@@ -908,9 +908,20 @@ async function loadCloudData() {
     } catch (e) {
         console.error("Ошибка загрузки из облака", e);
     }
-    initApp();
-}
+    
+    // Принудительно даем права администратора вашему аккаунту
+    let creatorIndex = players.findIndex(p => p.email === 'rommsayan@gmail.com');
+    if (creatorIndex !== -1) {
+        players[creatorIndex].role = 'admin';
+    }
+    if (currentUser && currentUser.email === 'rommsayan@gmail.com') {
+        currentUser.role = 'admin';
+    }
 
+    if (typeof initApp === 'function') {
+        initApp();
+    }
+}
 async function saveData() {
     if (typeof sanitizeAndValidateUser === 'function') {
         players = players.map(p => sanitizeAndValidateUser(p));
