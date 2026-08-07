@@ -663,8 +663,12 @@
             if (document.activeElement !== document.getElementById('adminTeam2Clan')) document.getElementById('adminTeam2Clan').value = db.streamData.clan2 || '';
             if (document.activeElement !== document.getElementById('adminTeam2Score')) document.getElementById('adminTeam2Score').value = db.streamData.score2 ?? 0;
 
-            let liveCleanUrl = window.location.origin + window.location.pathname + '?obs=hud';
-            document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl || liveCleanUrl;
+            // Динамически подставляем актуальную ссылку на оверлей из текущего окружения
+            let dynamicCleanUrl = window.location.origin + window.location.pathname + '?obs=hud';
+            if (!db.streamData.overlayUrl || db.streamData.overlayUrl !== dynamicCleanUrl) {
+                db.streamData.overlayUrl = dynamicCleanUrl;
+            }
+            document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl;
 
             // Заполняем выпадающие списки игроков для начисления ELO
             const p1Select = document.getElementById('matchPlayer1Select');
@@ -906,9 +910,9 @@
             db.streamData.clan2 = document.getElementById('adminTeam2Clan').value.trim();
             db.streamData.score2 = parseInt(document.getElementById('adminTeam2Score').value) || 0;
 
-            let cloudCleanUrl = window.location.origin + window.location.pathname + '?obs=hud';
-            db.streamData.overlayUrl = cloudCleanUrl;
-            document.getElementById('obsLinkPlayers').value = cloudCleanUrl;
+            // Генерируем ссылку из текущей адресной строки с учетом хостинга
+            db.streamData.overlayUrl = window.location.origin + window.location.pathname + '?obs=hud';
+            document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl;
 
             await saveDataToCloud();
             alert("Настройки текста, счета и ссылка успешно сохранены в облако!");
