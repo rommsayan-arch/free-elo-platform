@@ -117,7 +117,7 @@
     <div id="obsOverlayContainer" style="display: none; width: 100vw; height: 100vh;"></div>
 
     <div class="sidebar" id="mainSidebar">
-        <div class="logo" onclick="switchPage('matches')">FF</div>
+        <div class="logo" onclick="switchPage('matches')">FE</div>
         <div class="nav-item active" id="nav-matches" title="Матчи" onclick="switchPage('matches')"><i class="fas fa-gamepad"></i></div>
         <div class="nav-item" id="nav-leaderboard" title="Топ 100 игроков" onclick="switchPage('leaderboard')"><i class="fas fa-crown"></i></div>
         <div class="nav-item" id="nav-season" title="Топ Сезона" onclick="switchPage('season')"><i class="fas fa-trophy"></i></div>
@@ -223,32 +223,32 @@
                     <div class="form-group" style="margin-bottom:0;"><label style="color: #ff3333;">Игрок 2</label><select id="streamMatchPlayer2"></select></div>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-success" onclick="finishStreamMatch(1)">🏆 Победил Игрок 1</button>
-                    <button class="btn btn-danger" onclick="finishStreamMatch(2)">🏆 Победил Игрок 2</button>
+                    <button class="btn btn-success" onclick="finishStreamMatch(1)">🏆 Победил Игрок 1 (+26 ELO)</button>
+                    <button class="btn btn-danger" onclick="finishStreamMatch(2)">🏆 Победил Игрок 2 (+26 ELO)</button>
                 </div>
                 <div id="streamMatchResult" style="margin-top: 15px; font-weight: bold;"></div>
             </div>
 
             <div class="card admin-obs-only" id="obsSettingsCard" style="grid-column: span 12; border-color: var(--accent); display: none;">
-                <h2 style="color: var(--accent);"><i class="fas fa-desktop"></i> Настройка текста для OBS Оверлеев</h2>
+                <h2 style="color: var(--accent);"><i class="fas fa-desktop"></i> Раздельная настройка текста для OBS Оверлеев</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 15px 0;">
                     <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
                         <h3 style="color: #00be63; margin-bottom: 10px;">Левая сторона</h3>
                         <div class="form-group"><label>Ник игрока 1</label><input type="text" id="adminTeam1Player" value="sayan"></div>
-                        <div class="form-group"><label>Ник клана 1</label><input type="text" id="adminTeam1Clan" value="NUN"></div>
+                        <div class="form-group"><label>Тег/Название клана 1</label><input type="text" id="adminTeam1Clan" value="NUN"></div>
                     </div>
                     <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
                         <h3 style="color: #ff3333; margin-bottom: 10px;">Правая сторона</h3>
                         <div class="form-group"><label>Ник игрока 2</label><input type="text" id="adminTeam2Player" value="player2"></div>
-                        <div class="form-group"><label>Ник клана 2</label><input type="text" id="adminTeam2Clan" value="WAKANDA"></div>
+                        <div class="form-group"><label>Тег/Название клана 2</label><input type="text" id="adminTeam2Clan" value="WAKANDA"></div>
                     </div>
                 </div>
                 <button class="btn btn-primary" style="margin-bottom: 25px;" onclick="saveObsSettings()">Сохранить текст для оверлеев</button>
                 
-                <h3 style="color: #00be63; margin-bottom: 10px;"><i class="fas fa-link"></i> Ссылка №1: Оверлей для Ников игроков</h3>
+                <h3 style="color: #00be63; margin-bottom: 10px;"><i class="fas fa-link"></i> Ссылка №1 (Только Ник игрока 1 и Ник игрока 2)</h3>
                 <div class="form-group"><div style="display: flex; gap: 10px;"><input type="text" id="obsLinkPlayers" readonly style="flex: 1; background: #111; color: #00be63; font-weight: bold;"><button class="btn btn-primary" onclick="copyLink('obsLinkPlayers')"><i class="fas fa-copy"></i></button></div></div>
 
-                <h3 style="color: #ff3333; margin: 20px 0 10px 0;"><i class="fas fa-link"></i> Ссылка №2: Оверлей для Ников кланов</h3>
+                <h3 style="color: #ff3333; margin: 20px 0 10px 0;"><i class="fas fa-link"></i> Ссылка №2 (Только Клан 1 и Клан 2)</h3>
                 <div class="form-group"><div style="display: flex; gap: 10px;"><input type="text" id="obsLinkClans" readonly style="flex: 1; background: #111; color: #ff3333; font-weight: bold;"><button class="btn btn-primary" onclick="copyLink('obsLinkClans')"><i class="fas fa-copy"></i></button></div></div>
             </div>
 
@@ -400,13 +400,13 @@
                 id: 1, 
                 name: 'sayan', 
                 email: 'rommsayan@gmail.com', 
-                password: 'Suzuki/77',           
+                password: 'Suzuki/77',          
                 elo: 1000, 
                 matches: 0, 
                 wins: 0, 
                 level: 1, 
                 role: 'creator', 
-                clan: 'Нет клана', 
+                clan: 'NUN', 
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=sayan`, 
                 frame: '', 
                 inventory: [] 
@@ -419,7 +419,10 @@
             creatorAcc.password = 'Suzuki/77';
         }
 
-        let clans = JSON.parse(localStorage.getItem('fe_clans')) || [];
+        let clans = JSON.parse(localStorage.getItem('fe_clans')) || [
+            { name: 'NUN', tag: 'NUN', owner: 'sayan' },
+            { name: 'WAKANDA', tag: 'WAK', owner: 'player2' }
+        ];
         let shopItems = JSON.parse(localStorage.getItem('fe_shop')) || [
             { id: 101, name: 'Крутой Робот', type: 'avatar', price: 500, img: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot1' }
         ];
@@ -427,8 +430,8 @@
             { id: 1, name: 'sayan', url: 'https://twitch.tv/', priority: 10 }
         ];
         let streamData = JSON.parse(localStorage.getItem('fe_stream')) || {
-            player1: 'sayan', clan1: 'NO-CLAN',
-            player2: 'player2', clan2: 'NO-CLAN'
+            player1: 'sayan', clan1: 'NUN',
+            player2: 'player2', clan2: 'WAKANDA'
         };
 
         let currentUser = null; 
@@ -486,14 +489,13 @@
             }
 
             const foundUser = players.find(p => p.email === gmail && p.password === password);
-            if (!foundUser) {
+            if (foundUser) {
+                currentUser = sanitizeAndValidateUser(foundUser);
+                document.getElementById('authModal').style.display = 'none';
+                initApp();
+            } else {
                 alert("Неверный Gmail или пароль!");
-                return;
             }
-
-            currentUser = foundUser;
-            document.getElementById('authModal').style.display = 'none';
-            initApp();
         }
 
         function registerUser() {
@@ -502,22 +504,19 @@
             const password = document.getElementById('regPassword').value.trim();
 
             if (!name || !gmail || !password) {
-                alert("Заполните все поля регистрации!");
+                alert("Заполните все поля для регистрации!");
                 return;
             }
-
             if (password.length < 6) {
                 alert("Пароль должен быть не менее 6 символов!");
                 return;
             }
-
-            const existing = players.find(p => p.email === gmail);
-            if (existing) {
-                alert("Этот Gmail уже зарегистрирован!");
+            if (players.some(p => p.email === gmail)) {
+                alert("Аккаунт с таким Gmail уже зарегистрирован!");
                 return;
             }
 
-            const newPlayer = {
+            const newUser = sanitizeAndValidateUser({
                 id: Date.now(),
                 name: name,
                 email: gmail,
@@ -531,12 +530,11 @@
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
                 frame: '',
                 inventory: []
-            };
+            });
 
-            players.push(newPlayer);
-            currentUser = newPlayer;
+            players.push(newUser);
+            currentUser = newUser;
             saveData();
-
             document.getElementById('authModal').style.display = 'none';
             initApp();
         }
@@ -545,212 +543,166 @@
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-            const targetPage = document.getElementById('page-' + pageId);
-            const targetNav = document.getElementById('nav-' + pageId);
-
+            const targetPage = document.getElementById(`page-${pageId}`);
             if (targetPage) targetPage.classList.add('active');
+
+            const targetNav = document.getElementById(`nav-${pageId}`);
             if (targetNav) targetNav.classList.add('active');
 
             const titles = {
                 'matches': 'МАТЧИ И СТАТИСТИКА',
-                'leaderboard': 'ТОП 100 ИГРОКОВ',
+                'leaderboard': 'ТОП 100 ИГРОКОВ ПЛАТФОРМЫ',
                 'season': 'ТОП СЕЗОНА',
-                'streamers': 'СТРИМЕРЫ ПЛАТФОРМЫ',
-                'clans': 'КЛАНЫ',
+                'streamers': 'ПРЯМЫЕ ТРАНСЛЯЦИИ И ПАНЕЛЬ',
+                'clans': 'КЛАНЫ ПЛАТФОРМЫ',
                 'shop': 'МАГАЗИН НАГРАД',
-                'admin': 'ПАНЕЛЬ УПРАВЛЕНИЯ'
+                'admin': 'ПАНЕЛЬ АДМИНИСТРАТОРА И СОЗДАТЕЛЯ'
             };
-            document.getElementById('pageTitle').innerText = titles[pageId] || 'ПЛАТФОРМА';
+            document.getElementById('pageTitle').textContent = titles[pageId] || 'FREE ELO';
         }
 
         function initApp() {
             if (!currentUser) return;
-
-            document.getElementById('userName').innerText = currentUser.name;
+            document.getElementById('userName').textContent = currentUser.name;
             document.getElementById('userAvatar').src = currentUser.avatar;
-            document.getElementById('widgetAvatar').src = currentUser.avatar;
-            document.getElementById('widgetName').innerText = currentUser.name;
-            document.getElementById('widgetClan').innerText = `Клан: ${currentUser.clan}`;
+            document.getElementById('userElo').textContent = currentUser.elo;
+            document.getElementById('userLevel').textContent = currentUser.level;
+            document.getElementById('userMatches').textContent = currentUser.matches;
             
-            document.getElementById('userElo').innerText = currentUser.elo;
-            document.getElementById('userLevel').innerText = currentUser.level;
-            document.getElementById('userMatches').innerText = currentUser.matches;
-            
-            const wr = currentUser.matches > 0 ? Math.round((currentUser.wins / currentUser.matches) * 100) : 0;
-            document.getElementById('userWinrate').innerText = wr + ' %';
+            let winrate = currentUser.matches > 0 ? Math.round((currentUser.wins / currentUser.matches) * 100) : 0;
+            document.getElementById('userWinrate').textContent = winrate + ' %';
 
-            const roleBadge = document.getElementById('roleBadge');
-            roleBadge.innerText = currentUser.role.toUpperCase();
+            const badge = document.getElementById('roleBadge');
+            badge.textContent = currentUser.role.toUpperCase();
             
-            if (currentUser.role === 'creator' || currentUser.role === 'admin') {
-                document.getElementById('nav-admin').style.display = 'block';
-                document.getElementById('obsSettingsCard').style.display = 'block';
-                document.getElementById('createClanCard').style.display = 'block';
+            const adminNav = document.getElementById('nav-admin');
+            const adminCard = document.getElementById('createClanCard');
+            const streamerCard = document.getElementById('streamerMatchControlCard');
+            const obsCard = document.getElementById('obsSettingsCard');
+
+            if (currentUser.role === 'admin' || currentUser.role === 'creator') {
+                adminNav.style.display = 'block';
+                if (adminCard) adminCard.style.display = 'block';
+                if (obsCard) obsCard.style.display = 'block';
+            } else {
+                adminNav.style.display = 'none';
+                if (adminCard) adminCard.style.display = 'none';
+                if (obsCard) obsCard.style.display = 'none';
             }
 
+            if (currentUser.role === 'streamer' || currentUser.role === 'admin' || currentUser.role === 'creator') {
+                if (streamerCard) streamerCard.style.display = 'block';
+            } else {
+                if (streamerCard) streamerCard.style.display = 'none';
+            }
+
+            document.getElementById('widgetName').textContent = currentUser.name;
+            document.getElementById('widgetAvatar').src = currentUser.avatar;
+            document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan}`;
+
+            // Заполняем поля OBS текущими значениями из памяти
+            document.getElementById('adminTeam1Player').value = streamData.player1;
+            document.getElementById('adminTeam1Clan').value = streamData.clan1;
+            document.getElementById('adminTeam2Player').value = streamData.player2;
+            document.getElementById('adminTeam2Clan').value = streamData.clan2;
+
             renderLeaderboard();
+            renderTop100();
+            renderSeasonLeaderboard();
+            renderStreamers();
+            renderClans();
             renderShop();
             renderInventory();
-            renderClans();
-            renderStreamers();
+            populateStreamSelects();
             renderAdminPanel();
         }
 
         function renderLeaderboard() {
             const tbody = document.getElementById('leaderboardBody');
-            const top100Body = document.getElementById('top100TableBody');
-            const seasonBody = document.getElementById('seasonLeaderboardBody');
+            tbody.innerHTML = '';
+            let sorted = [...players].sort((a, b) => b.elo - a.elo).slice(0, 5);
             
-            if (tbody) tbody.innerHTML = '';
-            if (top100Body) top100Body.innerHTML = '';
-            if (seasonBody) seasonBody.innerHTML = '';
-
-            const sorted = [...players].sort((a, b) => b.elo - a.elo);
-
-            sorted.slice(0, 5).forEach((p, index) => {
-                if (tbody) {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>#${index + 1}</td>
-                            <td>${p.name}</td>
-                            <td>${p.level}</td>
-                            <td style="color: var(--accent); font-weight: bold;">${p.elo}</td>
-                            <td>${p.matches}</td>
-                            <td><span class="role-badge">${p.role}</span></td>
-                        </tr>
-                    `;
-                }
+            sorted.forEach((p, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>#${index + 1}</b></td>
+                        <td>${p.name}</td>
+                        <td><span class="level-badge">${p.level}</span></td>
+                        <td style="color: var(--accent); font-weight: bold;">${p.elo}</td>
+                        <td>${p.matches}</td>
+                        <td><span class="role-badge">${p.role}</span></td>
+                    </tr>
+                `;
             });
+        }
+
+        function renderTop100() {
+            const tbody = document.getElementById('top100TableBody');
+            tbody.innerHTML = '';
+            let sorted = [...players].sort((a, b) => b.elo - a.elo);
 
             sorted.forEach((p, index) => {
-                if (top100Body) {
-                    const wr = p.matches > 0 ? Math.round((p.wins / p.matches) * 100) : 0;
-                    top100Body.innerHTML += `
-                        <tr>
-                            <td>#${index + 1}</td>
-                            <td><b>${p.name}</b></td>
-                            <td>${p.clan}</td>
-                            <td>${p.level}</td>
-                            <td style="color: var(--accent); font-weight: bold;">${p.elo}</td>
-                            <td>${p.matches} / ${p.wins} (${wr}%)</td>
-                            <td><span class="role-badge">${p.role}</span></td>
-                        </tr>
-                    `;
-                }
-                if (seasonBody) {
-                    seasonBody.innerHTML += `
-                        <tr>
-                            <td>#${index + 1}</td>
-                            <td><b>${p.name}</b></td>
-                            <td style="color: var(--accent); font-weight: bold;">${p.elo} ELO</td>
-                            <td>Уровень ${p.level}</td>
-                        </tr>
-                    `;
-                }
-            });
-        }
-
-        let activeShopCategory = 'all';
-        function filterShop(category, btn) {
-            activeShopCategory = category;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            renderShop();
-        }
-
-        function renderShop() {
-            const grid = document.getElementById('shopGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            const filtered = shopItems.filter(item => activeShopCategory === 'all' || item.type === activeShopCategory);
-            filtered.forEach(item => {
-                const isOwned = currentUser.inventory && currentUser.inventory.some(i => i.id === item.id);
-                grid.innerHTML += `
-                    <div class="shop-item">
-                        <img src="${item.img}" alt="${item.name}">
-                        <h4>${item.name}</h4>
-                        <p style="color: var(--accent); font-weight: bold;">${item.price} ELO</p>
-                        ${isOwned ? '<span style="color: #00be63; font-weight: bold; font-size: 13px;">Куплено</span>' : `<button class="btn btn-primary" style="width: 100%; padding: 6px;" onclick="buyItem(${item.id})">Купить</button>`}
-                    </div>
+                let wr = p.matches > 0 ? Math.round((p.wins / p.matches) * 100) : 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>#${index + 1}</b></td>
+                        <td><b>${p.name}</b></td>
+                        <td>${p.clan}</td>
+                        <td><span class="level-badge">${p.level}</span></td>
+                        <td style="color: var(--accent); font-weight: bold;">${p.elo} ELO</td>
+                        <td>${p.matches} / <span style="color: #00be63;">${p.wins} (${wr}%)</span></td>
+                        <td><span class="role-badge">${p.role}</span></td>
+                    </tr>
                 `;
             });
         }
 
-        function buyItem(id) {
-            const item = shopItems.find(i => i.id === id);
-            if (!item) return;
+        function renderSeasonLeaderboard() {
+            const tbody = document.getElementById('seasonLeaderboardBody');
+            tbody.innerHTML = '';
+            let sorted = [...players].sort((a, b) => b.elo - a.elo);
 
-            if (currentUser.elo < item.price) {
-                alert("Недостаточно ELO для покупки!");
-                return;
-            }
-
-            currentUser.elo -= item.price;
-            if (!currentUser.inventory) currentUser.inventory = [];
-            currentUser.inventory.push(item);
-
-            saveData();
-            initApp();
-            alert(`Вы успешно приобрели "${item.name}"!`);
-        }
-
-        function renderInventory() {
-            const grid = document.getElementById('inventoryGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            if (!currentUser.inventory || currentUser.inventory.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted);">Ваш инвентарь пуст.</p>';
-                return;
-            }
-
-            currentUser.inventory.forEach(item => {
-                const isEquipped = (item.type === 'avatar' && currentUser.avatar === item.img) || (item.type === 'frame' && currentUser.frame === item.img);
-                grid.innerHTML += `
-                    <div class="inventory-item">
-                        <img src="${item.img}" alt="${item.name}">
-                        <h4>${item.name}</h4>
-                        <button class="btn ${isEquipped ? 'btn-success' : 'btn-secondary'}" style="width: 100%; padding: 6px;" onclick="equipItem(${item.id})">${isEquipped ? 'Надето' : 'Надеть'}</button>
-                    </div>
+            sorted.forEach((p, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>#${index + 1}</b></td>
+                        <td>${p.name}</td>
+                        <td style="color: var(--accent); font-weight: bold;">${p.elo}</td>
+                        <td>Уровень ${p.level}</td>
+                    </tr>
                 `;
             });
         }
 
-        function equipItem(id) {
-            const item = currentUser.inventory.find(i => i.id === id);
-            if (!item) return;
-
-            if (item.type === 'avatar') {
-                currentUser.avatar = item.img;
-            } else if (item.type === 'frame') {
-                currentUser.frame = item.img;
-                const frameEl = document.getElementById('userFrame');
-                const widgetFrameEl = document.getElementById('widgetFrame');
-                if (frameEl) { frameEl.src = item.img; frameEl.style.display = 'block'; }
-                if (widgetFrameEl) { widgetFrameEl.src = item.img; widgetFrameEl.style.display = 'block'; }
-            }
-
-            saveData();
-            initApp();
+        function renderStreamers() {
+            const container = document.getElementById('streamersList');
+            container.innerHTML = '';
+            streamers.sort((a, b) => b.priority - a.priority).forEach(s => {
+                container.innerHTML += `
+                    <div class="streamer-card ${s.priority > 5 ? 'priority-high' : ''}">
+                        <div class="priority-badge">Приоритет: ${s.priority}</div>
+                        <h3><i class="fas fa-video"></i> ${s.name}</h3>
+                        <p style="color: var(--text-muted); font-size: 13px;">Прямой эфир турнирных матчей платформы FREE ELO.</p>
+                        <a href="${s.url}" target="_blank" class="btn btn-primary" style="text-align: center; text-decoration: none;">Смотреть стрим</a>
+                    </div>
+                `;
+            });
         }
 
         function renderClans() {
-            const grid = document.getElementById('clanList');
-            if (!grid) return;
-            grid.innerHTML = '';
-
+            const container = document.getElementById('clanList');
+            container.innerHTML = '';
             if (clans.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted);">Пока не создано ни одного клана.</p>';
+                container.innerHTML = '<p style="color: var(--text-muted);">Пока нет созданных кланов.</p>';
                 return;
             }
-
             clans.forEach(c => {
-                grid.innerHTML += `
+                let memberCount = players.filter(p => p.clan === c.name).length;
+                container.innerHTML += `
                     <div class="clan-card">
                         <h3>[${c.tag}] ${c.name}</h3>
-                        <p style="font-size: 13px; color: var(--text-muted);">Создатель: ${c.owner}</p>
-                        <button class="btn btn-primary" onclick="joinClan('${c.name}')">Вступить</button>
+                        <p style="color: var(--text-muted); font-size: 13px;">Участников: ${memberCount}</p>
+                        <button class="btn btn-secondary" onclick="joinClan('${c.name}')">Вступить в клан</button>
                     </div>
                 `;
             });
@@ -764,49 +716,206 @@
                 alert("Заполните название и тег клана!");
                 return;
             }
+            if (clans.some(c => c.name === name || c.tag === tag)) {
+                alert("Клан с таким именем или тегом уже существует!");
+                return;
+            }
 
-            clans.push({ id: Date.now(), name: name, tag: tag, owner: currentUser.name });
-            currentUser.clan = `[${tag}] ${name}`;
+            clans.push({ name, tag, owner: currentUser.name });
+            currentUser.clan = name;
             saveData();
             initApp();
-            alert("Клан успешно создан!");
+            alert(`Клан [${tag}] ${name} успешно создан!`);
         }
 
         function joinClan(clanName) {
             currentUser.clan = clanName;
             saveData();
             initApp();
-            alert(`Вы вступили в клан ${clanName}!`);
+            alert(`Вы успешно вступили в клан ${clanName}!`);
         }
 
-        function renderStreamers() {
-            const list = document.getElementById('streamersList');
-            if (!list) return;
-            list.innerHTML = '';
-
-            streamers.sort((a, b) => b.priority - a.priority).forEach(s => {
-                list.innerHTML += `
-                    <div class="streamer-card ${s.priority > 5 ? 'priority-high' : ''}">
-                        ${s.priority > 5 ? '<div class="priority-badge">ТОП</div>' : ''}
-                        <h3><i class="fas fa-video"></i> ${s.name}</h3>
-                        <a href="${s.url}" target="_blank" class="btn btn-primary" style="text-align: center; text-decoration: none;">Смотреть трансляцию</a>
+        function renderShop() {
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = '';
+            shopItems.forEach(item => {
+                grid.innerHTML += `
+                    <div class="shop-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <h4>${item.name}</h4>
+                        <p style="color: var(--accent); font-weight: bold;">${item.price} ELO</p>
+                        <button class="btn btn-primary" onclick="buyItem(${item.id})">Купить</button>
                     </div>
                 `;
             });
         }
 
+        function filterShop(type, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = '';
+            let filtered = type === 'all' ? shopItems : shopItems.filter(i => i.type === type);
+
+            filtered.forEach(item => {
+                grid.innerHTML += `
+                    <div class="shop-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <h4>${item.name}</h4>
+                        <p style="color: var(--accent); font-weight: bold;">${item.price} ELO</p>
+                        <button class="btn btn-primary" onclick="buyItem(${item.id})">Купить</button>
+                    </div>
+                `;
+            });
+        }
+
+        function buyItem(id) {
+            const item = shopItems.find(i => i.id === id);
+            if (!item) return;
+
+            if (currentUser.elo < item.price) {
+                alert("Недостаточно ELO для покупки этого товара!");
+                return;
+            }
+
+            if (currentUser.inventory.some(i => i.id === id)) {
+                alert("Этот товар уже есть в вашем инвентаре!");
+                return;
+            }
+
+            currentUser.elo -= item.price;
+            currentUser.inventory.push(item);
+            saveData();
+            initApp();
+            alert(`Вы успешно приобрели ${item.name}!`);
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            grid.innerHTML = '';
+            if (!currentUser.inventory || currentUser.inventory.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-muted);">Ваш инвентарь пуст. Покупайте аватарки и рамки в магазине!</p>';
+                return;
+            }
+
+            currentUser.inventory.forEach(item => {
+                grid.innerHTML += `
+                    <div class="inventory-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <h4>${item.name}</h4>
+                        <button class="btn btn-success" onclick="equipItem(${item.id})">Использовать</button>
+                    </div>
+                `;
+            });
+        }
+
+        function equipItem(id) {
+            const item = currentUser.inventory.find(i => i.id === id);
+            if (!item) return;
+
+            if (item.type === 'avatar') {
+                currentUser.avatar = item.img;
+            } else if (item.type === 'frame') {
+                currentUser.frame = item.img;
+            }
+            saveData();
+            initApp();
+            alert(`Вы применили ${item.name}!`);
+        }
+
+        function populateStreamSelects() {
+            const sel1 = document.getElementById('streamMatchPlayer1');
+            const sel2 = document.getElementById('streamMatchPlayer2');
+            if (!sel1 || !sel2) return;
+
+            sel1.innerHTML = '';
+            sel2.innerHTML = '';
+
+            players.forEach(p => {
+                sel1.innerHTML += `<option value="${p.name}">${p.name} (ELO: ${p.elo})</option>`;
+                sel2.innerHTML += `<option value="${p.name}">${p.name} (ELO: ${p.elo})</option>`;
+            });
+        }
+
+        function finishStreamMatch(winnerNum) {
+            const p1Name = document.getElementById('streamMatchPlayer1').value;
+            const p2Name = document.getElementById('streamMatchPlayer2').value;
+
+            if (p1Name === p2Name) {
+                alert("Выберите двух разных игроков!");
+                return;
+            }
+
+            let player1 = players.find(p => p.name === p1Name);
+            let player2 = players.find(p => p.name === p2Name);
+
+            if (!player1 || !player2) return;
+
+            player1.matches++;
+            player2.matches++;
+
+            let resultDiv = document.getElementById('streamMatchResult');
+
+            if (winnerNum === 1) {
+                player1.wins++;
+                player1.elo += 26;
+                player2.elo = Math.max(0, player2.elo - 32);
+                resultDiv.innerHTML = `<span style="color: #00be63;">Матч завершен! ${player1.name} победил и получил +26 ELO. ${player2.name} потерял -32 ELO.</span>`;
+            } else {
+                player2.wins++;
+                player2.elo += 26;
+                player1.elo = Math.max(0, player1.elo - 32);
+                resultDiv.innerHTML = `<span style="color: #ff3333;">Матч завершен! ${player2.name} победил и получил +26 ELO. ${player1.name} потерял -32 ELO.</span>`;
+            }
+
+            saveData();
+            initApp();
+        }
+
+        function saveObsSettings() {
+            streamData.player1 = document.getElementById('adminTeam1Player').value;
+            streamData.clan1 = document.getElementById('adminTeam1Clan').value;
+            streamData.player2 = document.getElementById('adminTeam2Player').value;
+            streamData.clan2 = document.getElementById('adminTeam2Clan').value;
+            saveData();
+            alert("Раздельные настройки OBS успешно сохранены!");
+        }
+
+        function copyLink(elementId) {
+            const input = document.getElementById(elementId);
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert("Ссылка скопирована в буфер обмена!");
+        }
+
         function renderAdminPanel() {
-            const shopBody = document.getElementById('adminShopTableBody');
-            if (shopBody) {
-                shopBody.innerHTML = '';
-                shopItems.forEach(i => {
-                    shopBody.innerHTML += `
+            const tableBody = document.getElementById('adminShopTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = '';
+                shopItems.forEach(item => {
+                    tableBody.innerHTML += `
                         <tr>
-                            <td><img src="${i.img}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;"></td>
-                            <td>${i.name}</td>
-                            <td>${i.type}</td>
-                            <td>${i.price} ELO</td>
-                            <td><button class="btn btn-danger" style="padding: 4px 8px;" onclick="deleteShopItem(${i.id})">Удалить</button></td>
+                            <td><img src="${item.img}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;"></td>
+                            <td>${item.name}</td>
+                            <td>${item.type}</td>
+                            <td>${item.price} ELO</td>
+                            <td><button class="btn btn-danger" onclick="deleteShopItem(${item.id})">Удалить</button></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const streamTable = document.getElementById('adminStreamersTableBody');
+            if (streamTable) {
+                streamTable.innerHTML = '';
+                streamers.forEach(s => {
+                    streamTable.innerHTML += `
+                        <tr>
+                            <td>${s.name}</td>
+                            <td><a href="${s.url}" target="_blank" style="color: var(--accent);">${s.url}</a></td>
+                            <td>${s.priority}</td>
+                            <td><button class="btn btn-danger" onclick="deleteStreamer(${s.id})">Удалить</button></td>
                         </tr>
                     `;
                 });
@@ -825,9 +934,9 @@
         function addShopItemByAdmin() {
             const name = document.getElementById('adminShopName').value.trim();
             const type = document.getElementById('adminShopType').value;
-            const price = parseInt(document.getElementById('adminShopPrice').value) || 0;
-            const imgUrl = document.getElementById('adminShopImgUrl').value.trim();
+            const price = parseInt(document.getElementById('adminShopPrice').value) || 500;
             const fileInput = document.getElementById('adminShopFile');
+            const urlInput = document.getElementById('adminShopImgUrl').value.trim();
 
             if (!name) {
                 alert("Введите название товара!");
@@ -840,16 +949,16 @@
                     shopItems.push({ id: Date.now(), name, type, price, img: e.target.result });
                     saveData();
                     initApp();
-                    alert("Товар успешно добавлен!");
+                    alert("Товар с изображением с ПК успешно добавлен!");
                 };
                 reader.readAsDataURL(fileInput.files[0]);
-            } else if (imgUrl) {
-                shopItems.push({ id: Date.now(), name, type, price, img: imgUrl });
+            } else if (urlInput) {
+                shopItems.push({ id: Date.now(), name, type, price, img: urlInput });
                 saveData();
                 initApp();
-                alert("Товар успешно добавлен!");
+                alert("Товар по URL успешно добавлен!");
             } else {
-                alert("Загрузите файл картинки или укажите URL!");
+                alert("Загрузите файл или укажите URL картинки!");
             }
         }
 
@@ -859,42 +968,101 @@
             initApp();
         }
 
-        function loadUserToAdmin() {
-            const select = document.getElementById('adminUserSelect');
-            if (!select) return;
-            const userId = parseInt(select.value);
-            const targetUser = players.find(p => p.id === userId);
-            if (!targetUser) return;
+        function addOrUpdateStreamer() {
+            const name = document.getElementById('adminStreamerName').value.trim();
+            const url = document.getElementById('adminStreamerUrl').value.trim();
+            const priority = parseInt(document.getElementById('adminStreamerPriority').value) || 1;
 
-            document.getElementById('adminEloInput').value = targetUser.elo;
-            document.getElementById('adminMatchesInput').value = targetUser.matches;
-            document.getElementById('adminLevelInput').value = targetUser.level;
-            document.getElementById('adminRoleSelect').value = targetUser.role;
-        }
+            if (!name || !url) {
+                alert("Заполните ник и ссылку стримера!");
+                return;
+            }
 
-        function applyAdminChanges() {
-            const select = document.getElementById('adminUserSelect');
-            if (!select) return;
-            const userId = parseInt(select.value);
-            const targetUser = players.find(p => p.id === userId);
-            if (!targetUser) return;
-
-            targetUser.elo = parseInt(document.getElementById('adminEloInput').value) || 0;
-            targetUser.matches = parseInt(document.getElementById('adminMatchesInput').value) || 0;
-            targetUser.level = parseInt(document.getElementById('adminLevelInput').value) || 1;
-            targetUser.role = document.getElementById('adminRoleSelect').value;
+            let existing = streamers.find(s => s.name === name);
+            if (existing) {
+                existing.url = url;
+                existing.priority = priority;
+            } else {
+                streamers.push({ id: Date.now(), name, url, priority });
+            }
 
             saveData();
             initApp();
-            alert("Данные игрока успешно обновлены!");
+            alert("Стример успешно сохранен!");
+        }
+
+        function deleteStreamer(id) {
+            streamers = streamers.filter(s => s.id !== id);
+            saveData();
+            initApp();
+        }
+
+        function loadUserToAdmin() {
+            const userId = parseInt(document.getElementById('adminUserSelect').value);
+            const user = players.find(p => p.id === userId);
+            if (!user) return;
+
+            document.getElementById('adminEloInput').value = user.elo;
+            document.getElementById('adminMatchesInput').value = user.matches;
+            document.getElementById('adminLevelInput').value = user.level;
+            document.getElementById('adminRoleSelect').value = user.role;
+        }
+
+        function applyAdminChanges() {
+            const userId = parseInt(document.getElementById('adminUserSelect').value);
+            let user = players.find(p => p.id === userId);
+            if (!user) return;
+
+            user.elo = parseInt(document.getElementById('adminEloInput').value) || 0;
+            user.matches = parseInt(document.getElementById('adminMatchesInput').value) || 0;
+            user.level = parseInt(document.getElementById('adminLevelInput').value) || 1;
+            user.role = document.getElementById('adminRoleSelect').value;
+
+            saveData();
+            initApp();
+            alert("Изменения пользователя сохранены!");
         }
 
         window.onload = function() {
+            // Формируем чистые ссылки для OBS без лишних параметров
+            let cleanBaseUrl = window.location.origin + window.location.pathname;
+            document.getElementById('obsLinkPlayers').value = cleanBaseUrl + '?obs=players';
+            document.getElementById('obsLinkClans').value = cleanBaseUrl + '?obs=clans';
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const obsMode = urlParams.get('obs');
+
+            if (obsMode) {
+                document.getElementById('mainSidebar').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('authModal').style.display = 'none';
+                
+                const obsContainer = document.getElementById('obsOverlayContainer');
+                obsContainer.style.display = 'flex';
+                obsContainer.className = 'obs-overlay-mode';
+
+                if (obsMode === 'players') {
+                    obsContainer.innerHTML = `
+                        <div class="obs-text-box">
+                            <span style="color: #00be63;">${streamData.player1}</span>
+                            <span style="color: var(--accent);">VS</span>
+                            <span style="color: #ff3333;">${streamData.player2}</span>
+                        </div>
+                    `;
+                } else if (obsMode === 'clans') {
+                    obsContainer.innerHTML = `
+                        <div class="obs-text-box">
+                            <span style="color: #00be63;">[${streamData.clan1}]</span>
+                            <span style="color: var(--accent);">VS</span>
+                            <span style="color: #ff3333;">[${streamData.clan2}]</span>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
             document.getElementById('authModal').style.display = 'flex';
         };
     </script>
 </body>
 </html>
-
-</html>
-
