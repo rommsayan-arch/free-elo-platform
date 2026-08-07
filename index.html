@@ -406,8 +406,8 @@
     </div>
 
     <script>
-        const BIN_ID = '6a75f281f5f4af5e29f808d5'; 
-        const API_KEY = '$2a$10$YPs2XTBmJWHGzvmgye.UzuddWpmwhsLLTWtAgQRr3gBCHmLlgP6W';
+        const BIN_ID = '6a75f281f5f4af5e29f808d5';
+        const MASTER_KEY = '$2a$10$65AmGwQADKBmirr1AF.7yONH0FBNs/YpMjEV9Svc7Nuq4NbOsv6h2';
 
         let db = {
             players: [
@@ -1097,120 +1097,23 @@
                 obsContainer.style.display = 'flex';
                 obsContainer.className = 'obs-overlay-mode';
 
-async function initApp() {
-            // Сначала принудительно подтягиваем свежие данные из облака, чтобы игроки точно были в базе
-            await loadDataFromCloud();
-
-            let currentUser = getCurrentUser();
-            if (!currentUser) {
-                document.getElementById('authModal').style.display = 'flex';
-                return;
-            }
-
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userAvatar').src = currentUser.avatar;
-            document.getElementById('userElo').textContent = currentUser.elo;
-            document.getElementById('userLevel').textContent = currentUser.level;
-            document.getElementById('userMatches').textContent = currentUser.matches;
-            
-            let winrate = currentUser.matches > 0 ? Math.round((currentUser.wins / currentUser.matches) * 100) : 0;
-            document.getElementById('userWinrate').textContent = winrate + ' %';
-
-            const badge = document.getElementById('roleBadge');
-            badge.textContent = currentUser.role.toUpperCase();
-            
-            const adminNav = document.getElementById('nav-admin');
-            const adminCard = document.getElementById('createClanCard');
-            const obsCard = document.getElementById('obsSettingsCard');
-
-            if (currentUser.role === 'admin' || currentUser.role === 'creator') {
-                adminNav.style.display = 'block';
-                if (adminCard) adminCard.style.display = 'block';
-                if (obsCard) obsCard.style.display = 'block';
-            } else {
-                adminNav.style.display = 'none';
-                if (adminCard) adminCard.style.display = 'none';
-                if (obsCard) obsCard.style.display = 'none';
-            }
-
-            document.getElementById('widgetName').textContent = currentUser.name;
-            document.getElementById('widgetAvatar').src = currentUser.avatar;
-            document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan}`;
-
-            if (!db.streamData) {
-                db.streamData = { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0, overlayUrl: '' };
-            }
-
-            if (document.activeElement !== document.getElementById('adminTeam1Player')) document.getElementById('adminTeam1Player').value = db.streamData.player1 || '';
-            if (document.activeElement !== document.getElementById('adminTeam1Clan')) document.getElementById('adminTeam1Clan').value = db.streamData.clan1 || '';
-            if (document.activeElement !== document.getElementById('adminTeam1Score')) document.getElementById('adminTeam1Score').value = db.streamData.score1 ?? 0;
-            
-            if (document.activeElement !== document.getElementById('adminTeam2Player')) document.getElementById('adminTeam2Player').value = db.streamData.player2 || '';
-            if (document.activeElement !== document.getElementById('adminTeam2Clan')) document.getElementById('adminTeam2Clan').value = db.streamData.clan2 || '';
-            if (document.activeElement !== document.getElementById('adminTeam2Score')) document.getElementById('adminTeam2Score').value = db.streamData.score2 ?? 0;
-
-            let currentEnvUrl = window.location.origin + window.location.pathname + '?obs=hud';
-            if (!db.streamData.overlayUrl) {
-                db.streamData.overlayUrl = currentEnvUrl;
-            }
-            document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl;
-
-            const p1Select = document.getElementById('matchPlayer1Select');
-            const p2Select = document.getElementById('matchPlayer2Select');
-            if (p1Select && p2Select) {
-                p1Select.innerHTML = '';
-                p2Select.innerHTML = '';
-                db.players.forEach(p => {
-                    p1Select.innerHTML += `<option value="${p.id}">${p.name} (${p.elo} ELO)</option>`;
-                    p2Select.innerHTML += `<option value="${p.id}">${p.name} (${p.elo} ELO)</option>`;
-                });
-            }
-
-            renderLeaderboard();
-            renderTop100();
-            renderSeasonLeaderboard();
-            renderStreamers();
-            renderClans();
-            renderShop();
-            renderInventory();
-            renderAdminPanel();
-        }
-
-        window.onload = async function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const obsMode = urlParams.get('obs');
-
-            if (obsMode) {
-                document.getElementById('mainSidebar').style.display = 'none';
-                document.getElementById('mainContainer').style.display = 'none';
-                document.getElementById('authModal').style.display = 'none';
-                
-                const obsContainer = document.getElementById('obsOverlayContainer');
-                obsContainer.style.display = 'flex';
-                obsContainer.className = 'obs-overlay-mode';
-
                 async function updateObsContent() {
                     await loadDataFromCloud();
                     let sd = db.streamData || {};
-               obsContainer.innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, rgba(18, 18, 24, 0.95), rgba(30, 25, 40, 0.95)); border: 2px solid #ff4757; border-radius: 12px; padding: 15px 30px; box-shadow: 0 0 25px rgba(255, 71, 87, 0.4); font-family: sans-serif; min-width: 480px;">
-                            <!-- ИГРОК 1 (Ник сверху, клан снизу) -->
-                            <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                                <span style="color: #ffffff; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${sd.player1 || 'SAYAN'}</span>
-                                <span style="color: #00d2d3; font-size: 13px; font-weight: 700; background: rgba(0,210,211,0.15); padding: 2px 8px; border-radius: 4px; margin-top: 4px; border: 1px solid rgba(0,210,211,0.3);">[${sd.clan1 || 'NUN'}]</span>
+                    obsContainer.innerHTML = `
+                        <div class="obs-match-hud">
+                            <div class="obs-top-row">
+                                <span class="obs-player-1">${sd.player1 || 'SAYAN'}</span>
+                                <span class="obs-player-2">${sd.player2 || 'PLAYER2'}</span>
                             </div>
-
-                            <!-- СЧЕТ / VS -->
-                            <div style="display: flex; align-items: center; gap: 14px; margin: 0 25px;">
-                                <span style="color: #ff4757; font-size: 26px; font-weight: 900; text-shadow: 0 0 10px rgba(255,71,87,0.6);">${sd.score1 ?? 0}</span>
-                                <span style="color: #a4b0be; font-size: 16px; font-weight: bold;">VS</span>
-                                <span style="color: #ff4757; font-size: 26px; font-weight: 900; text-shadow: 0 0 10px rgba(255,71,87,0.6);">${sd.score2 ?? 0}</span>
-                            </div>
-
-                            <!-- ИГРОК 2 (Ник сверху, клан снизу) -->
-                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                <span style="color: #ffffff; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${sd.player2 || 'KOREAN'}</span>
-                                <span style="color: #ff6b81; font-size: 13px; font-weight: 700; background: rgba(255,107,129,0.15); padding: 2px 8px; border-radius: 4px; margin-top: 4px; border: 1px solid rgba(255,107,129,0.3);">[${sd.clan2 || 'SERENITY'}]</span>
+                            <div class="obs-clans-row">
+                                <span class="obs-clan-1">[${sd.clan1 || 'NUN'}]</span>
+                                <div class="obs-score-box">
+                                    <span class="obs-score-1">${sd.score1 !== undefined ? sd.score1 : 0}</span>
+                                    <span class="obs-score-colon">:</span>
+                                    <span class="obs-score-2">${sd.score2 !== undefined ? sd.score2 : 0}</span>
+                                </div>
+                                <span class="obs-clan-2">[${sd.clan2 || 'WAKANDA'}]</span>
                             </div>
                         </div>
                     `;
@@ -1222,17 +1125,10 @@ async function initApp() {
             }
 
             await loadDataFromCloud();
-            
-            // Если в localStorage записан ID, но пользователя нет в загруженной базе, сбрасываем авторизацию
-            if (currentUserId && !db.players.some(p => p.id == currentUserId)) {
-                currentUserId = null;
-                localStorage.removeItem('fe_current_user_id');
-            }
-
             if (!currentUserId || !getCurrentUser()) {
                 document.getElementById('authModal').style.display = 'flex';
             } else {
-                await initApp();
+                initApp();
             }
 
             setInterval(async () => {
