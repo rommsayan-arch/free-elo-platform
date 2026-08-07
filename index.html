@@ -96,8 +96,46 @@
         .season-banner { background: linear-gradient(135deg, #ff5500 0%, #26262b 100%); padding: 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .season-timer { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        .obs-overlay-mode { background: transparent !important; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; padding: 10px; }
-        .obs-text-box { font-size: 32px; font-weight: bold; color: white; text-shadow: 2px 2px 6px rgba(0,0,0,0.9); display: flex; gap: 15px; align-items: center; }
+        /* КРАСИВЫЙ КИБЕРСПОРТИВНЫЙ ОВЕРЛЕЙ ДЛЯ OBS */
+        .obs-overlay-mode { background: transparent !important; display: flex; justify-content: center; align-items: flex-start; width: 100vw; height: 100vh; padding-top: 20px; }
+        .obs-match-hud {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(18, 18, 20, 0.9) 0%, rgba(10, 10, 12, 0.95) 100%);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 12px 35px;
+            box-shadow: 0 0 25px rgba(255, 85, 0, 0.4);
+            gap: 6px;
+        }
+        .obs-teams-row {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .obs-vs {
+            color: var(--accent);
+            font-size: 22px;
+            font-style: italic;
+            text-shadow: 0 0 10px var(--accent);
+        }
+        .obs-clans-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -230,7 +268,7 @@
             </div>
 
             <div class="card admin-obs-only" id="obsSettingsCard" style="grid-column: span 12; border-color: var(--accent); display: none;">
-                <h2 style="color: var(--accent);"><i class="fas fa-desktop"></i> Раздельная настройка текста для OBS Оверлеев</h2>
+                <h2 style="color: var(--accent);"><i class="fas fa-desktop"></i> Настройка текста для OBS Оверлея</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 15px 0;">
                     <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px;">
                         <h3 style="color: #00be63; margin-bottom: 10px;">Левая сторона</h3>
@@ -243,13 +281,10 @@
                         <div class="form-group"><label>Тег/Название клана 2</label><input type="text" id="adminTeam2Clan" value="WAKANDA"></div>
                     </div>
                 </div>
-                <button class="btn btn-primary" style="margin-bottom: 25px;" onclick="saveObsSettings()">Сохранить текст для оверлеев</button>
+                <button class="btn btn-primary" style="margin-bottom: 25px;" onclick="saveObsSettings()">Сохранить текст для оверлея</button>
                 
-                <h3 style="color: #00be63; margin-bottom: 10px;"><i class="fas fa-link"></i> Ссылка №1 (Только Ник игрока 1 и Ник игрока 2)</h3>
-                <div class="form-group"><div style="display: flex; gap: 10px;"><input type="text" id="obsLinkPlayers" readonly style="flex: 1; background: #111; color: #00be63; font-weight: bold;"><button class="btn btn-primary" onclick="copyLink('obsLinkPlayers')"><i class="fas fa-copy"></i></button></div></div>
-
-                <h3 style="color: #ff3333; margin: 20px 0 10px 0;"><i class="fas fa-link"></i> Ссылка №2 (Только Клан 1 и Клан 2)</h3>
-                <div class="form-group"><div style="display: flex; gap: 10px;"><input type="text" id="obsLinkClans" readonly style="flex: 1; background: #111; color: #ff3333; font-weight: bold;"><button class="btn btn-primary" onclick="copyLink('obsLinkClans')"><i class="fas fa-copy"></i></button></div></div>
+                <h3 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-link"></i> Единая ссылка для OBS (Ники + Кланы на красивой плашке)</h3>
+                <div class="form-group"><div style="display: flex; gap: 10px;"><input type="text" id="obsLinkCombined" readonly style="flex: 1; background: #111; color: var(--accent); font-weight: bold;"><button class="btn btn-primary" onclick="copyLink('obsLinkCombined')"><i class="fas fa-copy"></i></button></div></div>
             </div>
 
             <div class="card" style="grid-column: span 12;">
@@ -600,7 +635,6 @@
             document.getElementById('widgetAvatar').src = currentUser.avatar;
             document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan}`;
 
-            // Заполняем поля OBS текущими значениями из памяти
             document.getElementById('adminTeam1Player').value = streamData.player1;
             document.getElementById('adminTeam1Clan').value = streamData.clan1;
             document.getElementById('adminTeam2Player').value = streamData.player2;
@@ -879,7 +913,7 @@
             streamData.player2 = document.getElementById('adminTeam2Player').value;
             streamData.clan2 = document.getElementById('adminTeam2Clan').value;
             saveData();
-            alert("Раздельные настройки OBS успешно сохранены!");
+            alert("Настройки OBS успешно сохранены!");
         }
 
         function copyLink(elementId) {
@@ -1024,15 +1058,13 @@
         }
 
         window.onload = function() {
-            // Формируем чистые ссылки для OBS без лишних параметров
             let cleanBaseUrl = window.location.origin + window.location.pathname;
-            document.getElementById('obsLinkPlayers').value = cleanBaseUrl + '?obs=players';
-            document.getElementById('obsLinkClans').value = cleanBaseUrl + '?obs=clans';
+            document.getElementById('obsLinkCombined').value = cleanBaseUrl + '?obs=match';
 
             const urlParams = new URLSearchParams(window.location.search);
             const obsMode = urlParams.get('obs');
 
-            if (obsMode) {
+            if (obsMode === 'match') {
                 document.getElementById('mainSidebar').style.display = 'none';
                 document.getElementById('mainContainer').style.display = 'none';
                 document.getElementById('authModal').style.display = 'none';
@@ -1041,23 +1073,20 @@
                 obsContainer.style.display = 'flex';
                 obsContainer.className = 'obs-overlay-mode';
 
-                if (obsMode === 'players') {
-                    obsContainer.innerHTML = `
-                        <div class="obs-text-box">
+                obsContainer.innerHTML = `
+                    <div class="obs-match-hud">
+                        <div class="obs-teams-row">
                             <span style="color: #00be63;">${streamData.player1}</span>
-                            <span style="color: var(--accent);">VS</span>
+                            <span class="obs-vs">VS</span>
                             <span style="color: #ff3333;">${streamData.player2}</span>
                         </div>
-                    `;
-                } else if (obsMode === 'clans') {
-                    obsContainer.innerHTML = `
-                        <div class="obs-text-box">
+                        <div class="obs-clans-row">
                             <span style="color: #00be63;">[${streamData.clan1}]</span>
-                            <span style="color: var(--accent);">VS</span>
+                            <span>• Кланы •</span>
                             <span style="color: #ff3333;">[${streamData.clan2}]</span>
                         </div>
-                    `;
-                }
+                    </div>
+                `;
                 return;
             }
 
