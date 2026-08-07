@@ -96,29 +96,28 @@
         .season-banner { background: linear-gradient(135deg, #ff5500 0%, #26262b 100%); padding: 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .season-timer { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        /* СТИЛЬНЫЙ, НЕ КОЛХОЗНЫЙ И ПРОЗРАЧНЫЙ КИБЕРСПОРТИВНЫЙ OBS ОВЕРЛЕЙ */
+        /* СТИЛЬНЫЙ КИБЕРСПОРТИВНЫЙ OBS ОВЕРЛЕЙ СО СЧЕТОМ */
         .obs-overlay-mode { background: transparent !important; display: flex; justify-content: center; align-items: flex-start; width: 100vw; height: 100vh; padding-top: 25px; }
         .obs-match-hud {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: linear-gradient(180deg, rgba(15, 15, 20, 0.85) 0%, rgba(10, 10, 13, 0.9) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 10px;
-            padding: 12px 28px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            gap: 6px;
+            background: linear-gradient(180deg, rgba(15, 15, 20, 0.9) 0%, rgba(10, 10, 13, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px 32px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            gap: 8px;
         }
         .obs-teams-row {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
             font-size: 26px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
         }
         .obs-player-1 { 
             color: #00ff66; 
@@ -128,13 +127,26 @@
             color: #ff3333; 
             text-shadow: 0 0 12px rgba(255, 51, 51, 0.4);
         }
+        .obs-score-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 16px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .obs-score-1 { color: #00ff66; font-size: 22px; font-weight: 900; }
+        .obs-score-colon { color: #ffffff; font-size: 20px; font-weight: bold; opacity: 0.6; }
+        .obs-score-2 { color: #ff3333; font-size: 22px; font-weight: 900; }
+
         .obs-vs {
             color: #ffffff;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
             font-style: italic;
             background: rgba(255, 255, 255, 0.1);
-            padding: 2px 10px;
+            padding: 2px 8px;
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             letter-spacing: 2px;
@@ -268,15 +280,18 @@
         <!-- СТРАНИЦА: СТРИМЕРЫ -->
         <div id="page-streamers" class="page-content">
             <div class="card streamer-only-panel" id="streamerMatchControlCard" style="grid-column: span 12; border-color: var(--accent); display: none;">
-                <h2 style="color: var(--accent);"><i class="fas fa-trophy"></i> Панель стримера: Управление матчем</h2>
+                <h2 style="color: var(--accent);"><i class="fas fa-trophy"></i> Панель стримера: Управление матчем и счетом</h2>
                 <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 15px; align-items: center; background: var(--bg-tertiary); padding: 20px; border-radius: 8px; margin-bottom: 15px;">
                     <div class="form-group" style="margin-bottom:0;"><label style="color: #00ff66;">Игрок 1</label><select id="streamMatchPlayer1"></select></div>
                     <div style="font-size: 20px; font-weight: bold; color: var(--accent);">VS</div>
                     <div class="form-group" style="margin-bottom:0;"><label style="color: #ff3333;">Игрок 2</label><select id="streamMatchPlayer2"></select></div>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-success" onclick="finishStreamMatch(1)">🏆 Победил Игрок 1 (+26 ELO)</button>
-                    <button class="btn btn-danger" onclick="finishStreamMatch(2)">🏆 Победил Игрок 2 (+26 ELO)</button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="finishStreamMatch(1)">🏆 Победа Игрока 1 (+26 ELO)</button>
+                        <button class="btn btn-danger" onclick="finishStreamMatch(2)">🏆 Победа Игрока 2 (+26 ELO)</button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="resetMatchScore()"><i class="fas fa-redo"></i> Сбросить счет (0:0)</button>
                 </div>
                 <div id="streamMatchResult" style="margin-top: 15px; font-weight: bold;"></div>
             </div>
@@ -297,18 +312,12 @@
                 </div>
                 <button class="btn btn-primary" style="margin-bottom: 25px;" onclick="saveObsSettings()">Сохранить текст для оверлея</button>
                 
-                <h3 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-link"></i> Ссылки для вставки в OBS (раздельные)</h3>
+                <h3 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-link"></i> Ссылки для вставки в OBS</h3>
                 <div class="form-group">
-                    <label style="color: #00ff66; font-size: 13px;">Ссылка 1: Только ники игроков (VS)</label>
+                    <label style="color: #00ff66; font-size: 13px;">Ссылка на HUD (Ники, Кланы и Счет)</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <input type="text" id="obsLinkPlayers" readonly style="flex: 1; background: #111; color: var(--accent); font-weight: bold;">
                         <button class="btn btn-primary" onclick="copyLink('obsLinkPlayers')"><i class="fas fa-copy"></i></button>
-                    </div>
-                    
-                    <label style="color: #ff3333; font-size: 13px;">Ссылка 2: Только теги кланов</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="obsLinkClans" readonly style="flex: 1; background: #111; color: var(--accent); font-weight: bold;">
-                        <button class="btn btn-primary" onclick="copyLink('obsLinkClans')"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
             </div>
@@ -490,9 +499,10 @@
         let streamers = JSON.parse(localStorage.getItem('fe_streamers')) || [
             { id: 1, name: 'Sayan', url: 'https://twitch.tv/', priority: 10 }
         ];
+        
         let streamData = JSON.parse(localStorage.getItem('fe_stream')) || {
-            player1: 'SAYAN', clan1: 'NUN',
-            player2: 'PLAYER2', clan2: 'WAKANDA'
+            player1: 'SAYAN', clan1: 'NUN', score1: 0,
+            player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0
         };
 
         let currentUser = null; 
@@ -661,7 +671,7 @@
             document.getElementById('widgetAvatar').src = currentUser.avatar;
             document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan}`;
 
-            // Заполняем поля полей ввода OBS только если пользователь не вводит их прямо сейчас (чтобы не сбивать фокус)
+            // Заполняем поля полей ввода OBS только если пользователь сейчас в них не пишет
             if (document.activeElement !== document.getElementById('adminTeam1Player')) document.getElementById('adminTeam1Player').value = streamData.player1;
             if (document.activeElement !== document.getElementById('adminTeam1Clan')) document.getElementById('adminTeam1Clan').value = streamData.clan1;
             if (document.activeElement !== document.getElementById('adminTeam2Player')) document.getElementById('adminTeam2Player').value = streamData.player2;
@@ -922,25 +932,41 @@
                 player1.wins++;
                 player1.elo += 26;
                 player2.elo = Math.max(0, player2.elo - 32);
-                resultDiv.innerHTML = `<span style="color: #00ff66;">Матч завершен! ${player1.name} победил и получил +26 ELO. ${player2.name} потерял -32 ELO.</span>`;
+                streamData.score1 = (streamData.score1 || 0) + 1;
+                resultDiv.innerHTML = `<span style="color: #00ff66;">Матч завершен! ${player1.name} победил (+26 ELO). Счет: ${streamData.score1}:${streamData.score2}</span>`;
             } else {
                 player2.wins++;
                 player2.elo += 26;
                 player1.elo = Math.max(0, player1.elo - 32);
-                resultDiv.innerHTML = `<span style="color: #ff3333;">Матч завершен! ${player2.name} победил и получил +26 ELO. ${player1.name} потерял -32 ELO.</span>`;
+                streamData.score2 = (streamData.score2 || 0) + 1;
+                resultDiv.innerHTML = `<span style="color: #ff3333;">Матч завершен! ${player2.name} победил (+26 ELO). Счет: ${streamData.score1}:${streamData.score2}</span>`;
             }
+
+            // Автоматически обновляем ники в настройках оверлея под участников матча
+            streamData.player1 = player1.name;
+            streamData.clan1 = player1.clan;
+            streamData.player2 = player2.name;
+            streamData.clan2 = player2.clan;
 
             saveData();
             initApp();
         }
 
+        function resetMatchScore() {
+            streamData.score1 = 0;
+            streamData.score2 = 0;
+            saveData();
+            document.getElementById('streamMatchResult').innerHTML = `<span style="color: var(--accent);">Счет матча сброшен (0:0).</span>`;
+            initApp();
+        }
+
         function saveObsSettings() {
-            streamData.player1 = document.getElementById('adminTeam1Player').value;
-            streamData.clan1 = document.getElementById('adminTeam1Clan').value;
-            streamData.player2 = document.getElementById('adminTeam2Player').value;
-            streamData.clan2 = document.getElementById('adminTeam2Clan').value;
+            streamData.player1 = document.getElementById('adminTeam1Player').value.trim();
+            streamData.clan1 = document.getElementById('adminTeam1Clan').value.trim();
+            streamData.player2 = document.getElementById('adminTeam2Player').value.trim();
+            streamData.clan2 = document.getElementById('adminTeam2Clan').value.trim();
             localStorage.setItem('fe_stream', JSON.stringify(streamData));
-            alert("Настройки OBS успешно сохранены!");
+            alert("Настройки текста для OBS успешно сохранены!");
         }
 
         function copyLink(elementId) {
@@ -1086,9 +1112,7 @@
 
         window.onload = function() {
             let cleanBaseUrl = window.location.origin + window.location.pathname;
-            
-            document.getElementById('obsLinkPlayers').value = cleanBaseUrl + '?obs=players';
-            document.getElementById('obsLinkClans').value = cleanBaseUrl + '?obs=clans';
+            document.getElementById('obsLinkPlayers').value = cleanBaseUrl + '?obs=hud';
 
             const urlParams = new URLSearchParams(window.location.search);
             const obsMode = urlParams.get('obs');
@@ -1105,27 +1129,24 @@
                 function updateObsContent() {
                     let savedStream = JSON.parse(localStorage.getItem('fe_stream')) || streamData;
                     
-                    if (obsMode === 'players') {
-                        obsContainer.innerHTML = `
-                            <div class="obs-match-hud">
-                                <div class="obs-teams-row">
-                                    <span class="obs-player-1">${savedStream.player1}</span>
-                                    <span class="obs-vs">VS</span>
-                                    <span class="obs-player-2">${savedStream.player2}</span>
+                    obsContainer.innerHTML = `
+                        <div class="obs-match-hud">
+                            <div class="obs-teams-row">
+                                <span class="obs-player-1">${savedStream.player1}</span>
+                                <div class="obs-score-box">
+                                    <span class="obs-score-1">${savedStream.score1 || 0}</span>
+                                    <span class="obs-score-colon">:</span>
+                                    <span class="obs-score-2">${savedStream.score2 || 0}</span>
                                 </div>
+                                <span class="obs-player-2">${savedStream.player2}</span>
                             </div>
-                        `;
-                    } else if (obsMode === 'clans') {
-                        obsContainer.innerHTML = `
-                            <div class="obs-match-hud">
-                                <div class="obs-clans-row">
-                                    <span class="obs-clan-1">[${savedStream.clan1}]</span>
-                                    <span style="color: rgba(255,255,255,0.4);">•</span>
-                                    <span class="obs-clan-2">[${savedStream.clan2}]</span>
-                                </div>
+                            <div class="obs-clans-row">
+                                <span class="obs-clan-1">[${savedStream.clan1}]</span>
+                                <span style="color: rgba(255,255,255,0.4);">•</span>
+                                <span class="obs-clan-2">[${savedStream.clan2}]</span>
                             </div>
-                        `;
-                    }
+                        </div>
+                    `;
                 }
 
                 updateObsContent();
