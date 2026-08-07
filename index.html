@@ -140,16 +140,36 @@
 
     <div id="obsOverlayContainer" style="display: none; width: 100vw; height: 100vh;"></div>
 
-    <div class="sidebar" id="mainSidebar">
-        <div class="logo" onclick="switchPage('matches')">FE</div>
-        <div class="nav-item active" id="nav-matches" title="Матчи" onclick="switchPage('matches')"><i class="fas fa-gamepad"></i></div>
-        <div class="nav-item" id="nav-leaderboard" title="Топ 100 игроков" onclick="switchPage('leaderboard')"><i class="fas fa-crown"></i></div>
-        <div class="nav-item" id="nav-season" title="Топ Сезона" onclick="switchPage('season')"><i class="fas fa-trophy"></i></div>
-        <div class="nav-item" id="nav-streamers" title="Стримеры" onclick="switchPage('streamers')"><i class="fas fa-video"></i></div>
-        <div class="nav-item" id="nav-clans" title="Кланы" onclick="switchPage('clans')"><i class="fas fa-users"></i></div>
-        <div class="nav-item" id="nav-shop" title="Магазин" onclick="switchPage('shop')"><i class="fas fa-shopping-cart"></i></div>
-        <div class="nav-item" id="nav-admin" title="Панель Создателя" style="color: #ff3333; display: none;" onclick="switchPage('admin')"><i class="fas fa-user-shield"></i></div>
+    <!-- В блоке панели администратора стрима добавьте поля для кланов -->
+<div class="row g-2 mb-3">
+    <div class="col-md-5">
+        <label class="form-label text-muted">Игрок 1</label>
+        <input type="text" id="adminTeam1Player" class="form-control bg-dark text-white border-secondary" placeholder="Ник 1">
     </div>
+    <div class="col-md-5">
+        <label class="form-label text-muted">Клан 1</label>
+        <input type="text" id="adminTeam1Clan" class="form-control bg-dark text-white border-secondary" placeholder="Клан 1 (например: NUN)">
+    </div>
+    <div class="col-md-2">
+        <label class="form-label text-muted">Счет 1</label>
+        <input type="number" id="adminTeam1Score" class="form-control bg-dark text-white border-secondary" value="0">
+    </div>
+</div>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-5">
+        <label class="form-label text-muted">Игрок 2</label>
+        <input type="text" id="adminTeam2Player" class="form-control bg-dark text-white border-secondary" placeholder="Ник 2">
+    </div>
+    <div class="col-md-5">
+        <label class="form-label text-muted">Клан 2</label>
+        <input type="text" id="adminTeam2Clan" class="form-control bg-dark text-white border-secondary" placeholder="Клан 2 (например: WAKANDA)">
+    </div>
+    <div class="col-md-2">
+        <label class="form-label text-muted">Счет 2</label>
+        <input type="number" id="adminTeam2Score" class="form-control bg-dark text-white border-secondary" value="0">
+    </div>
+</div>
 
     <div class="main-container" id="mainContainer">
         <header>
