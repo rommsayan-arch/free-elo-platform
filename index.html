@@ -96,7 +96,7 @@
         .season-banner { background: linear-gradient(135deg, #ff5500 0%, #26262b 100%); padding: 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .season-timer { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        /* ИДЕАЛЬНЫЙ ОБС ОВЕРЛЕЙ ПО ТВОИМ ПРАВИЛАМ */
+        /* ОБС ОВЕРЛЕЙ: Ники игроков отдельно, а счет стоит между никами кланов */
         .obs-overlay-mode { background: transparent !important; display: flex; justify-content: center; align-items: flex-start; width: 100vw; height: 100vh; padding-top: 25px; }
         .obs-match-hud {
             display: flex;
@@ -105,15 +105,17 @@
             background: linear-gradient(180deg, rgba(15, 15, 20, 0.9) 0%, rgba(10, 10, 13, 0.95) 100%);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
-            padding: 14px 28px;
+            padding: 14px 32px;
             backdrop-filter: blur(10px);
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
             gap: 10px;
         }
+        
+        /* Верхняя строка: только ники игроков отдельно друг от друга */
         .obs-top-row {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 40px;
         }
         .obs-player-1 { 
             color: #00ff66; 
@@ -129,35 +131,45 @@
             text-transform: uppercase;
             text-shadow: 0 0 12px rgba(255, 51, 51, 0.4);
         }
-        .obs-score-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 6px 18px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        .obs-score-1 { color: #00ff66; font-size: 22px; font-weight: 900; }
-        .obs-score-colon { color: #ffffff; font-size: 20px; font-weight: bold; opacity: 0.6; }
-        .obs-score-2 { color: #ff3333; font-size: 22px; font-weight: 900; }
 
+        /* Нижняя строка: ники кланов рядом друг с другом, а посередине них счет */
         .obs-clans-row {
             display: flex;
             align-items: center;
-            gap: 16px;
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .obs-clan-1 { 
+            color: #00ff66; 
+            font-size: 16px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
             letter-spacing: 1px;
-            background: rgba(0, 0, 0, 0.4);
+        }
+        .obs-clan-2 { 
+            color: #ff3333; 
+            font-size: 16px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+        
+        /* Счет посередине кланов */
+        .obs-score-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.8);
             padding: 4px 14px;
             border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .obs-clan-1 { color: #00ff66; opacity: 0.9; }
-        .obs-clan-2 { color: #ff3333; opacity: 0.9; }
-        .obs-clan-divider { color: rgba(255, 255, 255, 0.3); font-weight: 300; }
+        .obs-score-1 { color: #00ff66; font-size: 18px; font-weight: 900; }
+        .obs-score-colon { color: #ffffff; font-size: 16px; font-weight: bold; opacity: 0.6; }
+        .obs-score-2 { color: #ff3333; font-size: 18px; font-weight: 900; }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -310,7 +322,7 @@
                 
                 <h3 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-link"></i> Ссылки для вставки в OBS</h3>
                 <div class="form-group">
-                    <label style="color: #00ff66; font-size: 13px;">Ссылка на HUD (Ники, Кланы и Счет)</label>
+                    <label style="color: #00ff66; font-size: 13px;">Ссылка на HUD (Ники и Кланы со счетом)</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <input type="text" id="obsLinkPlayers" readonly style="flex: 1; background: #111; color: var(--accent); font-weight: bold;">
                         <button class="btn btn-primary" onclick="copyLink('obsLinkPlayers')"><i class="fas fa-copy"></i></button>
@@ -1121,23 +1133,23 @@
                 obsContainer.className = 'obs-overlay-mode';
 
                 function updateObsContent() {
-                    // Читаем напрямую из localStorage, чтобы изменения применялись мгновенно без перезагрузки браузера в OBS
                     let savedStream = JSON.parse(localStorage.getItem('fe_stream')) || streamData;
                     
                     obsContainer.innerHTML = `
                         <div class="obs-match-hud">
+                            <!-- Верхняя строка: Ники игроков отдельно слева и справа -->
                             <div class="obs-top-row">
                                 <span class="obs-player-1">${savedStream.player1 || 'SAYAN'}</span>
+                                <span class="obs-player-2">${savedStream.player2 || 'PLAYER2'}</span>
+                            </div>
+                            <!-- Нижняя строка: Ники кланов рядом друг с другом, а посередине них счет -->
+                            <div class="obs-clans-row">
+                                <span class="obs-clan-1">[${savedStream.clan1 || 'NUN'}]</span>
                                 <div class="obs-score-box">
                                     <span class="obs-score-1">${savedStream.score1 || 0}</span>
                                     <span class="obs-score-colon">:</span>
                                     <span class="obs-score-2">${savedStream.score2 || 0}</span>
                                 </div>
-                                <span class="obs-player-2">${savedStream.player2 || 'PLAYER2'}</span>
-                            </div>
-                            <div class="obs-clans-row">
-                                <span class="obs-clan-1">[${savedStream.clan1 || 'NUN'}]</span>
-                                <span class="obs-clan-divider">•</span>
                                 <span class="obs-clan-2">[${savedStream.clan2 || 'WAKANDA'}]</span>
                             </div>
                         </div>
@@ -1145,7 +1157,6 @@
                 }
 
                 updateObsContent();
-                // Автообновление каждые 300мс — теперь любые изменения в панели управления будут моментально видны в OBS!
                 setInterval(updateObsContent, 300);
                 return;
             }
