@@ -1097,6 +1097,98 @@
                 obsContainer.style.display = 'flex';
                 obsContainer.className = 'obs-overlay-mode';
 
+async function initApp() {
+            // Сначала принудительно подтягиваем свежие данные из облака, чтобы игроки точно были в базе
+            await loadDataFromCloud();
+
+            let currentUser = getCurrentUser();
+            if (!currentUser) {
+                document.getElementById('authModal').style.display = 'flex';
+                return;
+            }
+
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').src = currentUser.avatar;
+            document.getElementById('userElo').textContent = currentUser.elo;
+            document.getElementById('userLevel').textContent = currentUser.level;
+            document.getElementById('userMatches').textContent = currentUser.matches;
+            
+            let winrate = currentUser.matches > 0 ? Math.round((currentUser.wins / currentUser.matches) * 100) : 0;
+            document.getElementById('userWinrate').textContent = winrate + ' %';
+
+            const badge = document.getElementById('roleBadge');
+            badge.textContent = currentUser.role.toUpperCase();
+            
+            const adminNav = document.getElementById('nav-admin');
+            const adminCard = document.getElementById('createClanCard');
+            const obsCard = document.getElementById('obsSettingsCard');
+
+            if (currentUser.role === 'admin' || currentUser.role === 'creator') {
+                adminNav.style.display = 'block';
+                if (adminCard) adminCard.style.display = 'block';
+                if (obsCard) obsCard.style.display = 'block';
+            } else {
+                adminNav.style.display = 'none';
+                if (adminCard) adminCard.style.display = 'none';
+                if (obsCard) obsCard.style.display = 'none';
+            }
+
+            document.getElementById('widgetName').textContent = currentUser.name;
+            document.getElementById('widgetAvatar').src = currentUser.avatar;
+            document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan}`;
+
+            if (!db.streamData) {
+                db.streamData = { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0, overlayUrl: '' };
+            }
+
+            if (document.activeElement !== document.getElementById('adminTeam1Player')) document.getElementById('adminTeam1Player').value = db.streamData.player1 || '';
+            if (document.activeElement !== document.getElementById('adminTeam1Clan')) document.getElementById('adminTeam1Clan').value = db.streamData.clan1 || '';
+            if (document.activeElement !== document.getElementById('adminTeam1Score')) document.getElementById('adminTeam1Score').value = db.streamData.score1 ?? 0;
+            
+            if (document.activeElement !== document.getElementById('adminTeam2Player')) document.getElementById('adminTeam2Player').value = db.streamData.player2 || '';
+            if (document.activeElement !== document.getElementById('adminTeam2Clan')) document.getElementById('adminTeam2Clan').value = db.streamData.clan2 || '';
+            if (document.activeElement !== document.getElementById('adminTeam2Score')) document.getElementById('adminTeam2Score').value = db.streamData.score2 ?? 0;
+
+            let currentEnvUrl = window.location.origin + window.location.pathname + '?obs=hud';
+            if (!db.streamData.overlayUrl) {
+                db.streamData.overlayUrl = currentEnvUrl;
+            }
+            document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl;
+
+            const p1Select = document.getElementById('matchPlayer1Select');
+            const p2Select = document.getElementById('matchPlayer2Select');
+            if (p1Select && p2Select) {
+                p1Select.innerHTML = '';
+                p2Select.innerHTML = '';
+                db.players.forEach(p => {
+                    p1Select.innerHTML += `<option value="${p.id}">${p.name} (${p.elo} ELO)</option>`;
+                    p2Select.innerHTML += `<option value="${p.id}">${p.name} (${p.elo} ELO)</option>`;
+                });
+            }
+
+            renderLeaderboard();
+            renderTop100();
+            renderSeasonLeaderboard();
+            renderStreamers();
+            renderClans();
+            renderShop();
+            renderInventory();
+            renderAdminPanel();
+        }
+
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const obsMode = urlParams.get('obs');
+
+            if (obsMode) {
+                document.getElementById('mainSidebar').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('authModal').style.display = 'none';
+                
+                const obsContainer = document.getElementById('obsOverlayContainer');
+                obsContainer.style.display = 'flex';
+                obsContainer.className = 'obs-overlay-mode';
+
                 async function updateObsContent() {
                     await loadDataFromCloud();
                     let sd = db.streamData || {};
@@ -1125,10 +1217,17 @@
             }
 
             await loadDataFromCloud();
+            
+            // Если в localStorage записан ID, но пользователя нет в загруженной базе, сбрасываем авторизацию
+            if (currentUserId && !db.players.some(p => p.id == currentUserId)) {
+                currentUserId = null;
+                localStorage.removeItem('fe_current_user_id');
+            }
+
             if (!currentUserId || !getCurrentUser()) {
                 document.getElementById('authModal').style.display = 'flex';
             } else {
-                initApp();
+                await initApp();
             }
 
             setInterval(async () => {
