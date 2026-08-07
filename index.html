@@ -235,7 +235,6 @@
         </div>
 
         <div id="page-streamers" class="page-content">
-            <!-- Управление OBS и ELO матчей (Видно ТОЛЬКО админам/создателям) -->
             <div class="card admin-obs-only" id="obsSettingsCard" style="grid-column: span 12; border-color: var(--accent); display: none;">
                 <h2 style="color: var(--accent);"><i class="fas fa-desktop"></i> Управление OBS Оверлеем и Матчем (ELO +26 / -32)</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 15px 0;">
@@ -663,14 +662,12 @@
             if (document.activeElement !== document.getElementById('adminTeam2Clan')) document.getElementById('adminTeam2Clan').value = db.streamData.clan2 || '';
             if (document.activeElement !== document.getElementById('adminTeam2Score')) document.getElementById('adminTeam2Score').value = db.streamData.score2 ?? 0;
 
-            // Отображаем актуальную ссылку из облака или генерируем текущую, если в облаке пусто
             let currentEnvUrl = window.location.origin + window.location.pathname + '?obs=hud';
             if (!db.streamData.overlayUrl) {
                 db.streamData.overlayUrl = currentEnvUrl;
             }
             document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl;
 
-            // Заполняем выпадающие списки игроков для начисления ELO
             const p1Select = document.getElementById('matchPlayer1Select');
             const p2Select = document.getElementById('matchPlayer2Select');
             if (p1Select && p2Select) {
@@ -910,7 +907,6 @@
             db.streamData.clan2 = document.getElementById('adminTeam2Clan').value.trim();
             db.streamData.score2 = parseInt(document.getElementById('adminTeam2Score').value) || 0;
 
-            // Принудительно формируем и обновляем ссылку по текущему адресу сайта при нажатии кнопки сохранения
             db.streamData.overlayUrl = window.location.origin + window.location.pathname + '?obs=hud';
             document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl;
 
@@ -918,7 +914,6 @@
             alert("Настройки текста, счета и актуальная ссылка успешно сохранены в облако!");
         }
 
-        // Функция автоматического начисления +26 / -32 ELO игрокам со страницы Стримеров
         async function finishMatch(winnerNum) {
             const p1Id = parseInt(document.getElementById('matchPlayer1Select').value);
             const p2Id = parseInt(document.getElementById('matchPlayer2Select').value);
@@ -936,7 +931,6 @@
                 return;
             }
 
-            // Начисляем матчи
             player1.matches = (player1.matches || 0) + 1;
             player2.matches = (player2.matches || 0) + 1;
 
