@@ -889,9 +889,65 @@
             alert("Данные игрока успешно обновлены!");
         }
 
-        window.onload = function() {
-            document.getElementById('authModal').style.display = 'flex';
-        };
-    </script>
+        const BIN_ID = '6a75f281f5f4af5e29f808d5';
+const API_KEY = '$2a$10$65AmGwQADKBmirr1AF.7yONH0FBNs/YpMjEV9Svc7Nuq4NbOsv6h2';
+
+async function loadCloudData() {
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+            headers: { 'X-Master-Key': API_KEY }
+        });
+        const data = await response.json();
+        if (data && data.record) {
+            players = data.record.players || [];
+            clans = data.record.clans || [];
+            shopItems = data.record.shop || [];
+            streamers = data.record.streamers || [];
+            streamData = data.record.stream || streamData;
+        }
+    } catch (e) {
+        console.error("Ошибка загрузки из облака", e);
+    }
+    initApp();
+}
+
+async function saveData() {
+    if (typeof sanitizeAndValidateUser === 'function') {
+        players = players.map(p => sanitizeAndValidateUser(p));
+        if (currentUser) {
+            let index = players.findIndex(p => p.id === currentUser.id);
+            if (index !== -1) {
+                currentUser = sanitizeAndValidateUser(currentUser);
+                players[index] = currentUser;
+            }
+        }
+    }
+
+    const payload = {
+        players: players,
+        clans: clans,
+        shop: shopItems,
+        streamers: streamers,
+        stream: streamData
+    };
+
+    try {
+        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': API_KEY
+            },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.error("Ошибка сохранения в облако", e);
+    }
+}
+
+window.onload = async function() {
+    await loadCloudData();
+    document.getElementById('authModal').style.display = 'flex';
+};
 </body>
 </html>
