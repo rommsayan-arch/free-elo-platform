@@ -413,26 +413,10 @@
             }
         ];
 
-        let creatorIndex = players.findIndex(p => p.email === 'rommsayan@gmail.com');
+let creatorIndex = players.findIndex(p => p.email === 'rommsayan@gmail.com');
 if (creatorIndex !== -1) {
-    players[creatorIndex].role = 'creator';
+    players[creatorIndex].role = 'admin';
     players[creatorIndex].password = 'Suzuki/77';
-} else {
-    players.push({
-        id: 1,
-        name: 'sayan',
-        email: 'rommsayan@gmail.com',
-        password: 'Suzuki/77',
-        elo: 1000,
-        matches: 0,
-        wins: 0,
-        level: 1,
-        role: 'creator',
-        clan: 'Нет клана',
-        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=sayan',
-        frame: '',
-        inventory: []
-    });
 }
 
         let clans = JSON.parse(localStorage.getItem('fe_clans')) || [];
