@@ -435,7 +435,8 @@
             ],
             streamData: {
                 player1: 'SAYAN', clan1: 'NUN', score1: 0,
-                player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0
+                player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0,
+                overlayUrl: ''
             }
         };
 
@@ -646,7 +647,7 @@
             document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan}`;
 
             if (!db.streamData) {
-                db.streamData = { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
+                db.streamData = { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0, overlayUrl: '' };
             }
 
             if (document.activeElement !== document.getElementById('adminTeam1Player')) document.getElementById('adminTeam1Player').value = db.streamData.player1 || '';
@@ -656,6 +657,9 @@
             if (document.activeElement !== document.getElementById('adminTeam2Player')) document.getElementById('adminTeam2Player').value = db.streamData.player2 || '';
             if (document.activeElement !== document.getElementById('adminTeam2Clan')) document.getElementById('adminTeam2Clan').value = db.streamData.clan2 || '';
             if (document.activeElement !== document.getElementById('adminTeam2Score')) document.getElementById('adminTeam2Score').value = db.streamData.score2 ?? 0;
+
+            let liveCleanUrl = window.location.origin + window.location.pathname + '?obs=hud';
+            document.getElementById('obsLinkPlayers').value = db.streamData.overlayUrl || liveCleanUrl;
 
             renderLeaderboard();
             renderTop100();
@@ -885,8 +889,12 @@
             db.streamData.clan2 = document.getElementById('adminTeam2Clan').value.trim();
             db.streamData.score2 = parseInt(document.getElementById('adminTeam2Score').value) || 0;
 
+            let cloudCleanUrl = window.location.origin + window.location.pathname + '?obs=hud';
+            db.streamData.overlayUrl = cloudCleanUrl;
+            document.getElementById('obsLinkPlayers').value = cloudCleanUrl;
+
             await saveDataToCloud();
-            alert("Настройки текста и счета для OBS успешно сохранены в облако!");
+            alert("Настройки текста и счета успешно сохранены в облако, ссылка обновлена из облака!");
         }
 
         function copyLink(elementId) {
@@ -1025,9 +1033,6 @@
         }
 
         window.onload = async function() {
-            let cleanBaseUrl = window.location.origin + window.location.pathname;
-            document.getElementById('obsLinkPlayers').value = cleanBaseUrl + '?obs=hud';
-
             const urlParams = new URLSearchParams(window.location.search);
             const obsMode = urlParams.get('obs');
 
