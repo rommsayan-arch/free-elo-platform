@@ -3,224 +3,1243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE ELO - Platform & OBS Overlay</title>
+    <title>FREE ELO - Esports Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --bg-primary: #121214;
+            --bg-secondary: #1a1a1e;
+            --bg-tertiary: #26262b;
+            --accent: #ff5500;
+            --accent-hover: #e04b00;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --border-color: #33333b;
         }
-        body {
-            background-color: #0b0e14;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+
+        .nickname-fire {
+            background: linear-gradient(45deg, #ff4757, #ffa502);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.7));
         }
-        .main-container {
-            width: 100%;
-            max-width: 900px;
-            background: #151922;
-            border: 1px solid #ff5500;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 25px rgba(255, 85, 0, 0.2);
+
+        .nickname-gold {
+            background: linear-gradient(45deg, #f39c12, #f1c40f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(243, 156, 18, 0.7));
         }
-        h1 {
-            color: #ff5500;
-            text-align: center;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .section-title {
-            font-size: 14px;
-            color: #8a99ad;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-        .box {
-            background: rgba(18, 18, 24, 0.9);
-            border: 2px solid rgba(255, 85, 0, 0.6);
-            border-radius: 8px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        .team {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            flex: 1;
-        }
-        .label {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #ff5500;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-        .name {
-            font-size: 20px;
-            font-weight: 900;
-            text-transform: uppercase;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.7);
-        }
-        .vs {
-            color: #ff5500;
-            font-size: 18px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            margin: 0 20px;
-        }
-        .score {
-            font-size: 32px;
-            font-weight: bold;
-        }
-        .url-box {
-            margin-top: 20px;
-            background: #0b0e14;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #2a344a;
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 13px;
-            color: #00ff66;
-        }
-        .control-panel {
-            margin-top: 20px;
-            background: #11141d;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #2a344a;
-        }
-        .control-panel input, .control-panel button {
-            padding: 10px;
-            margin: 5px 0;
-            background: #1c2331;
-            border: 1px solid #ff5500;
+
+        .nickname-cyber {
             color: #fff;
-            border-radius: 5px;
-            width: 100%;
+            text-shadow: 0 0 8px #9b59b6, 0 0 20px #8e44ad;
+            letter-spacing: 2px;
         }
-        .control-panel button {
-            background: #ff5500;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-        .control-panel button:hover {
-            background: #ff7733;
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-primary); color: var(--text-main); display: flex; min-height: 100vh; }
+
+        .sidebar { width: 70px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 20px; position: fixed; height: 100vh; z-index: 100; }
+        .logo { color: var(--accent); font-size: 24px; font-weight: bold; cursor: pointer; }
+        .nav-item { color: var(--text-muted); font-size: 20px; cursor: pointer; transition: 0.2s; padding: 10px; border-radius: 8px; }
+        .nav-item:hover, .nav-item.active { color: var(--accent); background-color: var(--bg-tertiary); }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; margin-left: 70px; }
+        header { height: 60px; background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 30px; position: sticky; top: 0; z-index: 90; }
+        .header-title { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        
+        .avatar-wrapper { position: relative; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background-color: #222; position: relative; z-index: 1; }
+        .avatar-frame { position: absolute; top: 0; left: 0; width: 44px; height: 44px; pointer-events: none; object-fit: contain; z-index: 10; display: none; }
+
+        .page-content { display: none; padding: 30px; }
+        .page-content.active { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+
+        .card { background-color: var(--bg-secondary); border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); }
+        .stats-card { grid-column: span 3; display: flex; flex-direction: column; gap: 10px; }
+        .stat-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .stat-value { font-size: 28px; font-weight: bold; color: var(--accent); }
+        .level-badge { display: inline-block; background-color: #00be63; color: #000; font-weight: bold; padding: 4px 10px; border-radius: 4px; }
+
+        .top-players { grid-column: span 7; }
+        .profile-widget { grid-column: span 5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; }
+        
+        .profile-avatar-wrapper { position: relative; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; }
+        .profile-avatar-lg { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background-color: #222; position: relative; z-index: 1; }
+        .profile-frame-lg { position: absolute; top: 0; left: 0; width: 120px; height: 120px; pointer-events: none; object-fit: contain; z-index: 10; display: none; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 10px; font-size: 14px; border-bottom: 1px solid var(--border-color); }
+        th { color: var(--text-muted); }
+
+        .table-scroll-container { max-height: 500px; overflow-y: auto; margin-top: 15px; }
+        .table-scroll-container::-webkit-scrollbar { width: 6px; }
+        .table-scroll-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; text-align: left; }
+        input, select { padding: 10px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main); outline: none; width: 100%; }
+        input:focus, select:focus { border-color: var(--accent); }
+        
+        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background-color: var(--accent); color: white; }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-secondary { background-color: var(--bg-tertiary); color: white; border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: var(--border-color); }
+        .btn-danger { background-color: #ff3333; color: white; }
+        .btn-danger:hover { background-color: #cc0000; }
+        .btn-success { background-color: #00be63; color: #000; }
+        .btn-success:hover { background-color: #00964d; }
+
+        .role-badge { background-color: #ff3333; color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .auth-card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 35px 30px; width: 400px; text-align: center; }
+
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; margin-top: 15px; }
+        .auth-tabs button { flex: 1; padding: 10px; }
+
+        .shop-tabs { display: flex; gap: 10px; margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .tab-btn { padding: 8px 16px; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .shop-grid, .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; width: 100%; margin-top: 15px; }
+        .shop-item, .inventory-item { background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .shop-item img, .inventory-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; background: #111; }
+
+        .clan-grid, .streamers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; margin-top: 15px; }
+        .clan-card, .streamer-card { background: var(--bg-tertiary); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px; position: relative; }
+        .streamer-card.priority-high { border-color: var(--accent); box-shadow: 0 0 15px rgba(255, 85, 0, 0.2); }
+        .priority-badge { position: absolute; top: 15px; right: 15px; background: var(--accent); color: white; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
+
+        .season-banner { background: linear-gradient(135deg, #ff5500 0%, #26262b 100%); padding: 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .season-timer { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); }
+
+        .obs-overlay-mode { background: transparent !important; display: flex; justify-content: center; align-items: flex-start; width: 100vw; height: 100vh; padding-top: 25px; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: 60px; flex-direction: row; justify-content: space-around; padding: 0; bottom: 0; top: auto; border-right: none; border-top: 1px solid var(--border-color); }
+            .sidebar .logo { display: none; }
+            .main-container { margin-left: 0; margin-bottom: 70px; }
+            header { padding: 0 15px; }
+            .page-content.active { display: flex; flex-direction: column; padding: 15px; gap: 15px; }
+            .card, .stats-card, .top-players, .profile-widget { grid-column: span 12 !important; }
+            .season-banner { flex-direction: column; gap: 15px; text-align: center; }
+            .auth-card { width: 90%; padding: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <h1>FREE ELO</h1>
-        <div class="section-title">OBS Overlay HUD Preview:</div>
-        
-        <div id="obsContainer">
-            <!-- Динамический контент оверлея -->
+    <div id="obsOverlayContainer" style="display: none; width: 100vw; height: 100vh;"></div>
+
+    <div class="sidebar" id="mainSidebar">
+        <div class="logo" onclick="switchPage('matches')">FE</div>
+        <div class="nav-item active" id="nav-matches" title="Матчи" onclick="switchPage('matches')"><i class="fas fa-gamepad"></i></div>
+        <div class="nav-item" id="nav-leaderboard" title="Топ 100 игроков" onclick="switchPage('leaderboard')"><i class="fas fa-crown"></i></div>
+        <div class="nav-item" id="nav-season" title="Топ Сезона" onclick="switchPage('season')"><i class="fas fa-trophy"></i></div>
+        <div class="nav-item" id="nav-streamers" title="Стримеры" onclick="switchPage('streamers')"><i class="fas fa-video"></i></div>
+        <div class="nav-item" id="nav-clans" title="Кланы" onclick="switchPage('clans')"><i class="fas fa-users"></i></div>
+        <div class="nav-item" id="nav-shop" title="Магазин" onclick="switchPage('shop')"><i class="fas fa-shopping-cart"></i></div>
+        <div class="nav-item" id="nav-admin" title="Панель Создателя" style="color: #ff3333; display: none;" onclick="switchPage('admin')"><i class="fas fa-user-shield"></i></div>
+    </div>
+
+    <div class="main-container" id="mainContainer">
+        <header>
+            <div class="header-title" id="pageTitle">МАТЧИ И СТАТИСТИКА</div>
+            <div class="user-profile">
+                <div class="avatar-wrapper">
+                    <img id="userAvatar" class="avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=sayan" alt="Avatar">
+                    <img id="userFrame" class="avatar-frame" src="" alt="Frame">
+                </div>
+                <span id="userName">Игрок</span>
+                <span id="roleBadge" class="role-badge">Игрок</span>
+            </div>
+        </header>
+
+        <div id="page-matches" class="page-content active">
+            <div class="card stats-card"><span class="stat-title">Текущий ELO</span><span id="userElo" class="stat-value">1000</span></div>
+            <div class="card stats-card"><span class="stat-title">Уровень</span><div><span class="level-badge" id="userLevel">1</span></div></div>
+            <div class="card stats-card"><span class="stat-title">Сыграно матчей</span><span class="stat-value" id="userMatches" style="color: white;">0</span></div>
+            <div class="card stats-card"><span class="stat-title">Винрейт</span><span class="stat-value" id="userWinrate" style="color: white;">0 %</span></div>
+
+            <div class="card top-players">
+                <h3>ТОП ИГРОКОВ ПЛАТФОРМЫ</h3>
+                <table>
+                    <thead><tr><th>#</th><th>Игрок</th><th>Уровень</th><th>ELO</th><th>Матчи</th><th>Роль</th></tr></thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+            </div>
+
+            <div class="card profile-widget">
+                <div class="profile-avatar-wrapper">
+                    <img id="widgetAvatar" class="profile-avatar-lg" src="https://api.dicebear.com/7.x/bottts/svg?seed=sayan" alt="Avatar">
+                    <img id="widgetFrame" class="profile-frame-lg" src="" alt="Frame">
+                </div>
+                <h3 id="widgetName">Игрок</h3>
+                <p style="font-size: 12px; color: var(--text-muted);" id="widgetClan">Клан: Нет клана</p>
+            </div>
+
+            <div class="card" style="grid-column: span 12;">
+                <h2>МОЙ ИНВЕНТАРЬ</h2>
+                <div class="inventory-grid" id="inventoryGrid"></div>
+            </div>
         </div>
 
-        <div class="url-box" id="currentUrlBox">Загрузка ссылки...</div>
-
-        <div class="control-panel">
-            <div class="section-title" style="margin-bottom: 10px;">Панель управления матчем</div>
-            <input type="text" id="p1Input" placeholder="Игрок 1" value="SAYAN">
-            <input type="text" id="p2Input" placeholder="Игрок 2" value="PLAYER2">
-            <input type="text" id="c1Input" placeholder="Клан 1" value="NUN">
-            <input type="text" id="c2Input" placeholder="Клан 2" value="WAKANDA">
-            <div style="display: flex; gap: 10px;">
-                <input type="number" id="s1Input" placeholder="Счет 1" value="0">
-                <input type="number" id="s2Input" placeholder="Счет 2" value="0">
+        <div id="page-leaderboard" class="page-content">
+            <div class="card" style="grid-column: span 12;">
+                <h2><i class="fas fa-crown" style="color: var(--accent);"></i> Официальный глобальный Топ-100 игроков</h2>
+                <div class="table-scroll-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;"># Место</th>
+                                <th>Ник игрока</th>
+                                <th>Клан</th>
+                                <th>Уровень</th>
+                                <th>ELO очки</th>
+                                <th>Матчи / Победы</th>
+                                <th>Статус / Роль</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top100TableBody"></tbody>
+                    </table>
+                </div>
             </div>
-            <button onclick="saveData()">Сохранить и обновить</button>
+        </div>
+
+        <div id="page-season" class="page-content">
+            <div class="card" style="grid-column: span 12;">
+                <div class="season-banner">
+                    <div>
+                        <h1 style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-trophy"></i> СЕЗОН 1: БИТВА ЗА ЛЕГЕНДУ</h1>
+                        <p style="color: #ddd;">Сражайтесь в матчах, поднимайте ELO и забирайте награды!</p>
+                    </div>
+                    <div class="season-timer">
+                        <i class="fas fa-clock"></i> До конца: <span style="color: var(--accent);">14 дн.</span>
+                    </div>
+                </div>
+                <h2>Таблица лидеров текущего сезона</h2>
+                <table>
+                    <thead><tr><th>Позиция</th><th>Игрок</th><th>Текущий ELO Сезона</th><th>Прогресс Уровня</th></tr></thead>
+                    <tbody id="seasonLeaderboardBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="page-streamers" class="page-content">
+            <div class="card" style="grid-column: span 12;">
+                <h2><i class="fas fa-video" style="color: var(--accent);"></i> Прямые трансляции и OBS Оверлеи стримеров</h2>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">Здесь стримеры могут сами обновлять ссылки на свой стрим, а также управлять своими матчами и оверлеями.</p>
+                <div class="streamers-grid" id="streamersList"></div>
+            </div>
+        </div>
+
+        <div id="page-clans" class="page-content">
+            <div class="card admin-obs-only" id="createClanCard" style="grid-column: span 5; display: none;">
+                <h2>Создать новый клан</h2>
+                <div style="margin-top: 15px;">
+                    <div class="form-group"><label>Название клана</label><input type="text" id="clanNameInput" placeholder="Cyber Warriors"></div>
+                    <div class="form-group"><label>Тег клана (до 4 символов)</label><input type="text" id="clanTagInput" placeholder="CW" maxlength="4"></div>
+                    <button class="btn btn-primary" onclick="createClan()">Создать клан</button>
+                </div>
+            </div>
+            <div class="card" id="clanListCard" style="grid-column: span 12;">
+                <h2>Список кланов</h2>
+                <div class="clan-grid" id="clanList"></div>
+            </div>
+        </div>
+
+        <div id="page-shop" class="page-content">
+            <div class="card" style="grid-column: span 12;">
+                <h2>Магазин наград</h2>
+                <div class="shop-tabs">
+                    <button class="tab-btn active" onclick="filterShop('all', this)">Все</button>
+                    <button class="tab-btn" onclick="filterShop('avatar', this)">Аватарки</button>
+                    <button class="tab-btn" onclick="filterShop('frame', this)">Рамки</button>
+                    <button class="tab-btn" onclick="filterShop('decor', this)">Украшения</button>
+                </div>
+                <div class="shop-grid" id="shopGrid"></div>
+            </div>
+        </div>
+
+        <div id="page-admin" class="page-content">
+            <div class="card" style="grid-column: span 12; border-color: #00be63;">
+                <h2 style="color: #00be63;"><i class="fas fa-shopping-cart"></i> Управление магазином</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-top: 15px; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom:0;"><label>Название товара</label><input type="text" id="adminShopName" placeholder="Крутая аватарка"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Тип</label><select id="adminShopType"><option value="avatar">Аватарка</option><option value="frame">Рамка</option><option value="decor">Украшение</option></select></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Цена (ELO)</label><input type="number" id="adminShopPrice" value="500"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                    <div class="form-group" style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-bottom:0;">
+                        <label style="color: #00be63; font-weight: bold;">Способ 1: Загрузить файл с ПК</label>
+                        <input type="file" id="adminShopFile" accept="image/*" style="margin-top: 8px; padding: 6px;">
+                    </div>
+                    <div class="form-group" style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-bottom:0;">
+                        <label style="color: var(--accent); font-weight: bold;">Способ 2: Или указать URL картинки</label>
+                        <input type="text" id="adminShopImgUrl" placeholder="https://example.com/image.png" style="margin-top: 8px;">
+                    </div>
+                </div>
+
+                <button class="btn btn-success" style="margin-top: 15px; width: 100%;" onclick="addShopItemByAdmin()">➕ Загрузить товар в магазин</button>
+
+                <h3 style="margin-top: 25px; margin-bottom: 10px; color: #ff3333;">Список товаров для удаления:</h3>
+                <div class="table-scroll-container">
+                    <table>
+                        <thead><tr><th>Превью</th><th>Название</th><th>Тип</th><th>Цена</th><th>Действие</th></tr></thead>
+                        <tbody id="adminShopTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="grid-column: span 12; border-color: var(--accent);">
+                <h2 style="color: var(--accent);"><i class="fas fa-users"></i> База всех игроков и выдача личных OBS-оверлеев</h2>
+                <p style="color: var(--text-muted); margin-top: 5px; margin-bottom: 15px;">Ниже отображается общее количество игроков платформы. Нажмите «Выдать оверлей», чтобы закрепить за игроком его личный OBS HUD.</p>
+                <div class="table-scroll-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Игрок / Ник</th>
+                                <th>Gmail</th>
+                                <th>ELO / Уровень</th>
+                                <th>Текущая Роль</th>
+                                <th>Личные OBS Ссылки</th>
+                                <th>Управление оверлеем</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminAllPlayersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="grid-column: span 12;">
+                <h2 style="color: #ff3333;"><i class="fas fa-user-cog"></i> Управление Игроками и Ролями</h2>
+                <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; margin-top: 15px;">
+                    <div class="form-group" style="flex: 1; min-width: 180px;"><label>Игрок</label><select id="adminUserSelect" onchange="loadUserToAdmin()"></select></div>
+                    <div class="form-group" style="width: 140px;"><label>ELO</label><input type="number" id="adminEloInput"></div>
+                    <div class="form-group" style="width: 150px;"><label>Матчи</label><input type="number" id="adminMatchesInput"></div>
+                    <div class="form-group" style="width: 130px;"><label>Уровень</label><input type="number" id="adminLevelInput"></div>
+                    <div class="form-group" style="width: 160px;">
+                        <label>Роль</label>
+                        <select id="adminRoleSelect">
+                            <option value="player">Игрок</option><option value="streamer">Стример</option><option value="admin">Админ</option><option value="creator">Создатель</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="applyAdminChanges()">Сохранить</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="authModal">
+        <div class="auth-card">
+            <h2 style="color: var(--accent); margin-bottom: 5px;">FREE ELO</h2>
+            
+            <div class="auth-tabs">
+                <button class="btn btn-primary" id="tabLoginBtn" onclick="switchAuthMode('login')">Вход</button>
+                <button class="btn btn-secondary" id="tabRegisterBtn" onclick="switchAuthMode('register')">Регистрация</button>
+            </div>
+
+            <div id="loginFormBlock">
+                <div class="form-group">
+                    <label>Gmail:</label>
+                    <input type="email" id="loginEmail" placeholder="rommsayan@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Пароль:</label>
+                    <input type="password" id="loginPassword" placeholder="Ваш пароль">
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="loginUser()">Войти в аккаунт</button>
+            </div>
+
+            <div id="registerFormBlock" style="display: none;">
+                <div class="form-group">
+                    <label>Ваше Имя (Ник в игре):</label>
+                    <input type="text" id="regName" placeholder="Например: Sayan">
+                </div>
+                <div class="form-group">
+                    <label>Ваш Gmail:</label>
+                    <input type="email" id="regEmail" placeholder="example@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Придумайте пароль:</label>
+                    <input type="password" id="regPassword" placeholder="Минимум 6 символов">
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="registerUser()">Зарегистрироваться</button>
+            </div>
         </div>
     </div>
 
     <script>
-        function saveData() {
-            const data = {
-                player1: document.getElementById('p1Input').value,
-                player2: document.getElementById('p2Input').value,
-                clan1: document.getElementById('c1Input').value,
-                clan2: document.getElementById('c2Input').value,
-                score1: document.getElementById('s1Input').value,
-                score2: document.getElementById('s2Input').value
-            };
-            localStorage.setItem('free_elo_obs_data', JSON.stringify(data));
-            updateObsView(data);
+        const SUPABASE_URL = 'https://ogpqwzluyijbtdgxepsv.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_xGLI2_SQYD806t0CT18I8w_siDFSfdq';
+
+        let db = {
+            players: [
+                { 
+                    id: 1, 
+                    name: 'Sayan', 
+                    email: 'rommsayan@gmail.com', 
+                    password: 'Suzuki/77',          
+                    elo: 1000, 
+                    matches: 0, 
+                    wins: 0, 
+                    level: 1, 
+                    role: 'creator', 
+                    clan: 'NUN', 
+                    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=Sayan`, 
+                    frame: '', 
+                    inventory: [] 
+                }
+            ],
+            clans: [
+                { name: 'NUN', tag: 'NUN', owner: 'Sayan' },
+                { name: 'WAKANDA', tag: 'WAK', owner: 'PLAYER2' }
+            ],
+            shopItems: [
+                { id: 101, name: 'Крутой Робот', type: 'avatar', price: 500, img: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot1' }
+            ],
+            streamers: [
+                { id: 1, name: 'Sayan', url: 'https://twitch.tv/', priority: 10 }
+            ],
+            streamDataMap: {
+                "Sayan": { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 }
+            }
+        };
+
+        let currentUserId = localStorage.getItem('fe_current_user_id') || null;
+        let activeController = null;
+
+        async function loadDataFromCloud() {
+            if (activeController) activeController.abort();
+            activeController = new AbortController();
+
+            try {
+                let response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    signal: activeController.signal
+                });
+                if (response.ok) {
+                    let rows = await response.json();
+                    if (rows && rows.length > 0 && rows[0].content) {
+                        db = rows[0].content;
+                        if (!db.streamDataMap) db.streamDataMap = {};
+                    }
+                }
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    console.error("Ошибка загрузки из Supabase", e);
+                }
+            }
         }
 
-        function updateObsView(sd) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const obsMode = urlParams.get('obs');
-            const obsContainer = document.getElementById('obsContainer');
-
-            if (obsMode === 'clans') {
-                obsContainer.innerHTML = `
-                    <div class="box">
-                        <div class="team">
-                            <span class="label">Клан 1</span>
-                            <span class="name">${sd.clan1 || 'NUN'}</span>
-                        </div>
-                        <div class="score" style="color: #00ff66;">${sd.score1 ?? 0}</div>
-                        <div class="vs">VS</div>
-                        <div class="score" style="color: #ff3333;">${sd.score2 ?? 0}</div>
-                        <div class="team" style="align-items: flex-end;">
-                            <span class="label">Клан 2</span>
-                            <span class="name">${sd.clan2 || 'WAKANDA'}</span>
-                        </div>
-                    </div>
-                `;
-            } else {
-                obsContainer.innerHTML = `
-                    <div class="box">
-                        <div class="team">
-                            <span class="label">[${sd.clan1 || 'NUN'}]</span>
-                            <span class="name">${sd.player1 || 'PLAYER1'}</span>
-                        </div>
-                        <div class="score" style="color: #ff5500; font-size: 24px;">${sd.score1 ?? 0} : ${sd.score2 ?? 0}</div>
-                        <div class="team" style="align-items: flex-end;">
-                            <span class="label">[${sd.clan2 || 'WAKANDA'}]</span>
-                            <span class="name">${sd.player2 || 'PLAYER2'}</span>
-                        </div>
-                    </div>
-                `;
+        async function saveDataToCloud() {
+            try {
+                let response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ content: db })
+                });
+                if (!response.ok) {
+                    console.error("Ошибка сохранения в Supabase");
+                }
+            } catch (e) {
+                console.error("Ошибка сохранения в Supabase", e);
             }
+        }
+
+        function getCurrentUser() {
+            if (!currentUserId) return null;
+            return db.players.find(p => p.id == currentUserId) || null;
+        }
+
+        function sanitizeAndValidateUser(user) {
+            if (typeof user.elo !== 'number' || isNaN(user.elo) || user.elo < 0) user.elo = 0;
+            if (typeof user.matches !== 'number' || user.matches < 0) user.matches = 0;
+            if (typeof user.wins !== 'number' || user.wins < 0) user.wins = 0;
+            user.level = Math.max(1, Math.floor(user.elo / 300) + 1);
+            return user;
+        }
+
+        async function saveData() {
+            db.players = db.players.map(p => sanitizeAndValidateUser(p));
+            let curr = getCurrentUser();
+            if (curr) {
+                let index = db.players.findIndex(p => p.id === curr.id);
+                if (index !== -1) {
+                    db.players[index] = sanitizeAndValidateUser(curr);
+                }
+            }
+            await saveDataToCloud();
+            initApp();
+        }
+
+        function switchAuthMode(mode) {
+            const loginBlock = document.getElementById('loginFormBlock');
+            const regBlock = document.getElementById('registerFormBlock');
+            const btnLogin = document.getElementById('tabLoginBtn');
+            const btnReg = document.getElementById('tabRegisterBtn');
+
+            if (mode === 'login') {
+                loginBlock.style.display = 'block';
+                regBlock.style.display = 'none';
+                btnLogin.className = 'btn btn-primary';
+                btnReg.className = 'btn btn-secondary';
+            } else {
+                loginBlock.style.display = 'none';
+                regBlock.style.display = 'block';
+                btnLogin.className = 'btn btn-secondary';
+                btnReg.className = 'btn btn-primary';
+            }
+        }
+
+        async function loginUser() {
+            const gmail = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!gmail || !password) {
+                alert("Введите Gmail и Пароль!");
+                return;
+            }
+
+            await loadDataFromCloud();
+            const foundUser = db.players.find(p => p.email === gmail && p.password === password);
+            if (foundUser) {
+                currentUserId = foundUser.id;
+                localStorage.setItem('fe_current_user_id', currentUserId);
+                document.getElementById('authModal').style.display = 'none';
+                initApp();
+            } else {
+                alert("Неверный Gmail или пароль!");
+            }
+        }
+
+        async function registerUser() {
+            const name = document.getElementById('regName').value.trim();
+            const gmail = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+
+            if (!name || !gmail || !password) {
+                alert("Заполните все поля для регистрации!");
+                return;
+            }
+            if (password.length < 6) {
+                alert("Пароль должен быть не менее 6 символов!");
+                return;
+            }
+
+            await loadDataFromCloud();
+            if (db.players.some(p => p.email === gmail)) {
+                alert("Аккаунт с таким Gmail уже зарегистрирован!");
+                return;
+            }
+
+            const newUser = sanitizeAndValidateUser({
+                id: Date.now(),
+                name: name,
+                email: gmail,
+                password: password,
+                elo: 1000,
+                matches: 0,
+                wins: 0,
+                level: 1,
+                role: 'player',
+                clan: 'Нет клана',
+                avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
+                frame: '',
+                inventory: []
+            });
+
+            db.players.push(newUser);
+            currentUserId = newUser.id;
+            localStorage.setItem('fe_current_user_id', currentUserId);
+            await saveDataToCloud();
+            document.getElementById('authModal').style.display = 'none';
+            initApp();
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            const targetPage = document.getElementById(`page-${pageId}`);
+            if (targetPage) targetPage.classList.add('active');
+
+            const targetNav = document.getElementById(`nav-${pageId}`);
+            if (targetNav) targetNav.classList.add('active');
+
+            const titles = {
+                'matches': 'МАТЧИ И СТАТИСТИКА',
+                'leaderboard': 'ТОП 100 ИГРОКОВ ПЛАТФОРМЫ',
+                'season': 'ТОП СЕЗОНА',
+                'streamers': 'ПРЯМЫЕ ТРАНСЛЯЦИИ И OBS ОВЕРЛЕИ',
+                'clans': 'КЛАНЫ ПЛАТФОРМЫ',
+                'shop': 'МАГАЗИН НАГРАД',
+                'admin': 'ПАНЕЛЬ АДМИНИСТРАТОРА И СОЗДАТЕЛЯ'
+            };
+            document.getElementById('pageTitle').textContent = titles[pageId] || 'FREE ELO';
         }
 
         function initApp() {
-            document.getElementById('currentUrlBox').innerText = window.location.href;
-
-            let sd = { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
-            
-            const saved = localStorage.getItem('free_elo_obs_data');
-            if (saved) {
-                try {
-                    sd = JSON.parse(saved);
-                    document.getElementById('p1Input').value = sd.player1 || 'SAYAN';
-                    document.getElementById('p2Input').value = sd.player2 || 'PLAYER2';
-                    document.getElementById('c1Input').value = sd.clan1 || 'NUN';
-                    document.getElementById('c2Input').value = sd.clan2 || 'WAKANDA';
-                    document.getElementById('s1Input').value = sd.score1 ?? 0;
-                    document.getElementById('s2Input').value = sd.score2 ?? 0;
-                } catch(e) {}
+            let currentUser = getCurrentUser();
+            if (!currentUser) {
+                document.getElementById('authModal').style.display = 'flex';
+                return;
             }
 
-            updateObsView(sd);
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').src = currentUser.avatar;
+            document.getElementById('userElo').textContent = currentUser.elo;
+            document.getElementById('userLevel').textContent = currentUser.level;
+            document.getElementById('userMatches').textContent = currentUser.matches;
+            
+            let winrate = currentUser.matches > 0 ? Math.round((currentUser.wins / currentUser.matches) * 100) : 0;
+            document.getElementById('userWinrate').textContent = winrate + ' %';
+
+            const badge = document.getElementById('roleBadge');
+            badge.textContent = currentUser.role.toUpperCase();
+            
+            const adminNav = document.getElementById('nav-admin');
+            const adminCard = document.getElementById('createClanCard');
+
+            if (currentUser.role === 'admin' || currentUser.role === 'creator') {
+                adminNav.style.display = 'block';
+                if (adminCard) adminCard.style.display = 'block';
+            } else {
+                adminNav.style.display = 'none';
+                if (adminCard) adminCard.style.display = 'none';
+                if (document.getElementById('page-admin').classList.contains('active')) {
+                    switchPage('matches');
+                }
+            }
+
+            document.getElementById('widgetName').textContent = currentUser.name;
+            document.getElementById('widgetAvatar').src = currentUser.avatar;
+            document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan}`;
+
+            if (!db.streamDataMap) db.streamDataMap = {};
+
+            renderLeaderboard();
+            renderTop100();
+            renderSeasonLeaderboard();
+            renderStreamers();
+            renderClans();
+            renderShop();
+            renderInventory();
+            renderAdminPanel();
         }
 
-        window.onload = initApp;
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboardBody');
+            tbody.innerHTML = '';
+            let sorted = [...db.players].sort((a, b) => b.elo - a.elo).slice(0, 5);
+            
+            sorted.forEach((p, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>#${index + 1}</b></td>
+                        <td>${p.name}</td>
+                        <td><span class="level-badge">${p.level}</span></td>
+                        <td style="color: var(--accent); font-weight: bold;">${p.elo}</td>
+                        <td>${p.matches}</td>
+                        <td><span class="role-badge">${p.role}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderTop100() {
+            const tbody = document.getElementById('top100TableBody');
+            tbody.innerHTML = '';
+            let sorted = [...db.players].sort((a, b) => b.elo - a.elo);
+
+            sorted.forEach((p, index) => {
+                let wr = p.matches > 0 ? Math.round((p.wins / p.matches) * 100) : 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>#${index + 1}</b></td>
+                        <td><b>${p.name}</b></td>
+                        <td>${p.clan}</td>
+                        <td><span class="level-badge">${p.level}</span></td>
+                        <td style="color: var(--accent); font-weight: bold;">${p.elo} ELO</td>
+                        <td>${p.matches} / <span style="color: #00be63;">${p.wins} (${wr}%)</span></td>
+                        <td><span class="role-badge">${p.role}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderSeasonLeaderboard() {
+            const tbody = document.getElementById('seasonLeaderboardBody');
+            tbody.innerHTML = '';
+            let sorted = [...db.players].sort((a, b) => b.elo - a.elo);
+
+            sorted.forEach((p, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>#${index + 1}</b></td>
+                        <td>${p.name}</td>
+                        <td style="color: var(--accent); font-weight: bold;">${p.elo}</td>
+                        <td>Уровень ${p.level}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderStreamers() {
+            const container = document.getElementById('streamersList');
+            container.innerHTML = '';
+            if (!db.streamers || db.streamers.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Пока нет добавленных стримеров.</p>';
+                return;
+            }
+
+            let currentUser = getCurrentUser();
+            let isAdminOrCreator = currentUser && (currentUser.role === 'admin' || currentUser.role === 'creator');
+            let isStreamerUser = currentUser && currentUser.role === 'streamer';
+
+            let streamersToShow = db.streamers;
+            if (isStreamerUser && !isAdminOrCreator) {
+                streamersToShow = db.streamers.filter(s => s.name.toLowerCase() === currentUser.name.toLowerCase());
+                if (streamersToShow.length === 0) {
+                    streamersToShow = [{ id: currentUser.id, name: currentUser.name, url: 'https://twitch.tv/', priority: 1 }];
+                }
+            }
+
+            streamersToShow.sort((a, b) => b.priority - a.priority).forEach(s => {
+                let map = db.streamDataMap || {};
+                if (!map[s.name]) {
+                    map[s.name] = { player1: s.name, clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
+                }
+                let sd = map[s.name];
+                let baseUrl = window.location.origin + window.location.pathname;
+                let linkP = baseUrl + `?obs=players&streamer=${encodeURIComponent(s.name)}`;
+                let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(s.name)}`;
+
+                let showObsControl = isAdminOrCreator || (isStreamerUser && currentUser.name.toLowerCase() === s.name.toLowerCase());
+                let obsControlSection = '';
+
+                if (showObsControl) {
+                    let playersOptions = '';
+                    db.players.forEach(p => {
+                        playersOptions += `<option value="${p.id}">${p.name} (${p.elo} ELO)</option>`;
+                    });
+
+                    obsControlSection = `
+                        <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                            <h4 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-edit"></i> Обновить ссылку на стрим</h4>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 11px;">URL прямой трансляции (Twitch / YouTube):</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="streamUrl_${s.name}" value="${s.url}" placeholder="https://twitch.tv/..." style="font-size: 12px;">
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 11px;" onclick="updateStreamerUrl('${s.name}')">Сохранить</button>
+                                </div>
+                            </div>
+
+                            <h4 style="color: var(--accent); margin-bottom: 10px; margin-top: 15px;"><i class="fas fa-desktop"></i> Управление OBS Оверлеем</h4>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                                <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px;">
+                                    <div style="color: #00ff66; font-weight: bold; font-size: 12px; margin-bottom: 6px;">Игрок 1</div>
+                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p1_${s.name}" value="${sd.player1 || s.name}" placeholder="Ник 1"></div>
+                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c1_${s.name}" value="${sd.clan1 || 'NUN'}" placeholder="Клан 1"></div>
+                                    <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s1_${s.name}" value="${sd.score1 ?? 0}" placeholder="Счет 1"></div>
+                                    <div class="form-group" style="margin-bottom:6px;"><select id="mP1_${s.name}">${playersOptions}</select></div>
+                                    <button class="btn btn-success" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 1)">🏆 Победа Игр. 1</button>
+                                </div>
+                                <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px;">
+                                    <div style="color: #ff3333; font-weight: bold; font-size: 12px; margin-bottom: 6px;">Игрок 2</div>
+                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p2_${s.name}" value="${sd.player2 || 'PLAYER2'}" placeholder="Ник 2"></div>
+                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c2_${s.name}" value="${sd.clan2 || 'WAKANDA'}" placeholder="Клан 2"></div>
+                                    <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s2_${s.name}" value="${sd.score2 ?? 0}" placeholder="Счет 2"></div>
+                                    <div class="form-group" style="margin-bottom:6px;"><select id="mP2_${s.name}">${playersOptions}</select></div>
+                                    <button class="btn btn-danger" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 2)">🏆 Победа Игр. 2</button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="saveStreamerObsData('${s.name}')">💾 Сохранить оверлей</button>
+
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="color: #00d2d3; font-size: 11px; font-weight: bold;">Ссылка на HUD Игроков:</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="linkP_${s.name}" value="${linkP}" readonly style="font-size: 11px; background: #111; color: #00d2d3;">
+                                    <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkP_${s.name}')"><i class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="color: #ff4757; font-size: 11px; font-weight: bold;">Ссылка на HUD Кланов:</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="linkC_${s.name}" value="${linkC}" readonly style="font-size: 11px; background: #111; color: #ff4757;">
+                                    <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkC_${s.name}')"><i class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                let deleteBtnHtml = '';
+                if (isAdminOrCreator) {
+                    deleteBtnHtml = `<button class="btn btn-danger" style="width: 100%; margin-top: 5px;" onclick="removeStreamerByName('${s.name}')"><i class="fas fa-trash"></i> Удалить стримера</button>`;
+                }
+
+                container.innerHTML += `
+                    <div class="streamer-card ${s.priority > 5 ? 'priority-high' : ''}">
+                        <div class="priority-badge">Приоритет: ${s.priority}</div>
+                        <h3><i class="fas fa-video"></i> ${s.name}</h3>
+                        <p style="color: var(--text-muted); font-size: 13px;">Персональный прямой эфир стримера.</p>
+                        <a href="${s.url}" target="_blank" class="btn btn-primary" style="text-align: center; text-decoration: none;">Смотреть стрим</a>
+                        ${obsControlSection}
+                        ${deleteBtnHtml}
+                    </div>
+                `;
+            });
+        }
+
+        async function updateStreamerUrl(streamerName) {
+            const newUrl = document.getElementById(`streamUrl_${streamerName}`).value.trim();
+            if (!newUrl) {
+                alert("Введите корректную ссылку!");
+                return;
+            }
+            let streamerObj = db.streamers.find(s => s.name.toLowerCase() === streamerName.toLowerCase());
+            if (streamerObj) {
+                streamerObj.url = newUrl;
+            } else {
+                db.streamers.push({ id: Date.now(), name: streamerName, url: newUrl, priority: 1 });
+            }
+            await saveData();
+            alert("Ссылка на стрим успешно обновлена!");
+        }
+
+        async function saveStreamerObsData(streamerName) {
+            if (!db.streamDataMap) db.streamDataMap = {};
+            db.streamDataMap[streamerName] = {
+                player1: document.getElementById(`p1_${streamerName}`).value.trim(),
+                clan1: document.getElementById(`c1_${streamerName}`).value.trim(),
+                score1: parseInt(document.getElementById(`s1_${streamerName}`).value) || 0,
+                player2: document.getElementById(`p2_${streamerName}`).value.trim(),
+                clan2: document.getElementById(`c2_${streamerName}`).value.trim(),
+                score2: parseInt(document.getElementById(`s2_${streamerName}`).value) || 0
+            };
+
+            await saveData();
+            alert(`Настройки оверлея для стримера "${streamerName}" успешно сохранены!`);
+        }
+
+        async function finishMatchForStreamer(streamerName, winnerNum) {
+            const p1Id = parseInt(document.getElementById(`mP1_${streamerName}`).value);
+            const p2Id = parseInt(document.getElementById(`mP2_${streamerName}`).value);
+
+            if (p1Id === p2Id) {
+                alert("Игрок 1 и Игрок 2 не могут быть одним и тем же человеком!");
+                return;
+            }
+
+            let player1 = db.players.find(p => p.id === p1Id);
+            let player2 = db.players.find(p => p.id === p2Id);
+
+            if (!player1 || !player2) {
+                alert("Выберите обоих игроков из базы!");
+                return;
+            }
+
+            player1.matches = (player1.matches || 0) + 1;
+            player2.matches = (player2.matches || 0) + 1;
+
+            if (winnerNum === 1) {
+                player1.wins = (player1.wins || 0) + 1;
+                player1.elo = Math.max(0, player1.elo + 26);
+                player2.elo = Math.max(0, player2.elo - 32);
+                alert(`Матч завершен! Победил ${player1.name} (+26 ELO).`);
+            } else {
+                player2.wins = (player2.wins || 0) + 1;
+                player2.elo = Math.max(0, player2.elo + 26);
+                player1.elo = Math.max(0, player1.elo - 32);
+                alert(`Матч завершен! Победил ${player2.name} (+26 ELO).`);
+            }
+
+            await saveData();
+        }
+
+        function copyLinkText(elementId) {
+            const input = document.getElementById(elementId);
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert("Ссылка скопирована в буфер обмена!");
+        }
+
+        function renderClans() {
+            const container = document.getElementById('clanList');
+            container.innerHTML = '';
+            if (db.clans.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Пока нет созданных кланов.</p>';
+                return;
+            }
+            db.clans.forEach(c => {
+                let memberCount = db.players.filter(p => p.clan === c.name).length;
+                container.innerHTML += `
+                    <div class="clan-card">
+                        <h3>[${c.tag}] ${c.name}</h3>
+                        <p style="color: var(--text-muted); font-size: 13px;">Участников: ${memberCount}</p>
+                        <button class="btn btn-secondary" onclick="joinClan('${c.name}')">Вступить в клан</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function createClan() {
+            const name = document.getElementById('clanNameInput').value.trim();
+            const tag = document.getElementById('clanTagInput').value.trim().toUpperCase();
+            let currentUser = getCurrentUser();
+
+            if (!name || !tag) {
+                alert("Заполните название и тег клана!");
+                return;
+            }
+            if (db.clans.some(c => c.name === name || c.tag === tag)) {
+                alert("Клан с таким именем или тегом уже существует!");
+                return;
+            }
+
+            db.clans.push({ name, tag, owner: currentUser.name });
+            currentUser.clan = name;
+            await saveData();
+            alert(`Клан [${tag}] ${name} успешно создан!`);
+        }
+
+        async function joinClan(clanName) {
+            let currentUser = getCurrentUser();
+            currentUser.clan = clanName;
+            await saveData();
+            alert(`Вы успешно вступили в клан ${clanName}!`);
+        }
+
+        function renderShop() {
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = '';
+            db.shopItems.forEach(item => {
+                grid.innerHTML += `
+                    <div class="shop-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <h4>${item.name}</h4>
+                        <p style="color: var(--accent); font-weight: bold;">${item.price} ELO</p>
+                        <button class="btn btn-primary" onclick="buyItem(${item.id})">Купить</button>
+                    </div>
+                `;
+            });
+        }
+
+        function filterShop(type, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const grid = document.getElementById('shopGrid');
+            grid.innerHTML = '';
+            let filtered = type === 'all' ? db.shopItems : db.shopItems.filter(i => i.type === type);
+
+            filtered.forEach(item => {
+                grid.innerHTML += `
+                    <div class="shop-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <h4>${item.name}</h4>
+                        <p style="color: var(--accent); font-weight: bold;">${item.price} ELO</p>
+                        <button class="btn btn-primary" onclick="buyItem(${item.id})">Купить</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function buyItem(id) {
+            const item = db.shopItems.find(i => i.id === id);
+            let currentUser = getCurrentUser();
+            if (!item) return;
+
+            if (currentUser.elo < item.price) {
+                alert("Недостаточно ELO для покупки этого товара!");
+                return;
+            }
+
+            if (currentUser.inventory.some(i => i.id === id)) {
+                alert("Этот товар уже есть в вашем инвентаре!");
+                return;
+            }
+
+            currentUser.elo -= item.price;
+            currentUser.inventory.push(item);
+            await saveData();
+            alert(`Вы успешно приобрели ${item.name}!`);
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            let currentUser = getCurrentUser();
+            grid.innerHTML = '';
+            if (!currentUser.inventory || currentUser.inventory.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-muted);">Ваш инвентарь пуст. Покупайте аватарки и рамки в магазине!</p>';
+                return;
+            }
+
+            currentUser.inventory.forEach(item => {
+                grid.innerHTML += `
+                    <div class="inventory-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <h4>${item.name}</h4>
+                        <button class="btn btn-success" onclick="equipItem(${item.id})">Использовать</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function equipItem(id) {
+            let currentUser = getCurrentUser();
+            const item = currentUser.inventory.find(i => i.id === id);
+            if (!item) return;
+
+            if (item.type === 'avatar') {
+                currentUser.avatar = item.img;
+            } else if (item.type === 'frame') {
+                currentUser.frame = item.img;
+            }
+            await saveData();
+            alert(`Вы применили ${item.name}!`);
+        }
+
+        function renderAdminPanel() {
+            const tableBody = document.getElementById('adminShopTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = '';
+                db.shopItems.forEach(item => {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td><img src="${item.img}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;"></td>
+                            <td>${item.name}</td>
+                            <td>${item.type}</td>
+                            <td>${item.price} ELO</td>
+                            <td><button class="btn btn-danger" onclick="deleteShopItem(${item.id})">Удалить</button></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const allPlayersTable = document.getElementById('adminAllPlayersTableBody');
+            if (allPlayersTable) {
+                allPlayersTable.innerHTML = '';
+                db.players.forEach(p => {
+                    let isStreamer = db.streamers.some(s => s.name.toLowerCase() === p.name.toLowerCase());
+                    let baseUrl = window.location.origin + window.location.pathname;
+                    let linkP = baseUrl + `?obs=players&streamer=${encodeURIComponent(p.name)}`;
+                    let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(p.name)}`;
+
+                    let actionBtn = '';
+                    if (isStreamer) {
+                        actionBtn = `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeStreamerByName('${p.name}')">❌ Забрать оверлей</button>`;
+                    } else {
+                        actionBtn = `<button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;" onclick="makePlayerStreamerQuick('${p.name}')">➕ Выдать оверлей</button>`;
+                    }
+
+                    allPlayersTable.innerHTML += `
+                        <tr>
+                            <td><b>${p.name}</b></td>
+                            <td style="color: var(--text-muted);">${p.email}</td>
+                            <td><span style="color: var(--accent); font-weight: bold;">${p.elo} ELO</span> (Ур. ${p.level})</td>
+                            <td><span class="role-badge">${p.role}</span></td>
+                            <td>
+                                <div style="font-size: 11px; color: #00d2d3;">HUD Игроков: <a href="${linkP}" target="_blank" style="color: #00d2d3; word-break: break-all;">Открыть</a></div>
+                                <div style="font-size: 11px; color: #ff4757;">HUD Кланов: <a href="${linkC}" target="_blank" style="color: #ff4757; word-break: break-all;">Открыть</a></div>
+                            </td>
+                            <td>${actionBtn}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const userSelect = document.getElementById('adminUserSelect');
+            if (userSelect) {
+                userSelect.innerHTML = '';
+                db.players.forEach(p => {
+                    userSelect.innerHTML += `<option value="${p.id}">${p.name} (${p.email})</option>`;
+                });
+                loadUserToAdmin();
+            }
+        }
+
+        async function addShopItemByAdmin() {
+            const name = document.getElementById('adminShopName').value.trim();
+            const type = document.getElementById('adminShopType').value;
+            const price = parseInt(document.getElementById('adminShopPrice').value) || 500;
+            const fileInput = document.getElementById('adminShopFile');
+            const urlInput = document.getElementById('adminShopImgUrl').value.trim();
+
+            if (!name) {
+                alert("Введите название товара!");
+                return;
+            }
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    db.shopItems.push({ id: Date.now(), name, type, price, img: e.target.result });
+                    await saveData();
+                    alert("Товар успешно добавлен!");
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else if (urlInput) {
+                db.shopItems.push({ id: Date.now(), name, type, price, img: urlInput });
+                await saveData();
+                alert("Товар успешно добавлен!");
+            } else {
+                alert("Загрузите файл или укажите URL картинки!");
+            }
+        }
+
+        async function deleteShopItem(id) {
+            db.shopItems = db.shopItems.filter(i => i.id !== id);
+            await saveData();
+        }
+
+        async function makePlayerStreamerQuick(playerName) {
+            let targetPlayer = db.players.find(p => p.name === playerName);
+            if (targetPlayer && targetPlayer.role !== 'admin' && targetPlayer.role !== 'creator') {
+                targetPlayer.role = 'streamer';
+            }
+
+            if (!db.streamers.some(s => s.name.toLowerCase() === playerName.toLowerCase())) {
+                db.streamers.push({ id: Date.now(), name: playerName, url: 'https://twitch.tv/', priority: 1 });
+            }
+
+            if (!db.streamDataMap) db.streamDataMap = {};
+            if (!db.streamDataMap[playerName]) {
+                db.streamDataMap[playerName] = { player1: playerName, clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
+            }
+
+            await saveData();
+            alert(`Игроку "${playerName}" успешно выдан персональный оверлей и роль стримера!`);
+        }
+
+        async function removeStreamerByName(playerName) {
+            let p = db.players.find(pl => pl.name.toLowerCase() === playerName.toLowerCase());
+            if (p && p.role === 'streamer') {
+                p.role = 'player';
+            }
+            db.streamers = db.streamers.filter(s => s.name.toLowerCase() !== playerName.toLowerCase());
+            if (db.streamDataMap) {
+                delete db.streamDataMap[playerName];
+            }
+            await saveData();
+            alert(`У игрока "${playerName}" забраны права стримера и оверлей.`);
+        }
+
+        function loadUserToAdmin() {
+            const userId = parseInt(document.getElementById('adminUserSelect').value);
+            const user = db.players.find(p => p.id === userId);
+            if (!user) return;
+
+            document.getElementById('adminEloInput').value = user.elo;
+            document.getElementById('adminMatchesInput').value = user.matches;
+            document.getElementById('adminLevelInput').value = user.level;
+            document.getElementById('adminRoleSelect').value = user.role;
+        }
+
+        async function applyAdminChanges() {
+            const userId = parseInt(document.getElementById('adminUserSelect').value);
+            let user = db.players.find(p => p.id === userId);
+            if (!user) return;
+
+            user.elo = parseInt(document.getElementById('adminEloInput').value) || 0;
+            user.matches = parseInt(document.getElementById('adminMatchesInput').value) || 0;
+            user.level = parseInt(document.getElementById('adminLevelInput').value) || 1;
+            user.role = document.getElementById('adminRoleSelect').value;
+
+            await saveData();
+            alert("Изменения пользователя сохранены!");
+        }
+
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const obsMode = urlParams.get('obs');
+            const targetStreamer = urlParams.get('streamer');
+
+            if (obsMode) {
+                document.getElementById('mainSidebar').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('authModal').style.display = 'none';
+                
+                const obsContainer = document.getElementById('obsOverlayContainer');
+                obsContainer.style.display = 'flex';
+                obsContainer.className = 'obs-overlay-mode';
+
+                async function updateObsContent() {
+                    await loadDataFromCloud();
+                    let map = db.streamDataMap || {};
+                    let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
+
+                    if (obsMode === 'players') {
+                        obsContainer.innerHTML = `
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(18, 18, 24, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 6px; padding: 12px 30px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); font-family: 'Segoe UI', sans-serif; min-width: 440px;">
+                                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                                    <span style="font-size: 11px; color: #ff5500; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">[${sd.clan1 || 'NUN'}]</span>
+                                    <span style="color: #ffffff; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.player1 || 'PLAYER1'}</span>
+                                </div>
+                                <div style="color: #ff5500; font-size: 18px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,85,0,0.6); margin: 0 25px;">VS</div>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                    <span style="font-size: 11px; color: #ff5500; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">[${sd.clan2 || 'WAKANDA'}]</span>
+                                    <span style="color: #ffffff; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.player2 || 'PLAYER2'}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else if (obsMode === 'clans') {
+                        obsContainer.innerHTML = `
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(20, 20, 26, 0.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 6px; padding: 16px 35px; box-shadow: 0 10px 40px rgba(255, 85, 0, 0.25); font-family: 'Segoe UI', sans-serif; min-width: 420px;">
+                                <div style="display: flex; align-items: center;">
+                                    <span style="color: #ff5500; font-size: 22px; font-weight: 900; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.clan1 || 'NUN'}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 18px; margin: 0 30px;">
+                                    <span style="color: #00ff66; font-size: 32px; font-weight: 900; text-shadow: 0 0 12px rgba(0,255,102,0.5);">${sd.score1 ?? 0}</span>
+                                    <span style="color: #fff; font-size: 18px; font-weight: bold; opacity: 0.5;">:</span>
+                                    <span style="color: #ff3333; font-size: 32px; font-weight: 900; text-shadow: 0 0 12px rgba(255,51,51,0.5);">${sd.score2 ?? 0}</span>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <span style="color: #ff5500; font-size: 22px; font-weight: 900; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.clan2 || 'WAKANDA'}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                await updateObsContent();
+                setInterval(updateObsContent, 3000);
+                return;
+            }
+
+            await loadDataFromCloud();
+            if (!currentUserId || !getCurrentUser()) {
+                document.getElementById('authModal').style.display = 'flex';
+            } else {
+                initApp();
+            }
+
+            setInterval(async () => {
+                let prevDataStr = JSON.stringify(db);
+                await loadDataFromCloud();
+                if (JSON.stringify(db) !== prevDataStr) {
+                    initApp();
+                }
+            }, 4000);
+        };
     </script>
 </body>
 </html>
