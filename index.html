@@ -15,30 +15,26 @@
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
             --border-color: #33333b;
-}
+        }
 
-/* Эффект 2: Огненный градиент и тень */
-.nickname-fire {
-    background: linear-gradient(45deg, #ff4757, #ffa502);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.7));
-}
+        .nickname-fire {
+            background: linear-gradient(45deg, #ff4757, #ffa502);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.7));
+        }
 
-/* Эффект 3: Элитное золото */
-.nickname-gold {
-    background: linear-gradient(45deg, #f39c12, #f1c40f);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(243, 156, 18, 0.7));
-}
+        .nickname-gold {
+            background: linear-gradient(45deg, #f39c12, #f1c40f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(243, 156, 18, 0.7));
+        }
 
-/* Эффект 4: Кибер-пазл / Неоновый фиолетовый */
-.nickname-cyber {
-    color: #fff;
-    text-shadow: 0 0 8px #9b59b6, 0 0 20px #8e44ad;
-    letter-spacing: 2px;
-}
+        .nickname-cyber {
+            color: #fff;
+            text-shadow: 0 0 8px #9b59b6, 0 0 20px #8e44ad;
+            letter-spacing: 2px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -424,39 +420,44 @@
             activeController = new AbortController();
 
             try {
-                let response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY },
+                let response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
                     signal: activeController.signal
                 });
                 if (response.ok) {
-                    let json = await response.json();
-                    if (json && json.record) {
-                        db = json.record;
+                    let rows = await response.json();
+                    if (rows && rows.length > 0 && rows[0].content) {
+                        db = rows[0].content;
                         if (!db.streamDataMap) db.streamDataMap = {};
                     }
                 }
             } catch (e) {
                 if (e.name !== 'AbortError') {
-                    console.error("Ошибка загрузки из облака", e);
+                    console.error("Ошибка загрузки из Supabase", e);
                 }
             }
         }
 
         async function saveDataToCloud() {
             try {
-                let response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: 'PUT',
+                let response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`, {
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
                     },
-                    body: JSON.stringify(db)
+                    body: JSON.stringify({ content: db })
                 });
                 if (!response.ok) {
-                    alert("Ошибка сохранения в облако!");
+                    console.error("Ошибка сохранения в Supabase");
                 }
             } catch (e) {
-                console.error("Ошибка сохранения в облако", e);
+                console.error("Ошибка сохранения в Supabase", e);
             }
         }
 
@@ -1190,11 +1191,13 @@
                         obsContainer.innerHTML = `
                             <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(18, 18, 24, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 6px; padding: 12px 30px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); font-family: 'Segoe UI', sans-serif; min-width: 440px;">
                                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                                    <span style="color: #ffffff; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.player1 || 'sd.player2'}</span>
+                                    <span style="font-size: 11px; color: #ff5500; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">[${sd.clan1 || 'NUN'}]</span>
+                                    <span style="color: #ffffff; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.player1 || 'PLAYER1'}</span>
                                 </div>
                                 <div style="color: #ff5500; font-size: 18px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,85,0,0.6); margin: 0 25px;">VS</div>
                                 <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <span style="color: #ffffff; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.player1 || 'PLAYER2'}</span>
+                                    <span style="font-size: 11px; color: #ff5500; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">[${sd.clan2 || 'WAKANDA'}]</span>
+                                    <span style="color: #ffffff; font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">${sd.player2 || 'PLAYER2'}</span>
                                 </div>
                             </div>
                         `;
