@@ -17,26 +17,6 @@
             --border-color: #33333b;
         }
 
-        .nickname-fire {
-            background: linear-gradient(45deg, #ff4757, #ffa502);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.7));
-        }
-
-        .nickname-gold {
-            background: linear-gradient(45deg, #f39c12, #f1c40f);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 8px rgba(243, 156, 18, 0.7));
-        }
-
-        .nickname-cyber {
-            color: #fff;
-            text-shadow: 0 0 8px #9b59b6, 0 0 20px #8e44ad;
-            letter-spacing: 2px;
-        }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-primary); color: var(--text-main); display: flex; min-height: 100vh; }
 
@@ -93,6 +73,7 @@
         .btn-success:hover { background-color: #00964d; }
 
         .role-badge { background-color: #ff3333; color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+        .role-badge.creator { background: linear-gradient(45deg, #ff5500, #ff0055); box-shadow: 0 0 8px rgba(255,85,0,0.6); }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .auth-card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 35px 30px; width: 400px; text-align: center; }
@@ -383,7 +364,7 @@
             players: [
                 { 
                     id: 1, 
-                    name: 'Sayan', 
+                    name: 'sayan', 
                     email: 'rommsayan@gmail.com', 
                     password: 'Suzuki/77',          
                     elo: 1000, 
@@ -392,23 +373,23 @@
                     level: 1, 
                     role: 'creator', 
                     clan: 'NUN', 
-                    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=Sayan`, 
+                    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=sayan`, 
                     frame: '', 
                     inventory: [] 
                 }
             ],
             clans: [
-                { name: 'NUN', tag: 'NUN', owner: 'Sayan' },
+                { name: 'NUN', tag: 'NUN', owner: 'sayan' },
                 { name: 'WAKANDA', tag: 'WAK', owner: 'PLAYER2' }
             ],
             shopItems: [
                 { id: 101, name: 'Крутой Робот', type: 'avatar', price: 500, img: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot1' }
             ],
             streamers: [
-                { id: 1, name: 'Sayan', url: 'https://twitch.tv/', priority: 10 }
+                { id: 1, name: 'sayan', url: 'https://twitch.tv/', priority: 10 }
             ],
             streamDataMap: {
-                "Sayan": { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 }
+                "sayan": { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 }
             }
         };
 
@@ -439,9 +420,22 @@
                     console.error("Ошибка загрузки из Supabase", e);
                 }
             }
+            ensureCreatorRights();
+        }
+
+        // Принудительно гарантируем создателю права creator и правильный email
+        function ensureCreatorRights() {
+            if (!db || !db.players) return;
+            db.players.forEach(p => {
+                if (p.name?.toLowerCase() === 'sayan' || p.email?.toLowerCase() === 'rommsayan@gmail.com') {
+                    p.role = 'creator';
+                    p.email = 'rommsayan@gmail.com';
+                }
+            });
         }
 
         async function saveDataToCloud() {
+            ensureCreatorRights();
             try {
                 let response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`, {
                     method: 'PATCH',
@@ -463,10 +457,17 @@
 
         function getCurrentUser() {
             if (!currentUserId || !db?.players) return null;
-            return db.players.find(p => p.id == currentUserId) || null;
+            let user = db.players.find(p => p.id == currentUserId) || null;
+            if (user && (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com')) {
+                user.role = 'creator';
+            }
+            return user;
         }
 
         function sanitizeAndValidateUser(user) {
+            if (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com') {
+                user.role = 'creator';
+            }
             if (typeof user.elo !== 'number' || isNaN(user.elo) || user.elo < 0) user.elo = 0;
             if (typeof user.matches !== 'number' || user.matches < 0) user.matches = 0;
             if (typeof user.wins !== 'number' || user.wins < 0) user.wins = 0;
@@ -509,7 +510,7 @@
         }
 
         async function loginUser() {
-            const gmail = document.getElementById('loginEmail').value.trim();
+            const gmail = document.getElementById('loginEmail').value.trim().toLowerCase();
             const password = document.getElementById('loginPassword').value.trim();
 
             if (!gmail || !password) {
@@ -518,8 +519,11 @@
             }
 
             await loadDataFromCloud();
-            const foundUser = db?.players?.find(p => p.email === gmail && p.password === password);
+            const foundUser = db?.players?.find(p => p.email?.toLowerCase() === gmail && p.password === password);
             if (foundUser) {
+                if (foundUser.name?.toLowerCase() === 'sayan' || foundUser.email?.toLowerCase() === 'rommsayan@gmail.com') {
+                    foundUser.role = 'creator';
+                }
                 currentUserId = foundUser.id;
                 localStorage.setItem('fe_current_user_id', currentUserId);
                 document.getElementById('authModal').style.display = 'none';
@@ -531,7 +535,7 @@
 
         async function registerUser() {
             const name = document.getElementById('regName').value.trim();
-            const gmail = document.getElementById('regEmail').value.trim();
+            const gmail = document.getElementById('regEmail').value.trim().toLowerCase();
             const password = document.getElementById('regPassword').value.trim();
 
             if (!name || !gmail || !password) {
@@ -545,10 +549,12 @@
 
             await loadDataFromCloud();
             if (!db.players) db.players = [];
-            if (db.players.some(p => p.email === gmail)) {
+            if (db.players.some(p => p.email?.toLowerCase() === gmail)) {
                 alert("Аккаунт с таким Gmail уже зарегистрирован!");
                 return;
             }
+
+            let role = (name.toLowerCase() === 'sayan' || gmail === 'rommsayan@gmail.com') ? 'creator' : 'player';
 
             const newUser = sanitizeAndValidateUser({
                 id: Date.now(),
@@ -559,7 +565,7 @@
                 matches: 0,
                 wins: 0,
                 level: 1,
-                role: 'player',
+                role: role,
                 clan: 'Нет клана',
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
                 frame: '',
@@ -598,6 +604,7 @@
         }
 
         function initApp() {
+            ensureCreatorRights();
             let currentUser = getCurrentUser();
             if (!currentUser) {
                 document.getElementById('authModal').style.display = 'flex';
@@ -614,7 +621,14 @@
             document.getElementById('userWinrate').textContent = winrate + ' %';
 
             const badge = document.getElementById('roleBadge');
-            if (badge) badge.textContent = (currentUser.role || 'player').toUpperCase();
+            if (badge) {
+                badge.textContent = (currentUser.role || 'player').toUpperCase();
+                if (currentUser.role === 'creator') {
+                    badge.className = 'role-badge creator';
+                } else {
+                    badge.className = 'role-badge';
+                }
+            }
             
             const adminNav = document.getElementById('nav-admin');
             const adminCard = document.getElementById('createClanCard');
@@ -654,6 +668,7 @@
             let sorted = [...(db?.players || [])].sort((a, b) => (b.elo || 0) - (a.elo || 0)).slice(0, 5);
             
             sorted.forEach((p, index) => {
+                let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
                 tbody.innerHTML += `
                     <tr>
                         <td><b>#${index + 1}</b></td>
@@ -661,7 +676,7 @@
                         <td><span class="level-badge">${p.level || 1}</span></td>
                         <td style="color: var(--accent); font-weight: bold;">${p.elo || 0}</td>
                         <td>${p.matches || 0}</td>
-                        <td><span class="role-badge">${(p.role || 'player').toUpperCase()}</span></td>
+                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
                     </tr>
                 `;
             });
@@ -675,6 +690,7 @@
 
             sorted.forEach((p, index) => {
                 let wr = (p.matches > 0) ? Math.round(((p.wins || 0) / p.matches) * 100) : 0;
+                let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
                 tbody.innerHTML += `
                     <tr>
                         <td><b>#${index + 1}</b></td>
@@ -683,7 +699,7 @@
                         <td><span class="level-badge">${p.level || 1}</span></td>
                         <td style="color: var(--accent); font-weight: bold;">${p.elo || 0} ELO</td>
                         <td>${p.matches || 0} / <span style="color: #00be63;">${p.wins || 0} (${wr}%)</span></td>
-                        <td><span class="role-badge">${(p.role || 'player').toUpperCase()}</span></td>
+                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
                     </tr>
                 `;
             });
@@ -1083,12 +1099,13 @@
                         actionBtn = `<button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;" onclick="makePlayerStreamerQuick('${p.name}')">➕ Выдать оверлей</button>`;
                     }
 
+                    let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
                     allPlayersTable.innerHTML += `
                         <tr>
                             <td><b>${p.name || ''}</b></td>
                             <td style="color: var(--text-muted);">${p.email || ''}</td>
                             <td><span style="color: var(--accent); font-weight: bold;">${p.elo || 0} ELO</span> (Ур. ${p.level || 1})</td>
-                            <td><span class="role-badge">${(p.role || 'player').toUpperCase()}</span></td>
+                            <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
                             <td>
                                 <div style="font-size: 11px; color: #00d2d3;">HUD Игроков: <a href="${linkP}" target="_blank" style="color: #00d2d3; word-break: break-all;">Открыть</a></div>
                                 <div style="font-size: 11px; color: #ff4757;">HUD Кланов: <a href="${linkC}" target="_blank" style="color: #ff4757; word-break: break-all;">Открыть</a></div>
@@ -1153,7 +1170,7 @@
 
         async function makePlayerStreamerQuick(playerName) {
             let targetPlayer = (db?.players || []).find(p => p.name === playerName);
-            if (targetPlayer && targetPlayer.role !== 'admin' && targetPlayer.role !== 'creator') {
+            if (targetPlayer && targetPlayer.role !== 'creator' && targetPlayer.role !== 'admin') {
                 targetPlayer.role = 'streamer';
             }
 
@@ -1219,7 +1236,12 @@
             user.elo = eloIn ? (parseInt(eloIn.value) || 0) : 0;
             user.matches = matchIn ? (parseInt(matchIn.value) || 0) : 0;
             user.level = lvlIn ? (parseInt(lvlIn.value) || 1) : 1;
-            user.role = roleSel ? roleSel.value : 'player';
+            
+            if (user.name?.toLowerCase() !== 'sayan' && user.email?.toLowerCase() !== 'rommsayan@gmail.com') {
+                user.role = roleSel ? roleSel.value : 'player';
+            } else {
+                user.role = 'creator';
+            }
 
             await saveData();
             alert("Изменения пользователя сохранены!");
@@ -1248,7 +1270,7 @@
                 async function updateObsContent() {
                     await loadDataFromCloud();
                     let map = db?.streamDataMap || {};
-                    let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'SAYAN', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
+                    let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
 
                     if (obsContainer) {
                         if (obsMode === 'players') {
