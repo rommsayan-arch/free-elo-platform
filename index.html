@@ -766,6 +766,11 @@
                     `;
                 }
 
+                let deleteBtnHtml = '';
+                if (isAdminOrCreator) {
+                    deleteBtnHtml = `<button class="btn btn-danger" style="width: 100%; margin-top: 5px;" onclick="removeStreamerByName('${s.name}')"><i class="fas fa-trash"></i> Удалить стримера</button>`;
+                }
+
                 container.innerHTML += `
                     <div class="streamer-card ${s.priority > 5 ? 'priority-high' : ''}">
                         <div class="priority-badge">Приоритет: ${s.priority}</div>
@@ -773,6 +778,7 @@
                         <p style="color: var(--text-muted); font-size: 13px;">Персональный прямой эфир стримера.</p>
                         <a href="${s.url}" target="_blank" class="btn btn-primary" style="text-align: center; text-decoration: none;">Смотреть стрим</a>
                         ${obsControlSection}
+                        ${deleteBtnHtml}
                     </div>
                 `;
             });
