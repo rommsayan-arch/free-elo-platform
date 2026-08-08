@@ -15,6 +15,34 @@
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
             --border-color: #33333b;
+            /* Эффект 1: Неоновое свечение никнейма */
+.nickname-neon {
+    color: #fff;
+    text-shadow: 0 0 8px #00f3ff, 0 0 20px #00f3ff;
+}
+
+/* Эффект 2: Огненный градиент и тень */
+.nickname-fire {
+    background: linear-gradient(45deg, #ff4757, #ffa502);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.7));
+}
+
+/* Эффект 3: Элитное золото */
+.nickname-gold {
+    background: linear-gradient(45deg, #f39c12, #f1c40f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(243, 156, 18, 0.7));
+}
+
+/* Эффект 4: Кибер-пазл / Неоновый фиолетовый */
+.nickname-cyber {
+    color: #fff;
+    text-shadow: 0 0 8px #9b59b6, 0 0 20px #8e44ad;
+    letter-spacing: 2px;
+}
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
