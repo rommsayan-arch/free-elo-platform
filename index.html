@@ -277,21 +277,21 @@
             </div>
 
             <div class="card" style="grid-column: span 12; border-color: var(--accent);">
-                <h2 style="color: var(--accent);"><i class="fas fa-star"></i> Управление стримерами</h2>
+                <h2 style="color: var(--accent);"><i class="fas fa-star"></i> Назначить игрока стримером и управлять OBS</h2>
                 <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <div class="form-group" style="flex: 1; min-width: 180px;"><label>Ник стримера</label><input type="text" id="adminStreamerName"></div>
-                    <div class="form-group" style="flex: 1; min-width: 200px;"><label>Ссылка на стрим (Twitch/YouTube)</label><input type="text" id="adminStreamerUrl"></div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;"><label>Выберите игрока</label><select id="adminStreamerUserSelect"></select></div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;"><label>Ссылка на стрим (Twitch/YouTube)</label><input type="text" id="adminStreamerUrl" placeholder="https://twitch.tv/username"></div>
                     <div class="form-group" style="width: 120px;"><label>Приоритет</label><input type="number" id="adminStreamerPriority" value="1"></div>
-                    <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="addOrUpdateStreamer()">Добавить / Изменить</button>
+                    <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="assignPlayerAsStreamer()">Сделать стримером</button>
                 </div>
                 <table>
-                    <thead><tr><th>Стример</th><th>Ссылка</th><th>Приоритет</th><th>Действия</th></tr></thead>
+                    <thead><tr><th>Стример (Игрок)</th><th>Ссылка</th><th>Приоритет</th><th>Действия</th></tr></thead>
                     <tbody id="adminStreamersTableBody"></tbody>
                 </table>
             </div>
 
             <div class="card" style="grid-column: span 12;">
-                <h2 style="color: #ff3333;"><i class="fas fa-user-cog"></i> Управление Игроками</h2>
+                <h2 style="color: #ff3333;"><i class="fas fa-user-cog"></i> Управление Игроками и Ролями</h2>
                 <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; margin-top: 15px;">
                     <div class="form-group" style="flex: 1; min-width: 180px;"><label>Игрок</label><select id="adminUserSelect" onchange="loadUserToAdmin()"></select></div>
                     <div class="form-group" style="width: 140px;"><label>ELO</label><input type="number" id="adminEloInput"></div>
@@ -584,13 +584,16 @@
             const adminNav = document.getElementById('nav-admin');
             const adminCard = document.getElementById('createClanCard');
 
-            // Стримеры видят только свои оверлеи на вкладке стримеров, но не панель админа/создателя
+            // Стримеры видят только свои оверлеи на вкладке стримеров, и НЕ видят панель админа/создателя
             if (currentUser.role === 'admin' || currentUser.role === 'creator') {
                 adminNav.style.display = 'block';
                 if (adminCard) adminCard.style.display = 'block';
             } else {
                 adminNav.style.display = 'none';
                 if (adminCard) adminCard.style.display = 'none';
+                if (document.getElementById('page-admin').classList.contains('active')) {
+                    switchPage('matches');
+                }
             }
 
             document.getElementById('widgetName').textContent = currentUser.name;
@@ -678,12 +681,11 @@
             let isAdminOrCreator = currentUser && (currentUser.role === 'admin' || currentUser.role === 'creator');
             let isStreamerUser = currentUser && currentUser.role === 'streamer';
 
-            // Если зашел обычный стример, фильтруем список стримеров так, чтобы он видел только карточку с его ником
+            // Если зашел обычный стример, фильтруем список так, чтобы он видел только карточку с его ником
             let streamersToShow = db.streamers;
             if (isStreamerUser && !isAdminOrCreator) {
                 streamersToShow = db.streamers.filter(s => s.name.toLowerCase() === currentUser.name.toLowerCase());
                 if (streamersToShow.length === 0) {
-                    // Если стример еще не добавлен в список админом, автоматически создадим ему карточку или покажем уведомление
                     streamersToShow = [{ id: currentUser.id, name: currentUser.name, url: 'https://twitch.tv/', priority: 1 }];
                 }
             }
@@ -988,6 +990,14 @@
                 });
             }
 
+            const adminStreamerUserSelect = document.getElementById('adminStreamerUserSelect');
+            if (adminStreamerUserSelect) {
+                adminStreamerUserSelect.innerHTML = '';
+                db.players.forEach(p => {
+                    adminStreamerUserSelect.innerHTML += `<option value="${p.name}">${p.name} (${p.email})</option>`;
+                });
+            }
+
             const userSelect = document.getElementById('adminUserSelect');
             if (userSelect) {
                 userSelect.innerHTML = '';
@@ -1032,36 +1042,49 @@
             await saveData();
         }
 
-        async function addOrUpdateStreamer() {
-            const name = document.getElementById('adminStreamerName').value.trim();
-            const url = document.getElementById('adminStreamerUrl').value.trim();
+        async function assignPlayerAsStreamer() {
+            const playerName = document.getElementById('adminStreamerUserSelect').value;
+            const url = document.getElementById('adminStreamerUrl').value.trim() || 'https://twitch.tv/';
             const priority = parseInt(document.getElementById('adminStreamerPriority').value) || 1;
 
-            if (!name || !url) {
-                alert("Заполните ник и ссылку стримера!");
+            if (!playerName) {
+                alert("Выберите игрока!");
                 return;
             }
 
-            let existing = db.streamers.find(s => s.name === name);
+            // Меняем роль игроку на streamer
+            let targetPlayer = db.players.find(p => p.name === playerName);
+            if (targetPlayer && targetPlayer.role !== 'admin' && targetPlayer.role !== 'creator') {
+                targetPlayer.role = 'streamer';
+            }
+
+            let existing = db.streamers.find(s => s.name === playerName);
             if (existing) {
                 existing.url = url;
                 existing.priority = priority;
             } else {
-                db.streamers.push({ id: Date.now(), name, url, priority });
+                db.streamers.push({ id: Date.now(), name: playerName, url, priority });
                 if (!db.streamDataMap) db.streamDataMap = {};
-                if (!db.streamDataMap[name]) {
-                    db.streamDataMap[name] = { player1: name, clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
+                if (!db.streamDataMap[playerName]) {
+                    db.streamDataMap[playerName] = { player1: playerName, clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
                 }
             }
 
             await saveData();
-            alert("Стример успешно сохранен!");
+            alert(`Игрок "${playerName"}" успешно назначен стримером с доступом к оверлею!`);
         }
 
         async function deleteStreamer(id) {
             let s = db.streamers.find(item => item.id === id);
-            if (s && db.streamDataMap) {
-                delete db.streamDataMap[s.name];
+            if (s) {
+                // Возвращаем роль игроку обратно на обычную, если он был стримером
+                let p = db.players.find(pl => pl.name.toLowerCase() === s.name.toLowerCase());
+                if (p && p.role === 'streamer') {
+                    p.role = 'player';
+                }
+                if (db.streamDataMap) {
+                    delete db.streamDataMap[s.name];
+                }
             }
             db.streamers = db.streamers.filter(item => item.id !== id);
             await saveData();
