@@ -212,7 +212,7 @@
         <div id="page-streamers" class="page-content">
             <div class="card" style="grid-column: span 12;">
                 <h2><i class="fas fa-video" style="color: var(--accent);"></i> Прямые трансляции и OBS Оверлеи стримеров</h2>
-                <p style="color: var(--text-muted); margin-bottom: 15px;">Ниже представлены все стримеры платформы и панели управления их оверлеями.</p>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">Здесь стримеры могут сами обновлять ссылки на свой стрим, а также управлять своими матчами и оверлеями.</p>
                 <div class="streamers-grid" id="streamersList"></div>
             </div>
         </div>
@@ -276,10 +276,9 @@
                 </div>
             </div>
 
-            <!-- ИСПРАВЛЕННЫЙ БЛОК: Все игроки платформы и выдача личных оверлеев -->
             <div class="card" style="grid-column: span 12; border-color: var(--accent);">
                 <h2 style="color: var(--accent);"><i class="fas fa-users"></i> База всех игроков и выдача личных OBS-оверлеев</h2>
-                <p style="color: var(--text-muted); margin-top: 5px; margin-bottom: 15px;">Ниже отображается общее количество игроков платформы. Нажмите «Сделать стримером / Выдать оверлей», чтобы закрепить за игроком его личный OBS HUD.</p>
+                <p style="color: var(--text-muted); margin-top: 5px; margin-bottom: 15px;">Ниже отображается общее количество игроков платформы. Нажмите «Выдать оверлей», чтобы закрепить за игроком его личный OBS HUD.</p>
                 <div class="table-scroll-container">
                     <table>
                         <thead>
@@ -716,7 +715,16 @@
 
                     obsControlSection = `
                         <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                            <h4 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-desktop"></i> Управление OBS Оверлеем</h4>
+                            <h4 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-edit"></i> Обновить ссылку на стрим</h4>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 11px;">URL прямой трансляции (Twitch / YouTube):</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="streamUrl_${s.name}" value="${s.url}" placeholder="https://twitch.tv/..." style="font-size: 12px;">
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 11px;" onclick="updateStreamerUrl('${s.name}')">Сохранить</button>
+                                </div>
+                            </div>
+
+                            <h4 style="color: var(--accent); margin-bottom: 10px; margin-top: 15px;"><i class="fas fa-desktop"></i> Управление OBS Оверлеем</h4>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
                                 <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px;">
@@ -770,6 +778,22 @@
             });
         }
 
+        async function updateStreamerUrl(streamerName) {
+            const newUrl = document.getElementById(`streamUrl_${streamerName}`).value.trim();
+            if (!newUrl) {
+                alert("Введите корректную ссылку!");
+                return;
+            }
+            let streamerObj = db.streamers.find(s => s.name.toLowerCase() === streamerName.toLowerCase());
+            if (streamerObj) {
+                streamerObj.url = newUrl;
+            } else {
+                db.streamers.push({ id: Date.now(), name: streamerName, url: newUrl, priority: 1 });
+            }
+            await saveData();
+            alert("Ссылка на стрим успешно обновлена!");
+        }
+
         async function saveStreamerObsData(streamerName) {
             if (!db.streamDataMap) db.streamDataMap = {};
             db.streamDataMap[streamerName] = {
@@ -781,7 +805,7 @@
                 score2: parseInt(document.getElementById(`s2_${streamerName}`).value) || 0
             };
 
-            await saveDataToCloud();
+            await saveData();
             alert(`Настройки оверлея для стримера "${streamerName}" успешно сохранены!`);
         }
 
@@ -980,7 +1004,6 @@
                 });
             }
 
-            // Рендер таблицы ВСЕХ игроков с возможностью выдачи оверлея
             const allPlayersTable = document.getElementById('adminAllPlayersTableBody');
             if (allPlayersTable) {
                 allPlayersTable.innerHTML = '';
