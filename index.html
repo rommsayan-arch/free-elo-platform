@@ -311,7 +311,11 @@
                         </select>
                     </div>
                     <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="applyAdminChanges()">Сохранить</button>
+                    <button class="btn btn-danger" style="margin-bottom: 15px;" onclick="deleteSelectedPlayer()">🗑️ Удалить игрока</button>
                 </div>
+                <p style="color: var(--text-muted); font-size: 12px; margin-top: 5px;">
+                    Создателя удалить нельзя. Удаление окончательно убирает игрока из базы FREE ELO.
+                </p>
             </div>
         </div>
 
@@ -1093,10 +1097,20 @@
                     let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(p.name)}`;
 
                     let actionBtn = '';
+                    const isProtectedCreator = p.role === 'creator' ||
+                        p.name?.toLowerCase() === 'sayan' ||
+                        p.email?.toLowerCase() === 'rommsayan@gmail.com';
+
                     if (isStreamer) {
-                        actionBtn = `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeStreamerByName('${p.name}')">❌ Забрать оверлей</button>`;
+                        actionBtn += `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="removeStreamerByName('${p.name}')">❌ Забрать оверлей</button>`;
                     } else {
-                        actionBtn = `<button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;" onclick="makePlayerStreamerQuick('${p.name}')">➕ Выдать оверлей</button>`;
+                        actionBtn += `<button class="btn btn-success" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="makePlayerStreamerQuick('${p.name}')">➕ Выдать оверлей</button>`;
+                    }
+
+                    if (!isProtectedCreator) {
+                        actionBtn += `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px; margin-top: 5px;" onclick="deletePlayerById(${p.id})">🗑️ Удалить игрока</button>`;
+                    } else {
+                        actionBtn += `<div style="color: #00be63; font-size: 11px; margin-top: 5px;">🔒 Создатель защищён</div>`;
                     }
 
                     let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
@@ -1203,6 +1217,68 @@
             alert(`У игрока "${playerName}" забраны права стримера и оверлей.`);
         }
 
+        async function deletePlayerById(playerId) {
+            const currentUser = getCurrentUser();
+            if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'creator')) {
+                alert("Нет прав на удаление игроков.");
+                return;
+            }
+
+            const targetPlayer = (db?.players || []).find(p => p.id == playerId);
+            if (!targetPlayer) {
+                alert("Игрок не найден.");
+                return;
+            }
+
+            const isProtectedCreator =
+                targetPlayer.role === 'creator' ||
+                targetPlayer.name?.toLowerCase() === 'sayan' ||
+                targetPlayer.email?.toLowerCase() === 'rommsayan@gmail.com';
+
+            if (isProtectedCreator) {
+                alert("Создателя FREE ELO удалить нельзя.");
+                return;
+            }
+
+            const confirmed = confirm(
+                `Удалить игрока "${targetPlayer.name}"?\n\n` +
+                "Игрок, его статистика, инвентарь и роль будут удалены из базы. Это действие нельзя отменить."
+            );
+
+            if (!confirmed) return;
+
+            // Удаляем игрока из базы.
+            db.players = (db.players || []).filter(p => p.id != playerId);
+
+            // Если у игрока был стримерский оверлей — удаляем и его.
+            if (db.streamers) {
+                db.streamers = db.streamers.filter(
+                    s => s.name?.toLowerCase() !== targetPlayer.name?.toLowerCase()
+                );
+            }
+
+            if (db.streamDataMap) {
+                delete db.streamDataMap[targetPlayer.name];
+            }
+
+            // Если удаляемый игрок был выбран в селекте — сбросим выбор.
+            const userSelect = document.getElementById('adminUserSelect');
+            if (userSelect) userSelect.value = '';
+
+            await saveData();
+            alert(`Игрок "${targetPlayer.name}" удалён.`);
+        }
+
+        async function deleteSelectedPlayer() {
+            const userSelect = document.getElementById('adminUserSelect');
+            if (!userSelect || !userSelect.value) {
+                alert("Сначала выберите игрока.");
+                return;
+            }
+
+            await deletePlayerById(parseInt(userSelect.value));
+        }
+
         function loadUserToAdmin() {
             const userSelect = document.getElementById('adminUserSelect');
             if (!userSelect) return;
@@ -1228,6 +1304,11 @@
             let user = (db?.players || []).find(p => p.id === userId);
             if (!user) return;
 
+            const isProtectedCreator =
+                user.role === 'creator' ||
+                user.name?.toLowerCase() === 'sayan' ||
+                user.email?.toLowerCase() === 'rommsayan@gmail.com';
+
             const eloIn = document.getElementById('adminEloInput');
             const matchIn = document.getElementById('adminMatchesInput');
             const lvlIn = document.getElementById('adminLevelInput');
@@ -1237,7 +1318,7 @@
             user.matches = matchIn ? (parseInt(matchIn.value) || 0) : 0;
             user.level = lvlIn ? (parseInt(lvlIn.value) || 1) : 1;
             
-            if (user.name?.toLowerCase() !== 'sayan' && user.email?.toLowerCase() !== 'rommsayan@gmail.com') {
+            if (!isProtectedCreator) {
                 user.role = roleSel ? roleSel.value : 'player';
             } else {
                 user.role = 'creator';
