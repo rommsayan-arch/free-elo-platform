@@ -192,47 +192,6 @@
             .season-banner { flex-direction: column; gap: 15px; text-align: center; }
             .auth-card { width: 90%; padding: 20px; }
         }
-    
-        /* === OBS TRANSPARENT OVERLAY MODE === */
-        body.obs-overlay { background: transparent !important; overflow: hidden !important; }
-        body.obs-overlay > *:not(#obsOverlayRoot) { display:none !important; }
-        #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
-        body.obs-overlay #obsOverlayRoot { display:block; }
-        .obs-vs {
-            position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-            width:min(1180px,96vw); height:460px;
-            display:grid; grid-template-columns:1fr 170px 1fr; align-items:center;
-        }
-        .obs-char { position:relative; height:430px; display:flex; align-items:flex-end; justify-content:center; }
-        .obs-char img {
-            max-width:390px; max-height:420px; width:auto; height:auto;
-            object-fit:contain; filter:drop-shadow(0 12px 25px rgba(0,0,0,.75));
-            animation:obsCharIn .8s ease-out, obsFloat 2.8s ease-in-out infinite;
-        }
-        .obs-char.right img { animation-delay:.12s, -1.4s; transform:scaleX(-1); }
-        .obs-name {
-            position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
-            padding:7px 14px; border-radius:9px; font-size:22px; font-weight:900;
-            color:#fff; background:rgba(10,10,14,.75); border:1px solid rgba(255,255,255,.16);
-            white-space:nowrap; text-shadow:0 2px 7px #000;
-        }
-        .obs-vs-text {
-            text-align:center; font-size:86px; line-height:1; font-weight:1000;
-            font-style:italic; color:#fff; text-shadow:0 0 20px rgba(255,85,0,.95), 0 4px 8px #000;
-            animation:obsVs 1.2s ease-in-out infinite;
-        }
-        @keyframes obsCharIn {
-            from { opacity:0; transform:translateY(50px) scale(.75); }
-            to { opacity:1; transform:translateY(0) scale(1); }
-        }
-        @keyframes obsFloat {
-            0%,100% { margin-bottom:0; }
-            50% { margin-bottom:14px; }
-        }
-        @keyframes obsVs {
-            0%,100% { transform:scale(1); }
-            50% { transform:scale(1.10); }
-        }
     </style>
 </head>
 <body>
@@ -596,7 +555,6 @@
             renderAnimeArena();
             renderShop();
             renderInventory();
-            if (typeof paintOBSOverlay === 'function') paintOBSOverlay();
         }
 
         function animeCharacterImg(key) {
@@ -848,7 +806,6 @@
         }
 
         function initApp() {
-            loadAnimeImages();
             ensureCreatorRights();
             ensureAnimeShopItems();
             let currentUser = getCurrentUser();
@@ -1521,6 +1478,7 @@
             }
 
             await loadDataFromCloud();
+            loadAnimeImages();
             if (!currentUserId || !getCurrentUser()) {
                 document.getElementById('authModal').style.display = 'flex';
             } else {
