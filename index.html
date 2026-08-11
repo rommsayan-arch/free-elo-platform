@@ -97,7 +97,6 @@
         .season-banner { background: linear-gradient(135deg, #ff5500 0%, #26262b 100%); padding: 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .season-timer { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-
         /* === FREE ELO: Anime VS Characters === */
         .anime-vs-card {
             grid-column: span 12;
@@ -182,8 +181,6 @@
             background:radial-gradient(circle, rgba(255,85,0,.10), #101114 68%) !important;
         }
 
-        .obs-overlay-mode { background: transparent !important; display: flex; justify-content: center; align-items: flex-start; width: 100vw; height: 100vh; padding-top: 25px; }
-
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; height: 60px; flex-direction: row; justify-content: space-around; padding: 0; bottom: 0; top: auto; border-right: none; border-top: 1px solid var(--border-color); }
@@ -197,26 +194,16 @@
         }
     
         /* === OBS TRANSPARENT OVERLAY MODE === */
-        body.obs-overlay {
-            background: transparent !important;
-            overflow: hidden !important;
-        }
-        body.obs-overlay > *:not(#obsOverlayRoot) {
-            display:none !important;
-        }
-        #obsOverlayRoot {
-            position:fixed; inset:0; z-index:999999;
-            pointer-events:none; display:none;
-        }
+        body.obs-overlay { background: transparent !important; overflow: hidden !important; }
+        body.obs-overlay > *:not(#obsOverlayRoot) { display:none !important; }
+        #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
         body.obs-overlay #obsOverlayRoot { display:block; }
         .obs-vs {
             position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
             width:min(1180px,96vw); height:460px;
             display:grid; grid-template-columns:1fr 170px 1fr; align-items:center;
         }
-        .obs-char {
-            position:relative; height:430px; display:flex; align-items:flex-end; justify-content:center;
-        }
+        .obs-char { position:relative; height:430px; display:flex; align-items:flex-end; justify-content:center; }
         .obs-char img {
             max-width:390px; max-height:420px; width:auto; height:auto;
             object-fit:contain; filter:drop-shadow(0 12px 25px rgba(0,0,0,.75));
@@ -245,12 +232,6 @@
         @keyframes obsVs {
             0%,100% { transform:scale(1); }
             50% { transform:scale(1.10); }
-        }
-        @media(max-width:900px) {
-            .obs-vs { width:100vw; grid-template-columns:1fr 100px 1fr; }
-            .obs-char img { max-width:260px; max-height:330px; }
-            .obs-vs-text { font-size:58px; }
-            .obs-name { font-size:15px; }
         }
     </style>
 </head>
@@ -528,7 +509,8 @@
                     clan: 'NUN', 
                     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=sayan`, 
                     frame: '', 
-                    inventory: [] 
+                    inventory: [],
+                    equippedCharacter: 'gojo'
                 }
             ],
             clans: [
@@ -826,7 +808,7 @@
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
                 frame: '',
                 inventory: [],
-                equippedCharacter: ''
+                equippedCharacter: 'gojo'
             });
 
             db.players.push(newUser);
@@ -863,49 +845,6 @@
             };
             const pageTitleEl = document.getElementById('pageTitle');
             if (pageTitleEl) pageTitleEl.textContent = titles[pageId] || 'FREE ELO';
-        }
-
-        function setOBSImage(img, url) {
-            if (!img) return;
-            img.onerror = () => { img.style.display = 'none'; };
-            if (url) {
-                img.src = url;
-                img.style.display = 'block';
-            } else {
-                img.removeAttribute('src');
-                img.style.display = 'none';
-            }
-        }
-
-        function paintOBSOverlay() {
-            const me = getCurrentUser();
-            const players = (db?.players || []).filter(p => p.id !== me?.id);
-            const enemy = players[0] || {name:"PLAYER 2", equippedCharacter:"goku", elo:1000};
-
-            const leftKey = me?.equippedCharacter || 'naruto';
-            const rightKey = enemy.equippedCharacter || 'goku';
-
-            const li = document.getElementById('obsLeftImg');
-            const ri = document.getElementById('obsRightImg');
-            if (li) setOBSImage(li, animeCharacterImg(leftKey));
-            if (ri) setOBSImage(ri, animeCharacterImg(rightKey));
-
-            const ln = document.getElementById('obsLeftName');
-            const rn = document.getElementById('obsRightName');
-            if (ln) ln.textContent = (me?.name || 'PLAYER 1') + ' • ' + (me?.elo || 0) + ' ELO';
-            if (rn) rn.textContent = (enemy.name || 'PLAYER 2') + ' • ' + (enemy.elo || 1000) + ' ELO';
-        }
-
-        async function initOBSMode() {
-            if (new URLSearchParams(location.search).get('obs') !== '1') return;
-            document.body.classList.add('obs-overlay');
-            await loadDataFromCloud();
-            await loadAnimeImages();
-            paintOBSOverlay();
-            setInterval(async () => {
-                await loadDataFromCloud();
-                paintOBSOverlay();
-            }, 5000);
         }
 
         function initApp() {
@@ -1348,7 +1287,7 @@
             const currentUser = getCurrentUser();
             if (!currentUser) return;
 
-            const ownKey = currentUser.equippedCharacter || 'naruto';
+            const ownKey = currentUser.equippedCharacter || 'gojo';
             const others = (db.players || []).filter(p => p.id !== currentUser.id);
             const enemy = others.length ? others[Math.floor(Math.random() * others.length)] : { name:'PLAYER 2', elo:1000, equippedCharacter:'goku' };
             const enemyKey = enemy.equippedCharacter || 'goku';
@@ -1530,11 +1469,6 @@
             const obsMode = urlParams.get('obs');
             const targetStreamer = urlParams.get('streamer');
 
-            if (obsMode === '1') {
-                await initOBSMode();
-                return;
-            }
-
             if (obsMode) {
                 document.getElementById('mainSidebar').style.display = 'none';
                 document.getElementById('mainContainer').style.display = 'none';
@@ -1600,20 +1534,5 @@
             }, 4000);
         };
     </script>
-
-    <div id="obsOverlayRoot">
-        <div class="obs-vs">
-            <div class="obs-char left">
-                <img id="obsLeftImg" alt="">
-                <div class="obs-name" id="obsLeftName">PLAYER 1</div>
-            </div>
-            <div class="obs-vs-text">VS</div>
-            <div class="obs-char right">
-                <img id="obsRightImg" alt="">
-                <div class="obs-name" id="obsRightName">PLAYER 2</div>
-            </div>
-        </div>
-    </div>
-
 </body>
 </html>
