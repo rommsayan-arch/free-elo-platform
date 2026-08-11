@@ -149,8 +149,9 @@
             50% { transform:translateY(-9px) scale(1.025); }
         }
         .anime-player-name {
-            position:absolute; left:12px; top:10px; z-index:4; font-weight:800;
-            text-shadow:0 2px 8px #000; max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+            position:absolute; left:50%; transform:translateX(-50%); top:12px; z-index:4; font-weight:900; font-size: 16px;
+            text-shadow:0 2px 8px #000; max-width:85%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+            background: rgba(10, 10, 14, 0.75); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
         }
         .anime-elo {
             position:absolute; right:12px; top:10px; z-index:4; color:var(--accent); font-weight:800;
@@ -211,9 +212,9 @@
         }
         .obs-char.right img { animation-delay:.12s, -1.4s; transform:scaleX(-1); }
         .obs-name {
-            position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
-            padding:7px 14px; border-radius:9px; font-size:22px; font-weight:900;
-            color:#fff; background:rgba(10,10,14,.75); border:1px solid rgba(255,255,255,.16);
+            position:absolute; top:12px; left:50%; transform:translateX(-50%);
+            padding:7px 16px; border-radius:9px; font-size:22px; font-weight:900;
+            color:#fff; background:rgba(10,10,14,.85); border:1px solid rgba(255,255,255,.16);
             white-space:nowrap; text-shadow:0 2px 7px #000;
         }
         .obs-vs-text {
@@ -988,7 +989,6 @@
                 let sd = map[s.name];
                 let baseUrl = window.location.origin + window.location.pathname;
                 let linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(s.name)}`;
-                let linkP = baseUrl + `?obs=players&streamer=${encodeURIComponent(s.name)}`;
                 let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(s.name)}`;
 
                 let showObsControl = isAdminOrCreator || (isStreamerUser && currentUser.name?.toLowerCase() === s.name?.toLowerCase());
@@ -1038,14 +1038,6 @@
                                 <div style="display: flex; gap: 5px;">
                                     <input type="text" id="linkAnime_${s.name}" value="${linkAnime}" readonly style="font-size: 11px; background: #111; color: #ff5500;">
                                     <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkAnime_${s.name}')"><i class="fas fa-copy"></i></button>
-                                </div>
-                            </div>
-
-                            <div class="form-group" style="margin-bottom: 8px;">
-                                <label style="color: #00d2d3; font-size: 11px; font-weight: bold;">Ссылка на HUD Игроков:</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="linkP_${s.name}" value="${linkP}" readonly style="font-size: 11px; background: #111; color: #00d2d3;">
-                                    <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkP_${s.name}')"><i class="fas fa-copy"></i></button>
                                 </div>
                             </div>
 
@@ -1306,7 +1298,7 @@
 
             arena.innerHTML = `
                 <div class="anime-side">
-                    <div class="anime-player-name">🟠 ${currentUser.name || 'Вы'}</div>
+                    <div class="anime-player-name">${currentUser.name || 'Вы'}</div>
                     <div class="anime-elo">${currentUser.elo || 0} ELO</div>
                     <img class="anime-character" src="${animeCharacterImg(ownKey)}" alt="Персонаж">
                 </div>
@@ -1315,7 +1307,7 @@
                     <div class="anime-round">RANKED MATCH</div>
                 </div>
                 <div class="anime-side enemy">
-                    <div class="anime-player-name">🔵 ${enemy.name || 'PLAYER 2'}</div>
+                    <div class="anime-player-name">${enemy.name || 'PLAYER 2'}</div>
                     <div class="anime-elo">${enemy.elo || 1000} ELO</div>
                     <img class="anime-character" src="${animeCharacterImg(enemyKey)}" alt="Персонаж">
                 </div>
@@ -1346,7 +1338,6 @@
                     let isStreamer = (db?.streamers || []).some(s => s.name?.toLowerCase() === p.name?.toLowerCase());
                     let baseUrl = window.location.origin + window.location.pathname;
                     let linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(p.name)}`;
-                    let linkP = baseUrl + `?obs=players&streamer=${encodeURIComponent(p.name)}`;
                     let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(p.name)}`;
 
                     let actionBtn = isStreamer ? 
@@ -1362,7 +1353,6 @@
                             <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
                             <td>
                                 <div style="font-size: 11px; color: #ff5500;">⚔️ Аниме Арена: <a href="${linkAnime}" target="_blank" style="color: #ff5500;">Открыть</a></div>
-                                <div style="font-size: 11px; color: #00d2d3;">HUD Игроков: <a href="${linkP}" target="_blank" style="color: #00d2d3;">Открыть</a></div>
                                 <div style="font-size: 11px; color: #ff4757;">HUD Кланов: <a href="${linkC}" target="_blank" style="color: #ff4757;">Открыть</a></div>
                             </td>
                             <td>${actionBtn}</td>
@@ -1454,7 +1444,7 @@
             if (document.getElementById('adminEloInput')) document.getElementById('adminEloInput').value = user.elo || 0;
             if (document.getElementById('adminMatchesInput')) document.getElementById('adminMatchesInput').value = user.matches || 0;
             if (document.getElementById('adminLevelInput')) document.getElementById('adminLevelInput').value = user.level || 1;
-            if (document.getElementById('adminRoleSelect')) document.getElementById('adminRoleSelect').value = user.role || 'player';
+            if (document.getElementById('adminRoleSelect')) document.getElementById('adminRoleSelect'.value) = user.role || 'player';
         }
 
         async function applyAdminChanges() {
@@ -1513,26 +1503,12 @@
                                 <div class="obs-vs">
                                     <div class="obs-char">
                                         <img src="${char1Img}" alt="Player 1">
-                                        <div class="obs-name">🟠 [${sd.clan1 || 'NUN'}] ${sd.player1 || 'PLAYER 1'}</div>
+                                        <div class="obs-name">${sd.player1 || 'PLAYER 1'}</div>
                                     </div>
                                     <div class="obs-vs-text">VS</div>
                                     <div class="obs-char right">
                                         <img src="${char2Img}" alt="Player 2">
-                                        <div class="obs-name">🔵 [${sd.clan2 || 'WAKANDA'}] ${sd.player2 || 'PLAYER 2'}</div>
-                                    </div>
-                                </div>
-                            `;
-                        } else if (obsMode === 'players') {
-                            obsContainer.innerHTML = `
-                                <div style="position:fixed; left:30px; top:30px; display: flex; align-items: center; justify-content: space-between; background: rgba(18, 18, 24, 0.85); backdrop-filter: blur(12px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 8px; padding: 12px 30px; font-family: 'Segoe UI', sans-serif; min-width: 440px;">
-                                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                                        <span style="font-size: 11px; color: #ff5500; font-weight: bold;">[${sd.clan1 || 'NUN'}]</span>
-                                        <span style="color: #ffffff; font-size: 20px; font-weight: 900;">${sd.player1 || 'PLAYER1'}</span>
-                                    </div>
-                                    <div style="color: #ff5500; font-size: 18px; font-weight: 900; margin: 0 25px;">VS</div>
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                        <span style="font-size: 11px; color: #ff5500; font-weight: bold;">[${sd.clan2 || 'WAKANDA'}]</span>
-                                        <span style="color: #ffffff; font-size: 20px; font-weight: 900;">${sd.player2 || 'PLAYER2'}</span>
+                                        <div class="obs-name">${sd.player2 || 'PLAYER 2'}</div>
                                     </div>
                                 </div>
                             `;
