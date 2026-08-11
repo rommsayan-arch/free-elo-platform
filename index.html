@@ -1155,10 +1155,13 @@
             db.clans.forEach(c => {
                 let memberCount = (db?.players || []).filter(p => p.clan === c.name).length;
                 container.innerHTML += `
-                    <div class="clan-card">
-                        <h3>[${c.tag || ''}] ${c.name || ''}</h3>
-                        <p style="color: var(--text-muted); font-size: 13px;">Участников: ${memberCount}</p>
-                        <button class="btn btn-secondary" onclick="joinClan('${c.name}')">Вступить в клан</button>
+                    <div class="clan-card" style="background: linear-gradient(135deg, rgba(255,85,0,0.06), #26262b); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h3 style="color: #fff; font-size: 20px;"><span style="color: var(--accent);">[${c.tag || ''}]</span> ${c.name || ''}</h3>
+                            <span class="level-badge" style="background: var(--accent); color: #fff;">Клан</span>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Участников в клане: <b style="color: #fff;">${memberCount}</b></p>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="joinClan('${c.name}')">Вступить в клан</button>
                     </div>
                 `;
             });
@@ -1497,7 +1500,6 @@
                     let map = db?.streamDataMap || {};
                     let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
 
-                    // Ищем персонажей игроков для аниме-арены в OBS
                     let p1Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player1?.toLowerCase());
                     let p2Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player2?.toLowerCase());
                     let char1Key = p1Obj?.equippedCharacter || 'gojo';
@@ -1571,3 +1573,4 @@
     </script>
 </body>
 </html>
+```[cite: 7]
