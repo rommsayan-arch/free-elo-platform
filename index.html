@@ -192,6 +192,47 @@
             .season-banner { flex-direction: column; gap: 15px; text-align: center; }
             .auth-card { width: 90%; padding: 20px; }
         }
+    
+        /* === OBS TRANSPARENT OVERLAY MODE === */
+        body.obs-overlay { background: transparent !important; overflow: hidden !important; }
+        body.obs-overlay > *:not(#obsOverlayRoot) { display:none !important; }
+        #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
+        body.obs-overlay #obsOverlayRoot { display:block; }
+        .obs-vs {
+            position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+            width:min(1180px,96vw); height:460px;
+            display:grid; grid-template-columns:1fr 170px 1fr; align-items:center;
+        }
+        .obs-char { position:relative; height:430px; display:flex; align-items:flex-end; justify-content:center; }
+        .obs-char img {
+            max-width:390px; max-height:420px; width:auto; height:auto;
+            object-fit:contain; filter:drop-shadow(0 12px 25px rgba(0,0,0,.75));
+            animation:obsCharIn .8s ease-out, obsFloat 2.8s ease-in-out infinite;
+        }
+        .obs-char.right img { animation-delay:.12s, -1.4s; transform:scaleX(-1); }
+        .obs-name {
+            position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
+            padding:7px 14px; border-radius:9px; font-size:22px; font-weight:900;
+            color:#fff; background:rgba(10,10,14,.75); border:1px solid rgba(255,255,255,.16);
+            white-space:nowrap; text-shadow:0 2px 7px #000;
+        }
+        .obs-vs-text {
+            text-align:center; font-size:86px; line-height:1; font-weight:1000;
+            font-style:italic; color:#fff; text-shadow:0 0 20px rgba(255,85,0,.95), 0 4px 8px #000;
+            animation:obsVs 1.2s ease-in-out infinite;
+        }
+        @keyframes obsCharIn {
+            from { opacity:0; transform:translateY(50px) scale(.75); }
+            to { opacity:1; transform:translateY(0) scale(1); }
+        }
+        @keyframes obsFloat {
+            0%,100% { margin-bottom:0; }
+            50% { margin-bottom:14px; }
+        }
+        @keyframes obsVs {
+            0%,100% { transform:scale(1); }
+            50% { transform:scale(1.10); }
+        }
     </style>
 </head>
 <body>
@@ -555,6 +596,7 @@
             renderAnimeArena();
             renderShop();
             renderInventory();
+            if (typeof paintOBSOverlay === 'function') paintOBSOverlay();
         }
 
         function animeCharacterImg(key) {
@@ -945,6 +987,7 @@
                 }
                 let sd = map[s.name];
                 let baseUrl = window.location.origin + window.location.pathname;
+                let linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(s.name)}`;
                 let linkP = baseUrl + `?obs=players&streamer=${encodeURIComponent(s.name)}`;
                 let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(s.name)}`;
 
@@ -989,6 +1032,14 @@
                             </div>
 
                             <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="saveStreamerObsData('${s.name}')">💾 Сохранить оверлей</button>
+
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="color: #ff5500; font-size: 11px; font-weight: bold;">⚔️ Ссылка на Аниме-Арену (OBS):</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="linkAnime_${s.name}" value="${linkAnime}" readonly style="font-size: 11px; background: #111; color: #ff5500;">
+                                    <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkAnime_${s.name}')"><i class="fas fa-copy"></i></button>
+                                </div>
+                            </div>
 
                             <div class="form-group" style="margin-bottom: 8px;">
                                 <label style="color: #00d2d3; font-size: 11px; font-weight: bold;">Ссылка на HUD Игроков:</label>
@@ -1291,6 +1342,7 @@
                 (db?.players || []).forEach(p => {
                     let isStreamer = (db?.streamers || []).some(s => s.name?.toLowerCase() === p.name?.toLowerCase());
                     let baseUrl = window.location.origin + window.location.pathname;
+                    let linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(p.name)}`;
                     let linkP = baseUrl + `?obs=players&streamer=${encodeURIComponent(p.name)}`;
                     let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(p.name)}`;
 
@@ -1306,6 +1358,7 @@
                             <td><span style="color: var(--accent); font-weight: bold;">${p.elo || 0} ELO</span> (Ур. ${p.level || 1})</td>
                             <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
                             <td>
+                                <div style="font-size: 11px; color: #ff5500;">⚔️ Аниме Арена: <a href="${linkAnime}" target="_blank" style="color: #ff5500;">Открыть</a></div>
                                 <div style="font-size: 11px; color: #00d2d3;">HUD Игроков: <a href="${linkP}" target="_blank" style="color: #00d2d3;">Открыть</a></div>
                                 <div style="font-size: 11px; color: #ff4757;">HUD Кланов: <a href="${linkC}" target="_blank" style="color: #ff4757;">Открыть</a></div>
                             </td>
@@ -1428,14 +1481,15 @@
             const targetStreamer = urlParams.get('streamer');
 
             if (obsMode) {
+                document.body.classList.add('obs-overlay');
                 document.getElementById('mainSidebar').style.display = 'none';
                 document.getElementById('mainContainer').style.display = 'none';
                 document.getElementById('authModal').style.display = 'none';
                 
                 const obsContainer = document.getElementById('obsOverlayContainer');
                 if (obsContainer) {
-                    obsContainer.style.display = 'flex';
-                    obsContainer.className = 'obs-overlay-mode';
+                    obsContainer.style.display = 'block';
+                    obsContainer.id = 'obsOverlayRoot';
                 }
 
                 async function updateObsContent() {
@@ -1443,10 +1497,32 @@
                     let map = db?.streamDataMap || {};
                     let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
 
+                    // Ищем персонажей игроков для аниме-арены в OBS
+                    let p1Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player1?.toLowerCase());
+                    let p2Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player2?.toLowerCase());
+                    let char1Key = p1Obj?.equippedCharacter || 'gojo';
+                    let char2Key = p2Obj?.equippedCharacter || 'goku';
+                    let char1Img = animeCharacterImg(char1Key) || 'https://placehold.co/400x520/111217/ffffff?text=CHAR1';
+                    let char2Img = animeCharacterImg(char2Key) || 'https://placehold.co/400x520/111217/ffffff?text=CHAR2';
+
                     if (obsContainer) {
-                        if (obsMode === 'players') {
+                        if (obsMode === 'anime') {
                             obsContainer.innerHTML = `
-                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(18, 18, 24, 0.75); backdrop-filter: blur(12px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 6px; padding: 12px 30px; font-family: 'Segoe UI', sans-serif; min-width: 440px;">
+                                <div class="obs-vs">
+                                    <div class="obs-char">
+                                        <img src="${char1Img}" alt="Player 1">
+                                        <div class="obs-name">🟠 [${sd.clan1 || 'NUN'}] ${sd.player1 || 'PLAYER 1'}</div>
+                                    </div>
+                                    <div class="obs-vs-text">VS</div>
+                                    <div class="obs-char right">
+                                        <img src="${char2Img}" alt="Player 2">
+                                        <div class="obs-name">🔵 [${sd.clan2 || 'WAKANDA'}] ${sd.player2 || 'PLAYER 2'}</div>
+                                    </div>
+                                </div>
+                            `;
+                        } else if (obsMode === 'players') {
+                            obsContainer.innerHTML = `
+                                <div style="position:fixed; left:30px; top:30px; display: flex; align-items: center; justify-content: space-between; background: rgba(18, 18, 24, 0.85); backdrop-filter: blur(12px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 8px; padding: 12px 30px; font-family: 'Segoe UI', sans-serif; min-width: 440px;">
                                     <div style="display: flex; flex-direction: column; align-items: flex-start;">
                                         <span style="font-size: 11px; color: #ff5500; font-weight: bold;">[${sd.clan1 || 'NUN'}]</span>
                                         <span style="color: #ffffff; font-size: 20px; font-weight: 900;">${sd.player1 || 'PLAYER1'}</span>
@@ -1460,7 +1536,7 @@
                             `;
                         } else if (obsMode === 'clans') {
                             obsContainer.innerHTML = `
-                                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(20, 20, 26, 0.85); backdrop-filter: blur(14px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 6px; padding: 16px 35px; font-family: 'Segoe UI', sans-serif; min-width: 420px;">
+                                <div style="position:fixed; left:30px; top:30px; display: flex; align-items: center; justify-content: space-between; background: rgba(20, 20, 26, 0.9); backdrop-filter: blur(14px); border: 2px solid rgba(255, 85, 0, 0.6); border-radius: 8px; padding: 16px 35px; font-family: 'Segoe UI', sans-serif; min-width: 420px;">
                                     <span style="color: #ff5500; font-size: 22px; font-weight: 900;">${sd.clan1 || 'NUN'}</span>
                                     <div style="display: flex; align-items: center; gap: 18px; margin: 0 30px;">
                                         <span style="color: #00ff66; font-size: 32px; font-weight: 900;">${sd.score1 ?? 0}</span>
@@ -1473,6 +1549,7 @@
                         }
                     }
                 }
+                await loadAnimeImages();
                 await updateObsContent();
                 setInterval(updateObsContent, 3000);
                 return;
