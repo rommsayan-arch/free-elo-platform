@@ -286,6 +286,14 @@
             <div class="card stats-card"><span class="stat-title">Сыграно матчей</span><span class="stat-value" id="userMatches" style="color: white;">0</span></div>
             <div class="card stats-card"><span class="stat-title">Винрейт</span><span class="stat-value" id="userWinrate" style="color: white;">0 %</span></div>
 
+            <div class="card anime-vs-card">
+                <div class="anime-vs-title">
+                    <strong>FREE ELO: АНИМЕ СРАЖЕНИЕ</strong>
+                    <span>Выбери персонажа в инвентаре</span>
+                </div>
+                <div class="anime-arena" id="animeArena"></div>
+            </div>
+
             <div class="card top-players">
                 <h3>ТОП ИГРОКОВ ПЛАТФОРМЫ</h3>
                 <table>
@@ -728,9 +736,9 @@
             } catch (e) {
                 console.error("FREE ELO: ошибка сохранения:", e);
                 alert(
-                    "Не удалось сохранить данные.\\n\\n" +
+                    "Не удалось сохранить данные.\n\n" +
                     "Ошибка базы: " + e.message +
-                    "\\n\\nНужно проверить RLS/Policies таблицы app_data в Supabase."
+                    "\n\nНужно проверить RLS/Policies таблицы app_data в Supabase."
                 );
                 return false;
             }
