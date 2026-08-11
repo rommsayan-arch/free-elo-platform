@@ -471,13 +471,9 @@
             } catch (e) {
                 console.error("FREE ELO: ошибка сохранения:", e);
                 alert(
-                    "Не удалось сохранить данные.
-
-" +
+                    "Не удалось сохранить данные.\\n\\n" +
                     "Ошибка базы: " + e.message +
-                    "
-
-Нужно проверить RLS/Policies таблицы app_data в Supabase."
+                    "\\n\\nНужно проверить RLS/Policies таблицы app_data в Supabase."
                 );
                 return false;
             }
