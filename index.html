@@ -806,6 +806,7 @@
         }
 
         function initApp() {
+            loadAnimeImages();
             ensureCreatorRights();
             ensureAnimeShopItems();
             let currentUser = getCurrentUser();
@@ -1478,7 +1479,6 @@
             }
 
             await loadDataFromCloud();
-            loadAnimeImages();
             if (!currentUserId || !getCurrentUser()) {
                 document.getElementById('authModal').style.display = 'flex';
             } else {
