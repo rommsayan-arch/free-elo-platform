@@ -1444,7 +1444,8 @@
             if (document.getElementById('adminEloInput')) document.getElementById('adminEloInput').value = user.elo || 0;
             if (document.getElementById('adminMatchesInput')) document.getElementById('adminMatchesInput').value = user.matches || 0;
             if (document.getElementById('adminLevelInput')) document.getElementById('adminLevelInput').value = user.level || 1;
-            if (document.getElementById('adminRoleSelect')) document.getElementById('adminRoleSelect'.value) = user.role || 'player';
+            const roleSelect = document.getElementById('adminRoleSelect');
+            if (roleSelect) roleSelect.value = user.role || 'player';
         }
 
         async function applyAdminChanges() {
