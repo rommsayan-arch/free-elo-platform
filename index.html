@@ -176,12 +176,14 @@
             border:1px solid #363844; color:#cfd0d8; font-size:10px; margin-top:2px;
         }
         .shop-character-preview {
-            width:120px !important; height:135px !important; object-fit:contain !important;
-            background:radial-gradient(circle, rgba(255,85,0,.12), #101114 68%) !important;
-            border-radius:10px !important;
+            width:150px !important; height:190px !important; object-fit:contain !important;
+            object-position:center bottom !important; background:radial-gradient(circle at 50% 65%,rgba(255,85,0,.20),transparent 58%),linear-gradient(180deg,#101116,#171922) !important;
+            border-radius:12px !important; padding:8px !important; filter:drop-shadow(0 10px 16px rgba(0,0,0,.65));
+            transition:transform .25s ease,filter .25s ease;
         }
+        .shop-item:hover .shop-character-preview { transform:translateY(-6px) scale(1.035); filter:drop-shadow(0 16px 22px rgba(255,85,0,.25)); }
         .inventory-character-preview {
-            width:120px !important; height:135px !important; object-fit:contain !important;
+            width:120px !important; height:150px !important; object-fit:contain !important;
             background:radial-gradient(circle, rgba(255,85,0,.10), #101114 68%) !important;
         }
 
@@ -202,56 +204,25 @@
         body.obs-overlay > *:not(#obsOverlayRoot) { display:none !important; }
         #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
         body.obs-overlay #obsOverlayRoot { display:block; }
-        .obs-vs {
-            position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-            width:min(1250px,96vw); height:460px;
-            display:grid; grid-template-columns:1fr 170px 1fr; align-items:center;
-        }
-        .obs-char { position:relative; height:430px; display:flex; align-items:flex-end; justify-content:center; }
-        .obs-char img {
-            max-width:420px; max-height:420px; width:auto; height:auto;
-            object-fit:contain; filter:drop-shadow(0 12px 25px rgba(0,0,0,.75));
-            animation:obsCharIn .3s ease-out, obsFloat 1.2s ease-in-out infinite; /* Быстрое появление и анимация */
-        }
-        .obs-char.right img { animation-delay:.05s, -0.6s; transform:scaleX(-1); }
-        
-        /* Широкое имя игрока по центру в OBS */
-        .obs-name {
-            position:absolute; top:12px; left:50%; transform:translateX(-50%);
-            padding:8px 24px; border-radius:8px; font-size:22px; font-weight:900;
-            color:#fff; background:rgba(10,10,14,.9); border:2px solid rgba(255,255,255,.2);
-            white-space:nowrap; text-shadow:0 2px 7px #000; text-align: center; min-width: 240px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-        }
-        .obs-avatar-bg {
-            position:absolute; top:0; left:50%; transform:translateX(-50%);
-            width:96px; height:96px; border-radius:50%; object-fit:cover;
-            opacity:.38; filter:blur(.2px) saturate(1.25);
-            border:2px solid rgba(255,255,255,.28);
-            box-shadow:0 0 28px rgba(255,85,0,.35);
-            z-index:2; pointer-events:none;
-        }
-        .obs-char.right .obs-avatar-bg { box-shadow:0 0 28px rgba(0,191,255,.35); }
-        .obs-name { z-index:4; }
-        .clan-hud-side {
-            flex:1; min-width:170px; justify-content:center;
-        }
-        .clan-hud-tag {
-            min-width:150px; text-align:center; justify-content:center;
-            display:flex; align-items:center;
-        }
-        .clan-hud-score-box { flex:0 0 auto; }
-        .clan-hud-avatar {
-            width:42px; height:42px; border-radius:50%; object-fit:cover;
-            border:2px solid rgba(255,255,255,.35); box-shadow:0 0 18px rgba(255,85,0,.3);
-        }
-        .clan-hud-side.enemy .clan-hud-avatar { box-shadow:0 0 18px rgba(0,191,255,.3); }
 
-        .obs-vs-text {
-            text-align:center; font-size:86px; line-height:1; font-weight:1000;
-            font-style:italic; color:#fff; text-shadow:0 0 20px rgba(255,85,0,.95), 0 4px 8px #000;
-            animation:obsVs 0.8s ease-in-out infinite; /* Быстрее */
-        }
+        .obs-vs { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(1320px,98vw); height:650px; display:grid; grid-template-columns:1fr 170px 1fr; align-items:center; gap:0; }
+        .obs-char { position:relative; height:620px; display:flex; align-items:flex-end; justify-content:center; overflow:visible; }
+        .obs-character-img { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:min(520px,38vw); height:590px; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 18px 30px rgba(0,0,0,.82)); animation:obsCharIn .45s ease-out,obsFloat 2.6s ease-in-out infinite; z-index:2; }
+        .obs-char.right .obs-character-img { animation-delay:.05s,-1.3s; transform:translateX(-50%) scaleX(-1); }
+        .obs-player-card { position:absolute; top:18px; left:50%; transform:translateX(-50%); z-index:8; width:min(330px,30vw); min-height:118px; padding:10px 18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; border-radius:18px; background:linear-gradient(180deg,rgba(7,9,14,.96),rgba(10,12,18,.72)); border:1px solid rgba(255,255,255,.22); box-shadow:0 12px 35px rgba(0,0,0,.58),inset 0 0 30px rgba(255,85,0,.10); backdrop-filter:blur(9px); }
+        .obs-char.right .obs-player-card { box-shadow:0 12px 35px rgba(0,0,0,.58),inset 0 0 30px rgba(0,191,255,.12); }
+        .obs-avatar-wrap { position:relative; width:62px; height:62px; flex:0 0 62px; }
+        .obs-avatar { width:62px; height:62px; border-radius:50%; object-fit:cover; display:block; border:2px solid rgba(255,255,255,.6); background:#15161c; box-shadow:0 0 22px rgba(255,85,0,.42); }
+        .obs-char.right .obs-avatar { box-shadow:0 0 22px rgba(0,191,255,.42); }
+        .obs-avatar-frame { position:absolute; inset:-6px; width:74px; height:74px; object-fit:contain; pointer-events:none; z-index:2; }
+        .obs-name { position:static !important; transform:none !important; width:100%; min-width:0; max-width:100%; padding:0; background:transparent; border:0; box-shadow:none; border-radius:0; color:#fff; font-size:27px; font-weight:1000; line-height:1.05; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 3px 10px #000; letter-spacing:.6px; }
+        .obs-clan-label { font-size:12px; color:#c3c8d3; font-weight:900; text-transform:uppercase; letter-spacing:1.4px; }
+        .obs-vs-text { text-align:center; font-size:88px; line-height:1; font-weight:1000; font-style:italic; color:#fff; text-shadow:0 0 26px rgba(255,85,0,.95),0 4px 8px #000; animation:obsVs .9s ease-in-out infinite; z-index:10; }
+        .obs-char::before { content:""; position:absolute; left:50%; bottom:18px; transform:translateX(-50%); width:78%; height:46%; border-radius:50%; background:radial-gradient(ellipse,rgba(255,85,0,.22),transparent 68%); filter:blur(22px); z-index:1; pointer-events:none; }
+        .obs-char.right::before { background:radial-gradient(ellipse,rgba(0,191,255,.20),transparent 68%); }
+        .obs-char::after { content:""; position:absolute; left:8%; right:8%; bottom:8px; height:2px; background:linear-gradient(90deg,transparent,rgba(255,85,0,.7),transparent); box-shadow:0 0 22px rgba(255,85,0,.7); z-index:3; }
+        .obs-char.right::after { background:linear-gradient(90deg,transparent,rgba(0,191,255,.7),transparent); box-shadow:0 0 22px rgba(0,191,255,.7); }
+
         @keyframes obsCharIn {
             from { opacity:0; transform:translateY(30px) scale(.85); }
             to { opacity:1; transform:translateY(0) scale(1); }
@@ -585,80 +556,68 @@
             }
         };
 
+        const EPIC_ANIME_ART = {
+            luffy:'https://i.pinimg.com/originals/24/12/fb/2412fb16f6035da0ec58377b58ff20b6.jpg',
+            naruto:'https://i.pinimg.com/736x/4b/87/b4/4b87b4af3d894990812cab19cebbe839.jpg',
+            gojo:'https://pngfre.com/wp-content/uploads/satoru-gojo-10.png',
+            ichigo:'',
+            zoro:'https://img.favpng.com/21/4/2/roronoa-zoro-nami-one-piece-art-png-favpng-j9Ny04wGYFVM3MRnhS4c02rvv.jpg',
+            nezuko:'https://img.favpng.com/23/15/19/nezuko-kimetsu-no-yaiba-anime-girl-with-bamboo-in-action-MCBk2KtF.jpg',
+            sasuke:'https://www.vhv.rs/dpng/d/53-535017_sasuke-uchiha-rinnegan-hd-png-download.png',
+            killua:'https://static.wikia.nocookie.net/the-perfect-scaling/images/d/d0/Hunter_X_Hunter_Kanmuru_Killua_.webp/revision/latest?cb=20240830220654',
+            gon:'https://static.wikia.nocookie.net/vsbattles/images/a/a0/GonFreecss_v1_%28HxH%29.png/revision/latest?cb=20220215131511',
+            goku:'https://www.pngplay.com/wp-content/uploads/12/SoGoku-Transparent-Free-PNG.png'
+        };
+        function animeFallbackImage(key) { return EPIC_ANIME_ART[key] || ''; }
+
         const ANIME_CHARACTERS = {
-            naruto:  { name:"Naruto Uzumaki", anime:"Naruto", search:"Naruto Uzumaki", image:"" },
-            goku:    { name:"Son Goku", anime:"Dragon Ball", search:"Goku", image:"" },
-            luffy:   { name:"Monkey D. Luffy", anime:"One Piece", search:"Monkey D. Luffy", image:"" },
-            gojo:    { name:"Satoru Gojo", anime:"Jujutsu Kaisen", search:"Satoru Gojo", image:"" },
-            ichigo:  { name:"Ichigo Kurosaki", anime:"Bleach", search:"Ichigo Kurosaki", image:"" },
-            tanjiro: { name:"Tanjiro Kamado", anime:"Demon Slayer", search:"Tanjiro Kamado", image:"" },
-            nezuko:  { name:"Nezuko Kamado", anime:"Demon Slayer", search:"Nezuko Kamado", image:"" },
-            levi:    { name:"Levi Ackerman", anime:"Attack on Titan", search:"Levi Ackerman", image:"" },
-            eren:    { name:"Eren Yeager", anime:"Attack on Titan", search:"Eren Yeager", image:"" },
-            killua:  { name:"Killua Zoldyck", anime:"Hunter x Hunter", search:"Killua Zoldyck", image:"" },
-            gon:     { name:"Gon Freecss", anime:"Hunter x Hunter", search:"Gon Freecss", image:"" },
-            sukuna:  { name:"Ryomen Sukuna", anime:"Jujutsu Kaisen", search:"Ryomen Sukuna", image:"" },
-            zoro:    { name:"Roronoa Zoro", anime:"One Piece", search:"Roronoa Zoro", image:"" },
-            itachi:  { name:"Itachi Uchiha", anime:"Naruto", search:"Itachi Uchiha", image:"" },
-            sasuke:  { name:"Sasuke Uchiha", anime:"Naruto", search:"Sasuke Uchiha", image:"" }
+            naruto:  { name:"Naruto Uzumaki", anime:"Naruto", search:"Naruto Uzumaki", image:null },
+            goku:    { name:"Son Goku", anime:"Dragon Ball", search:"Goku", image:null },
+            luffy:   { name:"Monkey D. Luffy", anime:"One Piece", search:"Monkey D. Luffy", image:null },
+            gojo:    { name:"Satoru Gojo", anime:"Jujutsu Kaisen", search:"Satoru Gojo", image:null },
+            ichigo:  { name:"Ichigo Kurosaki", anime:"Bleach", search:"Ichigo Kurosaki", image:null },
+            tanjiro: { name:"Tanjiro Kamado", anime:"Demon Slayer", search:"Tanjiro Kamado", image:null },
+            nezuko:  { name:"Nezuko Kamado", anime:"Demon Slayer", search:"Nezuko Kamado", image:null },
+            levi:    { name:"Levi Ackerman", anime:"Attack on Titan", search:"Levi Ackerman", image:null },
+            eren:    { name:"Eren Yeager", anime:"Attack on Titan", search:"Eren Yeager", image:null },
+            killua:  { name:"Killua Zoldyck", anime:"Hunter x Hunter", search:"Killua Zoldyck", image:null },
+            gon:     { name:"Gon Freecss", anime:"Hunter x Hunter", search:"Gon Freecss", image:null },
+            sukuna:  { name:"Ryomen Sukuna", anime:"Jujutsu Kaisen", search:"Ryomen Sukuna", image:null },
+            zoro:    { name:"Roronoa Zoro", anime:"One Piece", search:"Roronoa Zoro", image:null },
+            itachi:  { name:"Itachi Uchiha", anime:"Naruto", search:"Itachi Uchiha", image:null },
+            sasuke:  { name:"Sasuke Uchiha", anime:"Naruto", search:"Sasuke Uchiha", image:null }
+        };
+
+        const EPIC_MOMENTS = {
+            luffy:'GEAR 5 • NIKA', naruto:'RASENGAN', goku:'SUPER SAIYAN', gojo:'HOLLOW PURPLE',
+            ichigo:'BANKAI', tanjiro:'SWORD SLASH', nezuko:'DEMON MODE', levi:'ODM ATTACK',
+            eren:'SURVEY CORPS', killua:'LIGHTNING', gon:'JAJANKEN', sukuna:'CURSED ENERGY',
+            zoro:'THREE SWORDS', itachi:'AKATSUKI', sasuke:'CHIDORI'
         };
 
         async function loadAnimeImages() {
-            const cacheKey = 'free_elo_anime_images_v2';
-            let cached = {};
-            try { cached = JSON.parse(localStorage.getItem(cacheKey) || '{}'); } catch (_) {}
-            const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-            for (const [key, c] of Object.entries(ANIME_CHARACTERS)) {
-                if (cached[key]) {
-                    c.image = cached[key];
-                    continue;
-                }
-                let ok = false;
-                for (let attempt = 0; attempt < 3 && !ok; attempt++) {
-                    try {
-                        const r = await fetch(
-                            'https://api.jikan.moe/v4/characters?q=' +
-                            encodeURIComponent(c.search) + '&limit=1',
-                            { cache: 'no-store' }
-                        );
-                        if (r.status === 429) {
-                            await sleep(1500 + attempt * 1000);
-                            continue;
-                        }
-                        if (!r.ok) {
-                            await sleep(900);
-                            continue;
-                        }
-                        const j = await r.json();
-                        const ch = j?.data?.[0];
-                        const url = ch?.images?.webp?.large_image_url ||
-                                    ch?.images?.webp?.image_url ||
-                                    ch?.images?.jpg?.large_image_url ||
-                                    ch?.images?.jpg?.image_url;
-                        if (url) {
-                            c.image = url;
-                            cached[key] = url;
-                            localStorage.setItem(cacheKey, JSON.stringify(cached));
-                            ok = true;
-                        }
-                    } catch (e) {
-                        console.warn('Не удалось загрузить:', c.name, e);
-                        await sleep(1000);
-                    }
-                }
-                await sleep(450);
-            }
-
-            renderAnimeArena();
-            renderShop();
-            renderInventory();
-            if (typeof paintOBSOverlay === 'function') paintOBSOverlay();
+            const cacheKey='free_elo_anime_images_v6';
+            let cached={}; try{ cached=JSON.parse(localStorage.getItem(cacheKey)||'{}'); }catch(_){ }
+            for(const [key,c] of Object.entries(ANIME_CHARACTERS)) c.image=cached[key]||animeFallbackImage(key)||'';
+            const jobs=Object.entries(ANIME_CHARACTERS).map(async ([key,c],i)=>{
+                await new Promise(r=>setTimeout(r,i*220));
+                try{
+                    const ctl=new AbortController(); const timer=setTimeout(()=>ctl.abort(),4500);
+                    const r=await fetch('https://api.jikan.moe/v4/characters?q='+encodeURIComponent(c.search)+'&limit=1',{cache:'no-store',signal:ctl.signal});
+                    clearTimeout(timer); if(!r.ok)return;
+                    const j=await r.json(), ch=j?.data?.[0];
+                    const url=ch?.images?.webp?.large_image_url||ch?.images?.webp?.image_url||ch?.images?.jpg?.large_image_url||ch?.images?.jpg?.image_url;
+                    if(url){c.image=url;cached[key]=url;localStorage.setItem(cacheKey,JSON.stringify(cached));}
+                }catch(_){ }
+            });
+            await Promise.allSettled(jobs);
+            renderAnimeArena(); renderShop(); renderInventory();
         }
 
         function animeCharacterImg(key) {
-            const c = ANIME_CHARACTERS[key] || ANIME_CHARACTERS.naruto;
-            return c.image || '';
+            const safeKey = ANIME_CHARACTERS[key] ? key : 'naruto';
+            const c = ANIME_CHARACTERS[safeKey];
+            return c.image || animeFallbackImage(safeKey);
         }
 
         function ensureAnimeShopItems() {
@@ -1279,13 +1238,13 @@
 
             grid.innerHTML = filtered.map(item => {
                 const isCharacter = item.type === 'character';
-                const img = isCharacter ? (animeCharacterImg(item.characterKey) || 'https://placehold.co/400x520/111217/ffffff?text=ANIME') : (item.img || '');
+                const img = isCharacter ? (animeCharacterImg(item.characterKey)) : (item.img || '');
                 const already = owned.has(item.id);
                 return `
                     <div class="shop-item" style="${isCharacter ? 'min-height:300px;' : ''}">
-                        <img class="${isCharacter ? 'shop-character-preview' : ''}" src="${img}" alt="${item.name || ''}">
+                        <img class="${isCharacter ? 'shop-character-preview' : ''}" src="${img}" alt="${item.name || ''}" onerror="this.src=animeFallbackImage('${item.characterKey || 'item'}')">
                         <h4>${item.name || ''}</h4>
-                        ${isCharacter ? '<span class="anime-item-badge">⚔️ Персонаж для VS</span>' : ''}
+                        ${isCharacter ? `<span class="anime-item-badge">⚡ ${EPIC_MOMENTS[item.characterKey] || 'EPIC MOMENT'}</span>` : ''}
                         <p style="color: var(--accent); font-weight:bold;">${item.price || 0} ELO</p>
                         <button class="btn ${already ? 'btn-secondary' : 'btn-primary'}" onclick="buyItem(${item.id})" ${already ? 'disabled' : ''}>
                             ${already ? '✓ Куплен' : 'Купить за ' + (item.price || 0)}
@@ -1334,11 +1293,11 @@
 
             currentUser.inventory.forEach(item => {
                 const isCharacter = item.type === 'character';
-                const img = isCharacter ? (animeCharacterImg(item.characterKey) || 'https://placehold.co/400x520/111217/ffffff?text=ANIME') : (item.img || '');
+                const img = isCharacter ? (animeCharacterImg(item.characterKey)) : (item.img || '');
                 const equipped = isCharacter && currentUser.equippedCharacter === item.characterKey;
                 grid.innerHTML += `
                     <div class="inventory-item">
-                        <img class="${isCharacter ? 'inventory-character-preview' : ''}" src="${img}" alt="${item.name || ''}">
+                        <img class="${isCharacter ? 'inventory-character-preview' : ''}" src="${img}" alt="${item.name || ''}" onerror="this.src=animeFallbackImage('${item.characterKey || 'item'}')">
                         <h4>${item.name || ''}</h4>
                         ${equipped ? '<span class="anime-item-badge">✓ Активен</span>' : ''}
                         <button class="btn ${equipped ? 'btn-secondary' : 'btn-success'}" onclick="equipItem(${item.id})">
@@ -1422,6 +1381,7 @@
                     let actionBtn = isStreamer ? 
                         `<button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="removeStreamerByName('${p.name}')">❌ Забрать оверлей</button>` :
                         `<button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;" onclick="makePlayerStreamerQuick('${p.name}')">➕ Выдать оверлей</button>`;
+                    let deletePlayerBtn = (p.role === 'creator') ? '' : `<button class="btn btn-danger" style="padding:6px 12px;font-size:12px;margin-top:5px;width:100%;" onclick="deletePlayerById(${p.id})">🗑 Удалить игрока</button>`;
 
                     let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
                     allPlayersTable.innerHTML += `
@@ -1434,7 +1394,7 @@
                                 <div style="font-size: 11px; color: #ff5500;">⚔️ Аниме Арена: <a href="${linkAnime}" target="_blank" style="color: #ff5500;">Открыть</a></div>
                                 <div style="font-size: 11px; color: #ff4757;">HUD Кланов: <a href="${linkC}" target="_blank" style="color: #ff4757;">Открыть</a></div>
                             </td>
-                            <td>${actionBtn}</td>
+                            <td>${actionBtn}${deletePlayerBtn}</td>
                             <td>
                                 ${p.role === 'creator' || p.name?.toLowerCase() === 'sayan' ? 
                                     '<span style="color:var(--text-muted);font-size:11px;">Создателя удалить нельзя</span>' :
@@ -1524,6 +1484,17 @@
             await saveData();
         }
 
+        async function deletePlayerById(playerId) {
+            const target=(db?.players||[]).find(p=>p.id===playerId);
+            if(!target) return;
+            if(target.role==='creator' || target.name?.toLowerCase()==='sayan') { alert('Создателя удалить нельзя.'); return; }
+            if(!confirm(`Удалить игрока "${target.name}"? Это действие нельзя отменить.`)) return;
+            db.players=db.players.filter(p=>p.id!==playerId);
+            db.streamers=(db.streamers||[]).filter(s=>s.name?.toLowerCase()!==target.name?.toLowerCase());
+            if(db.streamDataMap) delete db.streamDataMap[target.name];
+            await saveData();
+        }
+
         async function makePlayerStreamerQuick(playerName) {
             let targetPlayer = (db?.players || []).find(p => p.name === playerName);
             if (targetPlayer && targetPlayer.role !== 'creator' && targetPlayer.role !== 'admin') targetPlayer.role = 'streamer';
@@ -1610,23 +1581,35 @@
                     let p2Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player2?.toLowerCase());
                     let char1Key = p1Obj?.equippedCharacter || 'gojo';
                     let char2Key = p2Obj?.equippedCharacter || 'goku';
-                    let char1Img = animeCharacterImg(char1Key) || 'https://placehold.co/400x520/111217/ffffff?text=CHAR1';
-                    let char2Img = animeCharacterImg(char2Key) || 'https://placehold.co/400x520/111217/ffffff?text=CHAR2';
+                    let char1Img = animeCharacterImg(char1Key);
+                    let char2Img = animeCharacterImg(char2Key);
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
                             obsContainer.innerHTML = `
                                 <div class="obs-vs">
                                     <div class="obs-char">
-                                        <img class="obs-avatar-bg" src="${p1Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=player1'}" alt="">
-                                        <img src="${char1Img}" alt="Player 1">
-                                        <div class="obs-name">${sd.player1 || 'sayan'}</div>
+                                        <div class="obs-player-card">
+                                            <div class="obs-avatar-wrap">
+                                                <img class="obs-avatar" src="${p1Obj?.avatar || animeFallbackImage('player1')}" alt="">
+                                                ${p1Obj?.frame ? `<img class="obs-avatar-frame" src="${p1Obj.frame}" alt="">` : ''}
+                                            </div>
+                                            <div class="obs-name">${sd.player1 || 'sayan'}</div>
+                                            <div class="obs-clan-label">${sd.clan1 || p1Obj?.clan || 'Без клана'}</div>
+                                        </div>
+                                        <img class="obs-character-img" src="${char1Img}" alt="Player 1" onerror="this.src=animeFallbackImage('char1')">
                                     </div>
                                     <div class="obs-vs-text">VS</div>
                                     <div class="obs-char right">
-                                        <img class="obs-avatar-bg" src="${p2Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=player2'}" alt="">
-                                        <img src="${char2Img}" alt="Player 2">
-                                        <div class="obs-name">${sd.player2 || 'SAYAN'}</div>
+                                        <div class="obs-player-card">
+                                            <div class="obs-avatar-wrap">
+                                                <img class="obs-avatar" src="${p2Obj?.avatar || animeFallbackImage('player2')}" alt="">
+                                                ${p2Obj?.frame ? `<img class="obs-avatar-frame" src="${p2Obj.frame}" alt="">` : ''}
+                                            </div>
+                                            <div class="obs-name">${sd.player2 || 'SAYAN'}</div>
+                                            <div class="obs-clan-label">${sd.clan2 || p2Obj?.clan || 'Без клана'}</div>
+                                        </div>
+                                        <img class="obs-character-img" src="${char2Img}" alt="Player 2" onerror="this.src=animeFallbackImage('char2')">
                                     </div>
                                 </div>
                             `;
