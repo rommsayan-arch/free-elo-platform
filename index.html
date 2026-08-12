@@ -205,23 +205,42 @@
         #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
         body.obs-overlay #obsOverlayRoot { display:block; }
 
-        .obs-vs { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(1320px,98vw); height:650px; display:grid; grid-template-columns:1fr 170px 1fr; align-items:center; gap:0; }
-        .obs-char { position:relative; height:620px; display:flex; align-items:flex-end; justify-content:center; overflow:visible; }
-        .obs-character-img { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:min(520px,38vw); height:590px; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 18px 30px rgba(0,0,0,.82)); animation:obsCharIn .45s ease-out,obsFloat 2.6s ease-in-out infinite; z-index:2; }
-        .obs-char.right .obs-character-img { animation-delay:.05s,-1.3s; transform:translateX(-50%) scaleX(-1); }
-        .obs-player-card { position:absolute; top:18px; left:50%; transform:translateX(-50%); z-index:8; width:min(330px,30vw); min-height:118px; padding:10px 18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; border-radius:18px; background:linear-gradient(180deg,rgba(7,9,14,.96),rgba(10,12,18,.72)); border:1px solid rgba(255,255,255,.22); box-shadow:0 12px 35px rgba(0,0,0,.58),inset 0 0 30px rgba(255,85,0,.10); backdrop-filter:blur(9px); }
-        .obs-char.right .obs-player-card { box-shadow:0 12px 35px rgba(0,0,0,.58),inset 0 0 30px rgba(0,191,255,.12); }
-        .obs-avatar-wrap { position:relative; width:62px; height:62px; flex:0 0 62px; }
-        .obs-avatar { width:62px; height:62px; border-radius:50%; object-fit:cover; display:block; border:2px solid rgba(255,255,255,.6); background:#15161c; box-shadow:0 0 22px rgba(255,85,0,.42); }
-        .obs-char.right .obs-avatar { box-shadow:0 0 22px rgba(0,191,255,.42); }
-        .obs-avatar-frame { position:absolute; inset:-6px; width:74px; height:74px; object-fit:contain; pointer-events:none; z-index:2; }
-        .obs-name { position:static !important; transform:none !important; width:100%; min-width:0; max-width:100%; padding:0; background:transparent; border:0; box-shadow:none; border-radius:0; color:#fff; font-size:27px; font-weight:1000; line-height:1.05; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 3px 10px #000; letter-spacing:.6px; }
-        .obs-clan-label { font-size:12px; color:#c3c8d3; font-weight:900; text-transform:uppercase; letter-spacing:1.4px; }
-        .obs-vs-text { text-align:center; font-size:88px; line-height:1; font-weight:1000; font-style:italic; color:#fff; text-shadow:0 0 26px rgba(255,85,0,.95),0 4px 8px #000; animation:obsVs .9s ease-in-out infinite; z-index:10; }
-        .obs-char::before { content:""; position:absolute; left:50%; bottom:18px; transform:translateX(-50%); width:78%; height:46%; border-radius:50%; background:radial-gradient(ellipse,rgba(255,85,0,.22),transparent 68%); filter:blur(22px); z-index:1; pointer-events:none; }
-        .obs-char.right::before { background:radial-gradient(ellipse,rgba(0,191,255,.20),transparent 68%); }
-        .obs-char::after { content:""; position:absolute; left:8%; right:8%; bottom:8px; height:2px; background:linear-gradient(90deg,transparent,rgba(255,85,0,.7),transparent); box-shadow:0 0 22px rgba(255,85,0,.7); z-index:3; }
-        .obs-char.right::after { background:linear-gradient(90deg,transparent,rgba(0,191,255,.7),transparent); box-shadow:0 0 22px rgba(0,191,255,.7); }
+        .obs-vs {
+            position:absolute; left:50%; top:18%; transform:translateX(-50%);
+            width:min(1100px,94vw); display:grid; grid-template-columns:1fr 120px 1fr;
+            align-items:start; gap:18px;
+        }
+        .obs-char { position:relative; min-height:125px; display:flex; justify-content:center; }
+        .obs-character-img { display:none !important; }
+        .obs-avatar-wrap { position:relative; width:62px; height:62px; display:flex; align-items:center; justify-content:center; margin-bottom:2px; }
+        .obs-avatar { width:58px; height:58px; border-radius:50%; object-fit:cover; display:block; background:#15171d; border:2px solid rgba(255,255,255,.78); box-shadow:0 0 18px rgba(255,85,0,.35); }
+        .obs-avatar-frame { position:absolute; inset:-5px; width:72px; height:72px; object-fit:contain; display:block; pointer-events:none; z-index:2; }
+        .obs-player-card {
+            position:relative; z-index:3; width:min(360px,34vw); min-height:88px;
+            padding:14px 24px 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px;
+            border-radius:7px; background:rgba(9,10,14,.92);
+            border:1px solid rgba(255,255,255,.16);
+            box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        .obs-char:first-child .obs-player-card { border-top:3px solid #ff5500; }
+        .obs-char.right .obs-player-card { border-top:3px solid #00bfff; }
+        .obs-char.right .obs-avatar { box-shadow:0 0 18px rgba(0,191,255,.35); }
+        .obs-name {
+            position:static !important; transform:none !important; width:100%;
+            color:#fff; font-size:29px; font-weight:1000; line-height:1.05;
+            text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            text-shadow:0 3px 12px #000; letter-spacing:.8px;
+        }
+        .obs-clan-label {
+            font-size:11px; color:#aeb4c0; font-weight:900; text-transform:uppercase;
+            letter-spacing:1.8px; line-height:1;
+        }
+        .obs-vs-text {
+            text-align:center; padding-top:25px; font-size:46px; line-height:1;
+            font-weight:1000; font-style:italic; color:#fff;
+            text-shadow:0 0 20px rgba(255,85,0,.75),0 4px 8px #000;
+        }
+        .obs-char::before, .obs-char::after { display:none !important; }
 
         @keyframes obsCharIn {
             from { opacity:0; transform:translateY(30px) scale(.85); }
@@ -260,7 +279,14 @@
         }
         .clan-score-num { font-size: 34px; font-weight: 900; text-shadow: 0 0 12px currentColor; }
         .clan-score-divider { color: rgba(255,255,255,0.3); font-size: 22px; font-weight: bold; }
-    </style>
+    
+        .shop-item[data-character="true"], .inventory-item[data-character="true"] { display:none !important; }
+        .anime-vs-card { display:none !important; }
+        .shop-tabs .tab-btn.anime, .shop-tabs .tab-btn[data-type="character"] { display:none !important; }
+        .clan-hud-avatar { display:none !important; }
+        .clan-hud-container { gap:24px !important; }
+        .clan-hud-tag { min-width:180px !important; text-align:center !important; font-weight:1000 !important; letter-spacing:1px !important; }
+</style>
 </head>
 <body>
 
@@ -295,15 +321,6 @@
             <div class="card stats-card"><span class="stat-title">Уровень</span><div><span class="level-badge" id="userLevel">1</span></div></div>
             <div class="card stats-card"><span class="stat-title">Сыграно матчей</span><span class="stat-value" id="userMatches" style="color: white;">0</span></div>
             <div class="card stats-card"><span class="stat-title">Винрейт</span><span class="stat-value" id="userWinrate" style="color: white;">0 %</span></div>
-
-            <!-- ANIME VS ARENA ON MATCHES PAGE -->
-            <div class="anime-vs-card">
-                <div class="anime-vs-title">
-                    <strong>FREE ELO: Аниме сражение</strong>
-                    <span>Выбери персонажа в инвентаре</span>
-                </div>
-                <div class="anime-arena" id="animeArena"></div>
-            </div>
 
             <div class="card top-players">
                 <h3>ТОП ИГРОКОВ ПЛАТФОРМЫ</h3>
@@ -1055,7 +1072,7 @@
                             <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="saveStreamerObsData('${s.name}')">💾 Сохранить оверлей</button>
 
                             <div class="form-group" style="margin-bottom: 8px;">
-                                <label style="color: #ff5500; font-size: 11px; font-weight: bold;">⚔️ Ссылка на Аниме-Арену (OBS):</label>
+                                <label style="color: #ff5500; font-size: 11px; font-weight: bold;">🎮 Ссылка на HUD Игроков (OBS):</label>
                                 <div style="display: flex; gap: 5px;">
                                     <input type="text" id="linkAnime_${s.name}" value="${linkAnime}" readonly style="font-size: 11px; background: #111; color: #ff5500;">
                                     <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkAnime_${s.name}')"><i class="fas fa-copy"></i></button>
@@ -1222,7 +1239,13 @@
             alert(`Вы вступили в клан ${clanName}!`);
         }
 
-        function renderShop() { filterShop('all', document.querySelector('.shop-tabs .tab-btn')); }
+        function renderShop() {
+            document.querySelectorAll('.shop-tabs .tab-btn').forEach(btn => {
+                const label = (btn.textContent || '').toLowerCase();
+                if (label.includes('аниме') || label.includes('персонаж')) btn.remove();
+            });
+            filterShop('all', document.querySelector('.shop-tabs .tab-btn'));
+        }
 
         function filterShop(type, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1233,7 +1256,7 @@
 
             const currentUser = getCurrentUser();
             const owned = new Set((currentUser?.inventory || []).map(i => i.id));
-            const items = db?.shopItems || [];
+            const items = (db?.shopItems || []).filter(i => i.type !== 'character');
             const filtered = type === 'all' ? items : items.filter(i => i.type === type);
 
             grid.innerHTML = filtered.map(item => {
@@ -1269,11 +1292,7 @@
 
             currentUser.elo -= item.price;
             currentUser.inventory.push({...item});
-            if (item.type === 'character' && !currentUser.equippedCharacter) {
-                currentUser.equippedCharacter = item.characterKey;
-            }
-
-            await saveData();
+                        await saveData();
             renderShop();
             renderInventory();
             renderAnimeArena();
@@ -1291,8 +1310,8 @@
                 return;
             }
 
-            currentUser.inventory.forEach(item => {
-                const isCharacter = item.type === 'character';
+            currentUser.inventory.filter(item => item.type !== 'character').forEach(item => {
+                const isCharacter = false;
                 const img = isCharacter ? (animeCharacterImg(item.characterKey)) : (item.img || '');
                 const equipped = isCharacter && currentUser.equippedCharacter === item.characterKey;
                 grid.innerHTML += `
@@ -1314,8 +1333,7 @@
             const item = currentUser.inventory.find(i => i.id === id);
             if (!item) return;
 
-            if (item.type === 'character') currentUser.equippedCharacter = item.characterKey;
-            else if (item.type === 'avatar') currentUser.avatar = item.img;
+            if (item.type === 'avatar') currentUser.avatar = item.img;
             else if (item.type === 'frame') currentUser.frame = item.img;
 
             await saveData();
@@ -1324,32 +1342,9 @@
         }
 
         function renderAnimeArena() {
+            // Anime characters are intentionally disabled.
             const arena = document.getElementById('animeArena');
-            if (!arena) return;
-            const currentUser = getCurrentUser();
-            if (!currentUser) return;
-
-            const ownKey = currentUser.equippedCharacter || 'gojo';
-            const others = (db.players || []).filter(p => p.id !== currentUser.id);
-            const enemy = others.length ? others[Math.floor(Math.random() * others.length)] : { name:'PLAYER 2', elo:1000, equippedCharacter:'goku' };
-            const enemyKey = enemy.equippedCharacter || 'goku';
-
-            arena.innerHTML = `
-                <div class="anime-side">
-                    <div class="anime-player-name">${currentUser.name || 'Вы'}</div>
-                    <div class="anime-elo">${currentUser.elo || 0} ELO</div>
-                    <img class="anime-character" src="${animeCharacterImg(ownKey)}" alt="Персонаж">
-                </div>
-                <div class="anime-vs-center">
-                    <div class="anime-vs">VS</div>
-                    <div class="anime-round">RANKED MATCH</div>
-                </div>
-                <div class="anime-side enemy">
-                    <div class="anime-player-name">${enemy.name || 'PLAYER 2'}</div>
-                    <div class="anime-elo">${enemy.elo || 1000} ELO</div>
-                    <img class="anime-character" src="${animeCharacterImg(enemyKey)}" alt="Персонаж">
-                </div>
-            `;
+            if (arena) arena.remove();
         }
 
         function renderAdminPanel() {
@@ -1361,7 +1356,7 @@
                         <tr>
                             <td><img src="${item.img || ''}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;"></td>
                             <td>${item.name || ''}</td>
-                            <td>${item.type || ''}</td>
+                            <td>${item.type === 'character' ? 'скрыт' : (item.type || '')}</td>
                             <td>${item.price || 0} ELO</td>
                             <td><button class="btn btn-danger" onclick="deleteShopItem(${item.id})">Удалить</button></td>
                         </tr>
@@ -1591,25 +1586,23 @@
                                     <div class="obs-char">
                                         <div class="obs-player-card">
                                             <div class="obs-avatar-wrap">
-                                                <img class="obs-avatar" src="${p1Obj?.avatar || animeFallbackImage('player1')}" alt="">
-                                                ${p1Obj?.frame ? `<img class="obs-avatar-frame" src="${p1Obj.frame}" alt="">` : ''}
+                                                <img class="obs-avatar" src="${p1Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(sd.player1 || 'player1')}" alt="">
+                                                ${p1Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p1Obj.equippedFrame}" alt="">` : ''}
                                             </div>
-                                            <div class="obs-name">${sd.player1 || 'sayan'}</div>
-                                            <div class="obs-clan-label">${sd.clan1 || p1Obj?.clan || 'Без клана'}</div>
+                                            <div class="obs-clan-label">${sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА'}</div>
+                                            <div class="obs-name">${sd.player1 || 'PLAYER 1'}</div>
                                         </div>
-                                        <img class="obs-character-img" src="${char1Img}" alt="Player 1" onerror="this.src=animeFallbackImage('char1')">
                                     </div>
                                     <div class="obs-vs-text">VS</div>
                                     <div class="obs-char right">
                                         <div class="obs-player-card">
                                             <div class="obs-avatar-wrap">
-                                                <img class="obs-avatar" src="${p2Obj?.avatar || animeFallbackImage('player2')}" alt="">
-                                                ${p2Obj?.frame ? `<img class="obs-avatar-frame" src="${p2Obj.frame}" alt="">` : ''}
+                                                <img class="obs-avatar" src="${p2Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(sd.player2 || 'player2')}" alt="">
+                                                ${p2Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p2Obj.equippedFrame}" alt="">` : ''}
                                             </div>
-                                            <div class="obs-name">${sd.player2 || 'SAYAN'}</div>
-                                            <div class="obs-clan-label">${sd.clan2 || p2Obj?.clan || 'Без клана'}</div>
+                                            <div class="obs-clan-label">${sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА'}</div>
+                                            <div class="obs-name">${sd.player2 || 'PLAYER 2'}</div>
                                         </div>
-                                        <img class="obs-character-img" src="${char2Img}" alt="Player 2" onerror="this.src=animeFallbackImage('char2')">
                                     </div>
                                 </div>
                             `;
@@ -1618,7 +1611,6 @@
                             obsContainer.innerHTML = `
                                 <div class="clan-hud-container">
                                     <div class="clan-hud-side">
-                                        <img class="clan-hud-avatar" src="${p1Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=team1'}" alt="">
                                         <span class="clan-hud-tag">${sd.clan1 || 'NUN'}</span>
                                     </div>
                                     <div class="clan-hud-score-box">
@@ -1628,14 +1620,12 @@
                                     </div>
                                     <div class="clan-hud-side enemy">
                                         <span class="clan-hud-tag" style="border-color:#00bfff;background:rgba(0,191,255,.2);">${sd.clan2 || 'WAKANDA'}</span>
-                                        <img class="clan-hud-avatar" src="${p2Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=team2'}" alt="">
                                     </div>
                                 </div>
                             `;
                         }
                     }
                 }
-                await loadAnimeImages();
                 await updateObsContent();
                 setInterval(updateObsContent, 2000);
                 return;
