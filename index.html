@@ -355,8 +355,7 @@
     <div class="sidebar" id="mainSidebar">
         <div class="logo" onclick="switchPage('matches')">FE</div>
         <div class="nav-item active" id="nav-matches" title="Матчи" onclick="switchPage('matches')"><i class="fas fa-gamepad"></i></div>
-        <div class="nav-item" id="nav-overview" title="Обзор" onclick="switchPage('feed')"><i class="fas fa-compass"></i></div>
-        <div class="nav-item" id="nav-news" title="Новости" onclick="switchPage('news')"><i class="fas fa-newspaper"></i></div>
+        <div class="nav-item" id="nav-feed" title="Лента" onclick="switchPage('feed')"><i class="fas fa-newspaper"></i></div>
         <div class="nav-item" id="nav-leaderboard" title="Топ 100 игроков" onclick="switchPage('leaderboard')"><i class="fas fa-crown"></i></div>
         <div class="nav-item" id="nav-season" title="Топ Сесона" onclick="switchPage('season')"><i class="fas fa-trophy"></i></div>
         <div class="nav-item" id="nav-streamers" title="Стримеры" onclick="switchPage('streamers')"><i class="fas fa-video"></i></div>
@@ -425,15 +424,22 @@
         </div>
 
         <div id="page-feed" class="page-content">
-            <div class="feed-layout">
-                <div class="feed-main" id="feedMain"></div>
+            <div class="card" style="grid-column:span 12;padding:12px 14px;">
+                <div class="section-tabs" style="margin-bottom:0;">
+                    <button id="feedTabOverview" class="section-tab active" onclick="setFeedTab('overview')"><i class="fas fa-compass"></i> Обзор</button>
+                    <button id="feedTabNews" class="section-tab" onclick="setFeedTab('news')"><i class="fas fa-newspaper"></i> Новости</button>
+                </div>
             </div>
-        </div>
-
-        <div id="page-news" class="page-content">
-            <div class="news-grid">
-                <div class="news-list" id="newsList"></div>
-                <div class="creator-panel" id="creatorNewsPanel"></div>
+            <div id="feedOverviewSection" style="grid-column:span 12;">
+                <div class="feed-layout">
+                    <div class="feed-main" id="feedMain"></div>
+                </div>
+            </div>
+            <div id="feedNewsSection" style="display:none;grid-column:span 12;">
+                <div class="news-grid">
+                    <div class="news-list" id="newsList"></div>
+                    <div class="creator-panel" id="creatorNewsPanel"></div>
+                </div>
             </div>
         </div>
 
@@ -963,6 +969,19 @@
             initApp();
         }
 
+        function setFeedTab(tab) {
+            const overview = document.getElementById('feedOverviewSection');
+            const news = document.getElementById('feedNewsSection');
+            const overviewBtn = document.getElementById('feedTabOverview');
+            const newsBtn = document.getElementById('feedTabNews');
+            const isNews = tab === 'news';
+            if (overview) overview.style.display = isNews ? 'none' : 'block';
+            if (news) news.style.display = isNews ? 'block' : 'none';
+            if (overviewBtn) overviewBtn.classList.toggle('active', !isNews);
+            if (newsBtn) newsBtn.classList.toggle('active', isNews);
+            if (isNews) renderNews(); else renderFeed();
+        }
+
         function switchPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -975,8 +994,7 @@
 
             const titles = {
                 'matches': 'МАТЧИ И СТАТИСТИКА',
-                'feed': 'ОБЗОР',
-                'news': 'НОВОСТИ',
+                'feed': 'ЛЕНТА',
                 'leaderboard': 'ТОП 100 ИГРОКОВ ПЛАТФОРМЫ',
                 'season': 'ТОП СЕЗОНА',
                 'streamers': 'ПРЯМЫЕ ТРАНСЛЯЦИИ И OBS ОВЕРЛЕИ',
@@ -1431,7 +1449,7 @@
                 if (!db.news) db.news = [];
                 db.news.push({ id: Date.now(), title, text, image: image || '', author: getCurrentUser()?.name || 'Создатель', date: new Date().toISOString() });
                 saveData();
-                switchPage('news');
+                switchPage('feed'); setFeedTab('news');
             };
             if (file) {
                 const reader = new FileReader();
@@ -1445,7 +1463,7 @@
             if (!confirm('Удалить эту новость?')) return;
             db.news = (db.news || []).filter(n => n.id != id);
             await saveData();
-            switchPage('news');
+            switchPage('feed'); setFeedTab('news');
         }
 
         function renderHistoryCells() {
