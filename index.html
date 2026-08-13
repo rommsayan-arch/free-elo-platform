@@ -611,6 +611,7 @@
                     <input type="password" id="loginPassword" placeholder="Ваш пароль">
                 </div>
                 <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="loginUser()">Войти в аккаунт</button>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">✓ На этом устройстве аккаунт будет запомнен автоматически</div>
                 <button class="btn btn-secondary" style="width: 100%; margin-top: 8px;" onclick="testSupabaseConnection()">🔧 Проверить базу</button>
             </div>
 
@@ -771,8 +772,34 @@
             return changed;
         }
 
-        let currentUserId = localStorage.getItem('fe_current_user_id') || null;
+        // Сессия запоминается на этом устройстве. Пароль НЕ сохраняем — только ID и безопасные данные профиля.
+        let cachedSession = null;
+        try { cachedSession = JSON.parse(localStorage.getItem('fe_session_v2') || 'null'); } catch (_) { cachedSession = null; }
+        let currentUserId = localStorage.getItem('fe_current_user_id') || cachedSession?.id || null;
         let activeController = null;
+
+        function rememberDeviceSession(user) {
+            if (!user?.id) return;
+            currentUserId = user.id;
+            localStorage.setItem('fe_current_user_id', String(user.id));
+            // Не храним пароль и другие секретные данные.
+            const session = {
+                id: user.id, name: user.name || '', email: user.email || '',
+                avatar: user.avatar || '', frame: user.frame || '',
+                clan: user.clan || 'Нет клана', role: user.role || 'player',
+                savedAt: Date.now()
+            };
+            cachedSession = session;
+            localStorage.setItem('fe_session_v2', JSON.stringify(session));
+        }
+
+        // Выход из аккаунта отключён: после входа аккаунт закреплён за этим браузером.
+        // Сессия не удаляется через интерфейс сайта.
+        function clearDeviceSession() {
+            // intentionally disabled
+            const user = getCurrentUser();
+            if (user) rememberDeviceSession(user);
+        }
 
         async function loadDataFromCloud() {
             if (activeController) activeController.abort();
@@ -838,8 +865,12 @@
         }
 
         function getCurrentUser() {
-            if (!currentUserId || !db?.players) return null;
-            let user = db.players.find(p => p.id == currentUserId) || null;
+            if (!currentUserId) return null;
+            let user = db?.players?.find(p => p.id == currentUserId) || null;
+            // Если интернет/облако временно недоступно, используем сохранённую на устройстве сессию.
+            if (!user && cachedSession && String(cachedSession.id) === String(currentUserId)) {
+                user = { ...cachedSession };
+            }
             if (user && (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com')) {
                 user.role = 'creator';
             }
@@ -864,7 +895,10 @@
             let curr = getCurrentUser();
             if (curr) {
                 let index = db.players.findIndex(p => p.id === curr.id);
-                if (index !== -1) db.players[index] = sanitizeAndValidateUser(curr);
+                if (index !== -1) {
+                    db.players[index] = sanitizeAndValidateUser(curr);
+                    rememberDeviceSession(db.players[index]);
+                }
             }
             await saveDataToCloud();
             initApp();
@@ -913,8 +947,7 @@
                 if (foundUser.name?.toLowerCase() === 'sayan' || foundUser.email?.toLowerCase() === 'rommsayan@gmail.com') {
                     foundUser.role = 'creator';
                 }
-                currentUserId = foundUser.id;
-                localStorage.setItem('fe_current_user_id', currentUserId);
+                rememberDeviceSession(foundUser);
                 document.getElementById('authModal').style.display = 'none';
                 initApp();
             } else {
@@ -963,8 +996,7 @@
                 return;
             }
 
-            currentUserId = newUser.id;
-            localStorage.setItem('fe_current_user_id', currentUserId);
+            rememberDeviceSession(newUser);
             document.getElementById('authModal').style.display = 'none';
             initApp();
         }
@@ -1792,9 +1824,9 @@
                     }
                 });
             }
+            // Текущего пользователя удалить нельзя, поэтому его сессия остаётся активной.
             if (currentUserId == playerId) {
-                currentUserId = null;
-                localStorage.removeItem('fe_current_user_id');
+                rememberDeviceSession(player);
             }
             await saveDataToCloud();
             initApp();
@@ -1992,9 +2024,15 @@
             }
 
             await loadDataFromCloud();
+            // Автоматически восстанавливаем последний аккаунт на этом устройстве.
+            if (!currentUserId && cachedSession?.id) currentUserId = cachedSession.id;
             if (!currentUserId || !getCurrentUser()) {
                 document.getElementById('authModal').style.display = 'flex';
             } else {
+                // Обновляем локальную сессию свежими данными из облака.
+                const restoredUser = getCurrentUser();
+                if (restoredUser) rememberDeviceSession(restoredUser);
+                document.getElementById('authModal').style.display = 'none';
                 initApp();
             }
 
