@@ -1573,6 +1573,17 @@
   border-color:#00bfff !important;
 }
 
+/* LEFT HUD / CLAN COLOR MATCH: orange */
+.obs-char.left .obs-name,
+.obs-char.left .obs-clan-label {
+  text-shadow: 0 0 8px rgba(255,101,0,.45);
+}
+.clan-hud-side:first-child .clan-hud-tag {
+  border-color:#ff6500 !important;
+  background:rgba(255,101,0,.20) !important;
+  box-shadow:0 0 10px rgba(255,101,0,.28) !important;
+}
+
 </style>
 </head>
 <body>
@@ -3811,7 +3822,7 @@
 
                             obsContainer.innerHTML = `
                                 <div class="obs-vs">
-                                    <div class="obs-char">
+                                    <div class="obs-char left">
                                         <div class="obs-player-card ${hasAvatar1 ? '' : 'obs-name-only'}">
                                             ${avatar1}
                                             <div class="obs-name">${safeName1}</div>
