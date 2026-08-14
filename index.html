@@ -1826,7 +1826,7 @@
         <div class="modal-overlay" id="authModal" style="display:none;">
         <div class="auth-card">
             <div class="brand-title" style="font-size:28px;letter-spacing:2px;">FREE ELO</div>
-            <p style="color:var(--text-muted);margin:8px 0 18px;font-size:12px;">Безопасный вход для стримера или создателя</p>
+            <p style="color:var(--text-muted);margin:8px 0 18px;font-size:12px;">Вход для стримера или создателя</p>
             <div class="form-group"><label>Gmail</label><input type="email" id="loginEmail" placeholder="email"></div>
             <div class="form-group"><label>Пароль</label><input type="password" id="loginPassword" placeholder="Пароль"></div>
             <button class="btn btn-primary" style="width:100%;" onclick="loginUser()">🔐 Войти</button>
@@ -2170,15 +2170,45 @@
         }
 
         async function loginUser() {
-            const gmail=document.getElementById('loginEmail').value.trim().toLowerCase();
-            const password=document.getElementById('loginPassword').value;
-            await loadDataFromCloud();
-            const foundUser=(db?.players||[]).find(p=>p.email?.toLowerCase()===gmail && p.password===password);
-            if(foundUser && (foundUser.name?.toLowerCase()==='sayan' || foundUser.email?.toLowerCase()==='rommsayan@gmail.com')){
-                foundUser.role='creator'; currentUserId=foundUser.id; localStorage.setItem('fe_current_user_id',String(currentUserId));
-                closeCreatorLogin(); initApp(); return;
+            const gmail = document.getElementById('loginEmail')?.value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword')?.value || '';
+
+            if (!gmail || !password) {
+                alert('Введите Gmail и пароль.');
+                return;
             }
-            alert('Доступ только для создателя.');
+
+            await loadDataFromCloud();
+
+            const foundUser = (db?.players || []).find(p =>
+                String(p.email || '').toLowerCase() === gmail &&
+                String(p.password || '') === password
+            );
+
+            if (!foundUser) {
+                alert('Неверный Gmail или пароль.');
+                return;
+            }
+
+            // Только эти две роли могут входить через верхний замок.
+            if (!['creator', 'streamer'].includes(foundUser.role)) {
+                alert('Вход через замок доступен только стримерам и создателю.');
+                return;
+            }
+
+            // Главный аккаунт создателя всегда остаётся создателем.
+            if (
+                String(foundUser.name || '').toLowerCase() === 'sayan' ||
+                String(foundUser.email || '').toLowerCase() === 'rommsayan@gmail.com'
+            ) {
+                foundUser.role = 'creator';
+            }
+
+            currentUserId = foundUser.id;
+            localStorage.setItem('fe_current_user_id', String(currentUserId));
+
+            closeCreatorLogin();
+            initApp();
         }
 
         async function registerUser(){ alert('Обычным игрокам регистрация не нужна. Просто укажи ник в стримерской или магазине.'); }
