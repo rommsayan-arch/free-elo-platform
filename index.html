@@ -692,6 +692,205 @@
             .main-container{margin-left:64px}
         }
 
+
+        /* === FINAL PREMIUM RESPONSIVE LAYER === */
+        .site-header{
+            height:72px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:18px;
+        }
+        .header-left{display:flex;align-items:center;gap:18px;min-width:0}
+        .mini-brand{
+            font-family:'Orbitron',sans-serif;
+            font-size:16px;font-weight:900;letter-spacing:1.6px;
+            white-space:nowrap;
+            color:#fff;
+            text-shadow:0 0 18px rgba(139,92,246,.28);
+        }
+        .mini-brand span{
+            background:linear-gradient(90deg,#a78bfa,#22d3ee);
+            -webkit-background-clip:text;background-clip:text;color:transparent;
+        }
+        .header-title{
+            white-space:nowrap;
+            overflow:hidden;text-overflow:ellipsis;
+        }
+        .header-user{display:flex;align-items:center;gap:10px;min-width:0}
+        .header-user-text{display:flex;align-items:center;gap:9px;min-width:0}
+        .header-user-text #userName{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .role-badge{flex:0 0 auto;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .homepage-hero{
+            grid-column:span 12;
+            min-height:275px;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            position:relative;
+            overflow:hidden;
+            padding:42px;
+        }
+        .hero-chips{
+            display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;position:relative;z-index:2;
+        }
+        .hero-chips span{
+            display:inline-flex;align-items:center;
+            padding:7px 11px;border-radius:999px;
+            font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;
+            color:#cfd8ea;
+            border:1px solid rgba(255,255,255,.08);
+            background:rgba(255,255,255,.035);
+        }
+        .home-stat{grid-column:span 3}
+        .platform-count{grid-column:span 6}
+        .big-level{font-size:18px!important;padding:9px 14px!important;width:max-content}
+        .stat-caption{
+            display:block;color:#7f8ca5;font-size:11px;margin-top:auto;
+            letter-spacing:.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        }
+        .top-players{grid-column:span 12}
+        .top-players-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
+        .section-kicker{
+            display:block;color:#22d3ee;font-family:'Orbitron',sans-serif;
+            font-size:9px;font-weight:800;letter-spacing:2px;margin-bottom:5px
+        }
+        .top-players-live{
+            flex:0 0 auto;padding:6px 10px;border-radius:999px;
+            font-size:9px;font-family:'Orbitron',sans-serif;
+            background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.18);color:#7eefff
+        }
+        .top-players-live i{font-size:6px;margin-right:5px;color:#84ff7a;vertical-align:2px}
+        .top-players .table-scroll-container{max-height:520px;overflow:auto}
+        .top-players table{min-width:690px}
+        .top-players td,.top-players th{white-space:nowrap}
+        .page-content,.card,.table-scroll-container{max-width:100%;overflow-x:hidden}
+        img{max-width:100%}
+        input,select,button,textarea{max-width:100%}
+        .page-content h1,.page-content h2,.page-content h3,.page-content p,.page-content td,.page-content th{
+            overflow-wrap:anywhere;
+        }
+
+        @media(max-width:1100px){
+            .home-stat{grid-column:span 6}
+            .platform-count{grid-column:span 6}
+            .homepage-hero{min-height:245px}
+            .brand-title{font-size:48px!important}
+            .header-title{font-size:14px}
+        }
+
+        @media(max-width:768px){
+            body{min-width:0;overflow-x:hidden}
+            .sidebar{
+                width:100%;
+                height:64px;
+                left:0;right:0;bottom:0;top:auto;
+                flex-direction:row;
+                justify-content:space-around;
+                align-items:center;
+                gap:0;
+                padding:5px 7px;
+                border-right:0;
+                border-top:1px solid rgba(139,92,246,.18);
+                box-shadow:0 -15px 40px rgba(0,0,0,.45);
+                z-index:500;
+            }
+            .sidebar .logo{display:none}
+            .sidebar .nav-item{
+                width:42px;height:42px;border-radius:13px;font-size:16px;padding:0
+            }
+            .main-container{margin-left:0;margin-bottom:78px}
+            .site-header{
+                height:66px;padding:0 12px;
+                position:sticky;top:0;z-index:400;
+            }
+            .header-left{gap:9px;min-width:0}
+            .mini-brand{font-size:13px;letter-spacing:1.1px}
+            .header-title{
+                font-size:11px;max-width:38vw;letter-spacing:.9px
+            }
+            .user-profile{gap:7px}
+            .lock-btn{width:38px;height:38px;border-radius:12px}
+            .header-user-text{gap:5px}
+            .header-user-text #userName{max-width:74px;font-size:13px}
+            .header-user-text .role-badge{font-size:8px;padding:3px 5px}
+            .avatar-wrapper{width:38px;height:38px}
+            .avatar{width:32px;height:32px}
+            .avatar-frame{width:38px;height:38px}
+            .page-content{
+                display:none;
+                padding:12px;
+                width:100%;
+                gap:12px!important;
+            }
+            .page-content.active{
+                display:grid;
+                grid-template-columns:repeat(2,minmax(0,1fr));
+            }
+            .homepage-hero{
+                grid-column:span 2!important;
+                min-height:230px;
+                padding:28px 22px;
+                border-radius:16px;
+            }
+            .brand-title{
+                font-size:36px!important;
+                letter-spacing:3px;
+                max-width:100%;
+                line-height:1.06;
+            }
+            .brand-sub{
+                font-size:10px!important;
+                letter-spacing:2px!important;
+                line-height:1.45;
+                max-width:70%;
+            }
+            .hero-orbit{width:150px;height:150px;right:-18px;top:18px;opacity:.75}
+            .hero-chips{gap:7px;margin-top:15px}
+            .hero-chips span{font-size:7px;padding:6px 8px}
+            .home-stat{grid-column:span 1!important;min-height:112px;padding:16px!important}
+            .platform-count{grid-column:span 1!important;min-height:118px;padding:17px!important}
+            .stat-title{font-size:9px;line-height:1.2}
+            .stat-value{font-size:25px}
+            .big-level{font-size:15px!important}
+            .stat-caption{font-size:10px}
+            .top-players{
+                grid-column:span 2!important;
+                padding:16px!important;
+                border-radius:16px
+            }
+            .top-players-head{gap:10px}
+            .top-players h3{font-size:13px;line-height:1.3}
+            .section-kicker{font-size:7px}
+            .top-players-live{font-size:7px;padding:5px 7px}
+            .top-players table{min-width:620px}
+            .top-players td,.top-players th{padding:9px 8px;font-size:11px}
+            .card{border-radius:15px}
+            .table-scroll-container{max-width:100%;overflow-x:auto}
+            .feed-layout,.news-grid,.clan-grid,.streamers-grid,.shop-grid,.inventory-grid{
+                display:grid!important;grid-template-columns:1fr!important;
+            }
+            .section-tabs{overflow:auto;white-space:nowrap}
+            .section-tab{flex:0 0 auto}
+            .history-modal-card{width:96vw;max-height:88vh;padding:14px}
+            .history-summary{grid-template-columns:repeat(2,1fr)!important}
+            .auth-card{width:calc(100vw - 28px);max-width:440px;padding:24px 20px}
+        }
+
+        @media(max-width:420px){
+            .header-title{display:none}
+            .mini-brand{font-size:12px}
+            .header-user-text #userName{max-width:62px}
+            .homepage-hero{min-height:215px;padding:24px 18px}
+            .brand-title{font-size:31px!important}
+            .brand-sub{max-width:90%;letter-spacing:1.6px!important}
+            .hero-chips span{font-size:6px}
+            .home-stat,.platform-count{min-height:105px}
+            .stat-value{font-size:22px}
+            .top-players h3{font-size:12px}
+            .top-players table{min-width:590px}
+        }
+
 </style>
 </head>
 <body>
@@ -711,62 +910,87 @@
     </div>
 
     <div class="main-container" id="mainContainer">
-        <header>
-            <div class="header-title" id="pageTitle">МАТЧИ И СТАТИСТИКА</div>
+        <header class="site-header">
+            <div class="header-left">
+                <div class="mini-brand">FREE <span>ELO</span></div>
+                <div class="header-title" id="pageTitle">МАТЧИ И СТАТИСТИКА</div>
+            </div>
             <div class="user-profile">
-                <div class="avatar-wrapper">
-                    <img id="userAvatar" class="avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=sayan" alt="Avatar">
-                    <img id="userFrame" class="avatar-frame" src="" alt="Frame">
+                <button id="secureLoginBtn" class="lock-btn" title="Вход для стримера / создателя" onclick="openSecureLogin()">
+                    <i class="fas fa-lock"></i>
+                </button>
+                <div class="header-user">
+                    <div class="avatar-wrapper">
+                        <img id="userAvatar" class="avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=sayan" alt="Avatar">
+                        <img id="userFrame" class="avatar-frame" src="" alt="Frame">
+                    </div>
+                    <div class="header-user-text">
+                        <span id="userName">Гость</span>
+                        <span id="roleBadge" class="role-badge">ГОСТЬ</span>
+                    </div>
                 </div>
-                <span id="userName" class="clickable-player" onclick="showPlayerHistory(getCurrentUser()?.id)">Игрок</span>
-                <button id="secureLoginBtn" class="lock-btn" title="Вход для стримера / создателя" onclick="openSecureLogin()"><i class="fas fa-lock"></i></button>
-                <span id="roleBadge" class="role-badge">Гость</span>
             </div>
         </header>
 
         <div id="page-matches" class="page-content active">
-            <div class="card magnetic" style="grid-column:span 12;padding:28px 30px;background:
-                radial-gradient(circle at 90% 20%,rgba(34,211,238,.16),transparent 28%),
-                radial-gradient(circle at 10% 80%,rgba(139,92,246,.18),transparent 30%),
-                linear-gradient(135deg,#11111b,#171625);border-color:rgba(139,92,246,.18);">
-                <div class="hero-orbit"></div><div class="brand-title">FREE ELO</div>
+            <div class="card magnetic homepage-hero">
+                <div class="hero-orbit"></div>
+                <div class="brand-title">FREE ELO</div>
                 <div class="brand-sub">ESPORTS RANKING • MATCHES • CLANS • STREAMERS</div>
-            </div>
-
-            <div class="card stats-card"><span class="stat-title">Текущий ELO</span><span id="userElo" class="stat-value">1000</span></div>
-            <div class="card stats-card"><span class="stat-title">Уровень</span><div><span class="level-badge" id="userLevel">1</span></div></div>
-            <div class="card stats-card"><span class="stat-title">Сыграно матчей</span><span class="stat-value" id="userMatches" style="color: white;">0</span></div>
-            <div class="card stats-card"><span class="stat-title">Винрейт</span><span class="stat-value" id="userWinrate" style="color: white;">0 %</span></div>
-
-            
-            <div style="grid-column:span 12;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;">
-                <div class="card stats-card magnetic">
-                    <span class="stat-title">Всего игр</span>
-                    <span class="stat-value" id="platformGamesCount">0</span>
-                    <div style="color:#9da3b8;font-size:12px;">Завершённые игры платформы</div>
-                </div>
-                <div class="card stats-card magnetic">
-                    <span class="stat-title">Всего кланов</span>
-                    <span class="stat-value" id="platformClansCount">0</span>
-                    <div style="color:#9da3b8;font-size:12px;">Кланы, участвующие на платформе</div>
+                <div class="hero-chips">
+                    <span>LIVE MATCHES</span>
+                    <span>GLOBAL RANKING</span>
+                    <span>CLAN WARS</span>
                 </div>
             </div>
-<div class="card top-players">
-                <h3>ТОП ИГРОКОВ ПЛАТФОРМЫ</h3>
-                <table>
-                    <thead><tr><th>#</th><th>Игрок</th><th>Уровень</th><th>ELO</th><th>Матчи</th><th>Роль</th></tr></thead>
-                    <tbody id="leaderboardBody"></tbody>
-                </table>
+
+            <div class="card stats-card home-stat">
+                <span class="stat-title">Текущий ELO</span>
+                <span id="userElo" class="stat-value">1000</span>
+                <span class="stat-caption">Ваш рейтинг</span>
             </div>
-<div class="card history-cell">
-                    <div class="history-cell-head">
-                        <div><span class="history-kicker">CLAN</span><h2>История игр клана</h2></div>
-                        <button class="btn btn-secondary" onclick="showClanHistory(getCurrentUser()?.clan)">Открыть</button>
+            <div class="card stats-card home-stat">
+                <span class="stat-title">Уровень</span>
+                <span id="userLevel" class="level-badge big-level">1</span>
+                <span class="stat-caption">Текущий уровень</span>
+            </div>
+            <div class="card stats-card home-stat">
+                <span class="stat-title">Сыграно матчей</span>
+                <span id="userMatches" class="stat-value">0</span>
+                <span class="stat-caption">Личная статистика</span>
+            </div>
+            <div class="card stats-card home-stat">
+                <span class="stat-title">Винрейт</span>
+                <span id="userWinrate" class="stat-value">0 %</span>
+                <span class="stat-caption">Победы / матчи</span>
+            </div>
+
+            <div class="card stats-card platform-count magnetic">
+                <span class="stat-title">Всего игр на сайте</span>
+                <span class="stat-value" id="platformGamesCount">0</span>
+                <span class="stat-caption">Завершённые матчи платформы</span>
+            </div>
+            <div class="card stats-card platform-count magnetic">
+                <span class="stat-title">Кланов сейчас</span>
+                <span class="stat-value" id="platformClansCount">0</span>
+                <span class="stat-caption">Кланы, участвующие на платформе</span>
+            </div>
+
+            <div class="card top-players">
+                <div class="top-players-head">
+                    <div>
+                        <span class="section-kicker">RANKING</span>
+                        <h3>ТОП ИГРОКОВ ПЛАТФОРМЫ</h3>
                     </div>
-                    <div id="myClanRecentMatches" class="history-mini-list"></div>
+                    <span class="top-players-live"><i class="fas fa-circle"></i> LIVE</span>
+                </div>
+                <div class="table-scroll-container">
+                    <table>
+                        <thead><tr><th>#</th><th>Игрок</th><th>Уровень</th><th>ELO</th><th>Матчи</th><th>Роль</th></tr></thead>
+                        <tbody id="leaderboardBody"></tbody>
+                    </table>
                 </div>
             </div>
-
         </div>
 
         <div id="page-feed" class="page-content">
