@@ -1692,7 +1692,6 @@
                             <tr>
                                 <th>#</th>
                                 <th>Игрок</th>
-                                <th>Клан</th>
                                 <th>Ур.</th>
                                 <th>ELO</th>
                                 <th>Матчи / Победы</th>
@@ -2099,6 +2098,18 @@
                 if (e.name !== 'AbortError') console.error("Ошибка загрузки:", e);
             }
             ensureCreatorRights();
+
+            // Миграция: все обычные игроки принудительно остаются без клана.
+            // Кланы, выбранные стримером для конкретного матча, не записываются в профили.
+            let playersClanChanged = false;
+            (db?.players || []).forEach(p => {
+                if ((p.role || 'player') === 'player' && p.clan !== 'Нет клана') {
+                    p.clan = 'Нет клана';
+                    playersClanChanged = true;
+                }
+            });
+            if (playersClanChanged) await saveDataToCloud();
+
             ensureAnimeShopItems();
         }
 
@@ -2176,6 +2187,9 @@
             if (user.email?.toLowerCase() === 'rommsayan@gmail.com') {
                 user.role = 'creator';
             }
+            // Обычные игроки никогда не состоят в клане.
+            // Клан для матча хранится только в streamDataMap стримера.
+            if ((user.role || 'player') === 'player') user.clan = 'Нет клана';
             if (typeof user.elo !== 'number' || isNaN(user.elo) || user.elo < 0) user.elo = 0;
             if (typeof user.matches !== 'number' || user.matches < 0) user.matches = 0;
             if (typeof user.wins !== 'number' || user.wins < 0) user.wins = 0;
@@ -2275,6 +2289,13 @@
 
         async function registerUser(){ alert('Обычным игрокам регистрация не нужна. Просто укажи ник в стримерской или магазине.'); }
 
+        function normalizePlayerClans() {
+            if (!db || !Array.isArray(db.players)) return false;
+            let changed = false;
+            db.players.forEach(p => { if (p && p.role === 'player' && p.clan !== 'Нет клана') { p.clan = 'Нет клана'; changed = true; } });
+            return changed;
+        }
+
         function switchPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2308,12 +2329,15 @@
                 if(guestName) guestName.textContent='Гость';
                 if(badge){badge.textContent='ГОСТЬ'; badge.className='role-badge';}
                 const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display='none';
+                const clansNav=document.getElementById('nav-clans'); if(clansNav) clansNav.style.display='block';
                 const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display='inline-block';
             } else {
                 if(guestName) guestName.textContent=currentUser.name||'';
                 if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge';}
                 const lockBtn=document.getElementById('secureLoginBtn'); if(lockBtn) lockBtn.innerHTML=currentUser?.role ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
-                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none'; const createClanCard=document.getElementById('createClanCard'); if(createClanCard) createClanCard.style.display='none';
+                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none';
+                const clansNav=document.getElementById('nav-clans'); if(clansNav) clansNav.style.display='block';
+                const createClanCard=document.getElementById('createClanCard'); if(createClanCard) createClanCard.style.display='none';
                 if(currentUser.role==='creator') renderAdminPanel();
             }
             renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderClanLeaderboard(); renderShop(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
@@ -2333,7 +2357,7 @@
                         <td><span class="level-badge">${p.level || 1}</span></td>
                         <td style="color: var(--accent); font-weight: bold;">${p.elo || 0}</td>
                         <td>${p.matches || 0}</td>
-                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span>${p.role==='streamer'?`<div style="font-size:10px;color:var(--accent);margin-top:3px;">Клан: ${p.clan||'Нет клана'}</div>`:''}</td>
+                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
                     </tr>
                 `;
             });
@@ -2357,16 +2381,11 @@
                 const wins = Number(p.wins || 0);
                 const wr = matches > 0 ? Math.round((wins / matches) * 100) : 0;
                 const roleClass = p.role === 'creator' ? 'role-badge creator' : 'role-badge';
-                const clan = p.clan || 'Нет клана';
 
                 return `<tr>
                     <td><span class="rank-number">#${index + 1}</span></td>
                     <td class="player-cell clickable-player" onclick="showPlayerHistory(${p.id})">
                         <span class="player-rank-name">${escapeHistoryText(p.name || 'Игрок')}</span>
-                    </td>
-                    <td class="clan-cell ${clan !== 'Нет клана' ? 'clickable-clan' : ''}"
-                        ${clan !== 'Нет клана' ? `onclick="showClanHistory(${JSON.stringify(clan)})"` : ''}>
-                        ${escapeHistoryText(clan)}
                     </td>
                     <td><span class="level-badge">${Number(p.level || 1)}</span></td>
                     <td class="elo-cell"><b>${Number(p.elo || 0)}</b></td>
@@ -2398,7 +2417,7 @@
         async function startNewSeason(){
             if(!isCreator()){ alert('Только создатель может начать новый сезон.'); return; }
             const current=getCurrentSeasonNumber();
-            if(!confirm(`Начать сезон ${current+1}? ELO, победы, поражения и матчи всех игроков будут сброшены в 0. Старая история матчей сохранится.`)) return;
+            if(!confirm(`Начать сезон ${current+1}? ELO, победы, поражения и матчи игроков, а также ELO и статистика кланов будут сброшены в 0. Старая история матчей сохранится.`)) return;
             (db.players||[]).forEach(p=>{
                 p.elo=0; p.matches=0; p.wins=0; p.level=1;
             });
@@ -2411,7 +2430,7 @@
             renderSeasonLeaderboard();
             renderClanLeaderboard();
             renderTop100(); renderLeaderboard(); renderHistoryCells(); renderFeed();
-            alert(`✅ Начат сезон ${db.currentSeason}. Все сезонные показатели игроков сброшены.`);
+            alert(`✅ Начат сезон ${db.currentSeason}. ELO и сезонная статистика игроков и кланов сброшены в 0.`);
         }
 
         function seasonMatches(){
@@ -2638,16 +2657,20 @@
             // Кланы из оверлея тоже автоматически добавляются в базу, если их ещё нет.
             if (clan1 !== 'Нет клана') ensureClanExistsByName(clan1);
             if (clan2 !== 'Нет клана') ensureClanExistsByName(clan2);
-            // Для новых игроков клан берём из оверлея. Уже существующим игрокам клан/ELO не меняем.
-            if (created.includes(player1.name) && clan1) player1.clan = clan1;
-            if (created.includes(player2.name) && clan2) player2.clan = clan2;
+            // Клан из полей стримера НЕ записываем в профили игроков.
+            // Игроки остаются без клана, а клан матча хранится только в оверлее.
+            player1.clan = 'Нет клана';
+            player2.clan = 'Нет клана';
 
+            // Клан в оверлее всегда берётся из полей стримера.
+            // Неважно, есть ли у игрока свой клан в профиле — для этого стрима
+            // показывается именно тот клан, который выбран здесь.
             db.streamDataMap[streamerName] = {
                 player1: player1.name,
-                clan1: player1.clan || clan1 || 'Нет клана',
+                clan1: clan1 || 'Нет клана',
                 score1: s1El ? (parseInt(s1El.value) || 0) : 0,
                 player2: player2.name,
-                clan2: player2.clan || clan2 || 'Нет клана',
+                clan2: clan2 || 'Нет клана',
                 score2: s2El ? (parseInt(s2El.value) || 0) : 0
             };
 
@@ -3002,18 +3025,23 @@
                     (m.winnerId == m.player1Id ? m.clan1 :
                      m.winnerId == m.player2Id ? m.clan2 : '');
 
+                const clanIsLeft = String(m.clan1 || '').toLowerCase() === String(clanName).toLowerCase();
+                const myScore = clanIsLeft ? (Number(m.score1 || 0)) : (Number(m.score2 || 0));
+                const otherScore = clanIsLeft ? (Number(m.score2 || 0)) : (Number(m.score1 || 0));
+                const won = String(winnerClan || '').toLowerCase() === String(clanName).toLowerCase();
+                const resultText = won ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
                 return `<div class="history-mini-row">
                     <div class="history-mini-team">
                         <div class="history-mini-name">${escapeHistoryText(clanName)}</div>
-                        <div class="history-mini-clan">${escapeHistoryText(m.player1 || '')}</div>
+                        <div class="history-mini-clan">${escapeHistoryText(clanIsLeft ? (m.player1 || '') : (m.player2 || ''))}</div>
                     </div>
-                    <div class="history-mini-vs">VS</div>
+                    <div class="history-mini-vs" style="font-size:18px;font-weight:1000;">${myScore} : ${otherScore}</div>
                     <div class="history-mini-team right">
                         <div class="history-mini-name">${escapeHistoryText(other || '—')}</div>
-                        <div class="history-mini-clan">${escapeHistoryText(m.player2 || '')}</div>
+                        <div class="history-mini-clan">${escapeHistoryText(clanIsLeft ? (m.player2 || '') : (m.player1 || ''))}</div>
                     </div>
                     <div style="grid-column:1/-1;text-align:center;font-size:10px;color:var(--text-muted);margin-top:4px;">
-                        ПОБЕДИЛ: <b class="result-win">${escapeHistoryText(winnerClan || '—')}</b> · ${formatMatchDate(m.date)}
+                        <b class="${won ? 'result-win' : 'result-loss'}">${resultText}</b> · ${formatMatchDate(m.date)}
                     </div>
                 </div>`;
             }).join('') : '<div class="history-empty">У этого клана пока нет игр.</div>';
@@ -3021,9 +3049,9 @@
             document.getElementById('historyModalBody').innerHTML = `
                 <div class="history-summary">
                     <div class="history-summary-card"><span>Всего игр</span><b>${rows.length}</b></div>
-                    <div class="history-summary-card"><span>Победы клана</span><b class="result-win">${wins}</b></div>
+                    <div class="history-summary-card"><span>Победы</span><b class="result-win">${wins}</b></div>
+                    <div class="history-summary-card"><span>Поражения</span><b class="result-loss">${Math.max(0, rows.length - wins)}</b></div>
                     <div class="history-summary-card"><span>Соперники</span><b>${new Set(rows.map(m => m.clan1 === clanName ? m.clan2 : m.clan1)).size}</b></div>
-                    <div class="history-summary-card"><span>Участников</span><b>${(db?.players || []).filter(p => String(p.clan || '').toLowerCase() === String(clanName).toLowerCase()).length}</b></div>
                 </div>
                 <div class="history-mini-list">${cards}</div>`;
             modal.style.display = 'flex';
@@ -3078,7 +3106,7 @@
                 byName.set(String(c.name).toLowerCase(), {
                     name: c.name,
                     tag: c.tag || '',
-                    elo: Number(c.elo || 1000),
+                    elo: 0,
                     games: 0,
                     wins: 0,
                     losses: 0,
@@ -3087,10 +3115,11 @@
                 });
             });
 
+            const currentSeason = getCurrentSeasonNumber();
             const rows = [
                 ...(db?.clanMatchHistory || []),
                 ...(getMatchHistory() || [])
-            ];
+            ].filter(m => Number(m.season || 1) === currentSeason);
 
             rows.forEach(m => {
                 const clan1 = String(m.clan1 || '').trim();
@@ -3101,7 +3130,7 @@
                     const key = cn.toLowerCase();
                     if (!byName.has(key)) {
                         byName.set(key, {
-                            name: cn, tag: '', elo: 1000, games: 0, wins: 0,
+                            name: cn, tag: '', elo: 0, games: 0, wins: 0,
                             losses: 0, opponents: new Map(), lastDate: null
                         });
                     }
@@ -3140,8 +3169,7 @@
             });
 
             const stats = [...byName.values()]
-                .filter(s => s.games > 0)
-                .sort((a, b) => (b.wins - a.wins) || (b.games - a.games) || (b.elo - a.elo))
+                .sort((a, b) => (b.elo - a.elo) || (b.wins - a.wins) || (b.games - a.games))
                 .slice(0, 100);
 
             body.innerHTML = stats.length
@@ -3190,10 +3218,6 @@
             }
 
             db.clans.forEach(c => {
-                const memberCount = (db?.players || []).filter(
-                    p => String(p.clan || '').toLowerCase() === String(c.name || '').toLowerCase()
-                ).length;
-
                 const clanName = String(c.name || '');
                 const clanTag = String(c.tag || '');
 
@@ -3209,10 +3233,10 @@
                             <span class="level-badge" style="background:var(--accent);color:#fff;">Клан</span>
                         </div>
                         <p style="color:var(--text-muted);font-size:12px;margin:10px 0 0;">
-                            Участников: <b style="color:#fff;">${memberCount}</b>
+                            Клан существует отдельно от профилей игроков.
                         </p>
                         <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">
-                            Нажмите на клан, чтобы открыть всю историю игр
+                            Нажмите на клан, чтобы увидеть соперников, счета, победы и поражения.
                         </p>
                     </div>
                 `;
@@ -3220,6 +3244,7 @@
         }
 
         async function createClan() {
+            if (!isCreator()) { alert('Только создатель может создавать кланы.'); return; }
             const nameEl = document.getElementById('clanNameInput');
             const tagEl = document.getElementById('clanTagInput');
             const name = nameEl ? nameEl.value.trim() : '';
@@ -3231,20 +3256,9 @@
             if (db.clans.some(c => c.name === name || c.tag === tag)) { alert("Клан уже существует!"); return; }
 
             db.clans.push({ name, tag, owner: currentUser?.name || '' });
-            if (currentUser) currentUser.clan = name;
+            // Клан не назначается профилю игрока.
             await saveData();
             alert(`Клан [${tag}] ${name} создан!`);
-        }
-
-        async function joinClan(clanName) {
-            alert('Вступление в клан отключено. Кланы определяются по участию в матчах.'); return;
-            const name=prompt(`Введите свой ник, чтобы вступить в клан «${clanName}»:`);
-            if(!name) return;
-            const player=await getOrCreateGuestPlayer(name);
-            if(!player) return;
-            player.clan=clanName;
-            await saveDataToCloud(); renderClans(); renderLeaderboard();
-            alert(`✓ ${player.name} теперь в клане ${clanName}.`);
         }
 
         let shopTargetPlayerId = null;
@@ -3435,7 +3449,7 @@
                             <td><b>${p.name || ''}</b></td>
                             <td style="color: var(--text-muted);">${p.email || ''}</td>
                             <td><span style="color: var(--accent); font-weight: bold;">${p.elo || 0} ELO</span> (Ур. ${p.level || 1})</td>
-                            <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span>${p.role==='streamer'?`<div style="font-size:10px;color:var(--accent);margin-top:3px;">Клан: ${p.clan||'Нет клана'}</div>`:''}</td>
+                            <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
                             <td>
                                 <div style="font-size: 11px; color: #ff5500;">⚔️ Аниме Арена: <a href="${linkAnime}" target="_blank" style="color: #ff5500;">Открыть</a></div>
                                 <div style="font-size: 11px; color: #ff4757;">HUD Кланов: <a href="${linkC}" target="_blank" style="color: #ff4757;">Открыть</a></div>
