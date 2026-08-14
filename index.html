@@ -255,6 +255,7 @@
             border:2px solid #ff6500; box-shadow:none;
             overflow:hidden;
         }
+        .obs-char.left .obs-player-card { border-color:#ff6500 !important; box-shadow:0 0 0 1px #ff6500, 0 0 12px rgba(255,101,0,.35); }
         .obs-char.right .obs-player-card { border-color:#00bfff; }
         .obs-player-card.obs-name-only {
             height:150px; padding:0; background:transparent;
@@ -273,6 +274,7 @@
             position:absolute; inset:0; width:100%; height:100%;
             object-fit:fill; display:block; pointer-events:none; z-index:1; opacity:.9;
         }
+        .obs-char.left .obs-avatar-frame { filter:hue-rotate(145deg) saturate(1.25) brightness(1.05); }
         .obs-name {
             position:absolute !important; left:50%; top:50%; transform:translate(-50%,-50%) !important;
             z-index:3; width:calc(100% - 24px);
