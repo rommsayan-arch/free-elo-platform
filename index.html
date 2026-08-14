@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE ELO - Esports Platform</title>
+    <title>FREE ELO — Neon Esports</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -360,6 +360,338 @@
             transform: translateY(-2px);
         }
         .clan-card.clickable-clan { transition: .18s ease; }
+
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+        body, input, select, button, table { font-family:'Rajdhani',sans-serif; }
+        h1,h2,h3,.logo,.header-title,.feed-title,.section-tab,.role-badge { font-family:'Orbitron',sans-serif; }
+        :root {
+            --accent:#8b5cf6;
+            --accent-hover:#6d28d9;
+            --accent-2:#22d3ee;
+            --glow:rgba(139,92,246,.48);
+        }
+        body {
+            background:
+                radial-gradient(circle at 20% 10%, rgba(139,92,246,.10), transparent 30%),
+                radial-gradient(circle at 85% 15%, rgba(34,211,238,.08), transparent 28%),
+                #0b0b12;
+        }
+        .sidebar { background:linear-gradient(180deg,#11111a,#090910); border-right:1px solid rgba(139,92,246,.18); }
+        header {
+            background:linear-gradient(90deg,rgba(16,16,24,.98),rgba(14,17,28,.98));
+            border-bottom:1px solid rgba(139,92,246,.18);
+            box-shadow:0 8px 30px rgba(0,0,0,.28);
+        }
+        .logo {
+            font-size:26px; letter-spacing:1px;
+            background:linear-gradient(135deg,#a78bfa,#22d3ee,#f472b6);
+            -webkit-background-clip:text; background-clip:text; color:transparent;
+            text-shadow:0 0 28px rgba(139,92,246,.28);
+            transition:.25s ease;
+        }
+        .logo:hover { transform:scale(1.12) rotate(-2deg); filter:drop-shadow(0 0 10px rgba(34,211,238,.35)); }
+        .header-title { letter-spacing:1.6px; }
+        .card {
+            background:linear-gradient(180deg,rgba(22,22,31,.95),rgba(15,15,23,.97));
+            border:1px solid rgba(255,255,255,.07);
+            box-shadow:0 18px 45px rgba(0,0,0,.20);
+        }
+        .btn-primary {
+            background:linear-gradient(135deg,#8b5cf6,#22d3ee);
+            box-shadow:0 8px 24px rgba(139,92,246,.22);
+        }
+        .btn-primary:hover { background:linear-gradient(135deg,#7c3aed,#06b6d4); transform:translateY(-1px); }
+        .stats-card {
+            position:relative; overflow:hidden;
+            background:
+                radial-gradient(circle at 85% 15%,rgba(34,211,238,.12),transparent 30%),
+                radial-gradient(circle at 15% 85%,rgba(139,92,246,.12),transparent 32%),
+                linear-gradient(180deg,#181823,#10101a);
+        }
+        .stats-card::after {
+            content:""; position:absolute; inset:auto -25% -40% auto; width:160px;height:160px;
+            border-radius:50%; border:1px solid rgba(139,92,246,.18);
+            box-shadow:0 0 45px rgba(34,211,238,.12);
+        }
+        .stat-value { color:#fff !important; text-shadow:0 0 18px rgba(34,211,238,.24); font-family:'Orbitron',sans-serif; }
+        .level-badge { background:linear-gradient(135deg,#22d3ee,#8b5cf6); color:#fff; }
+        .role-badge { background:linear-gradient(135deg,#ef4444,#f97316); box-shadow:0 0 10px rgba(239,68,68,.25); }
+        .role-badge.creator { background:linear-gradient(135deg,#f472b6,#8b5cf6,#22d3ee); box-shadow:0 0 18px rgba(139,92,246,.38); }
+        .lock-btn {
+            width:38px;height:38px;border-radius:12px;border:1px solid rgba(139,92,246,.35);
+            background:linear-gradient(135deg,rgba(139,92,246,.16),rgba(34,211,238,.10));
+            color:#fff; cursor:pointer; font-size:16px; transition:.22s ease;
+            box-shadow:0 8px 22px rgba(0,0,0,.25);
+        }
+        .lock-btn:hover { transform:translateY(-2px) scale(1.04); border-color:rgba(34,211,238,.55); box-shadow:0 0 22px rgba(34,211,238,.18); }
+        .brand-title {
+            font-family:'Orbitron',sans-serif; font-size:40px; font-weight:900; letter-spacing:3px;
+            background:linear-gradient(90deg,#ffffff,#a78bfa 35%,#22d3ee 68%,#f472b6);
+            -webkit-background-clip:text; background-clip:text; color:transparent;
+            text-shadow:0 0 35px rgba(139,92,246,.20);
+            animation:brandFloat 4s ease-in-out infinite;
+        }
+        .brand-sub { margin-top:6px; color:#a6a9b6; font-size:13px; letter-spacing:2px; }
+        @keyframes brandFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+        .magnetic { transition:.22s ease; }
+        .magnetic:hover { transform:translateY(-2px) scale(1.01); }
+
+
+        #myRecentMatches,#myClanRecentMatches,.history-cells-grid,.profile-widget { display:none !important; }
+        #page-matches > .stats-card { min-height:120px; }
+        #page-matches .top-players { margin-top:0; }
+        @media(max-width:900px){
+            #page-matches > div[style*="repeat(2"]{grid-template-columns:1fr !important;}
+            .brand-title{font-size:30px;}
+        }
+
+
+        /* === LUXURY NEON / HIGH-CONTRAST LANDING DESIGN === */
+        :root{
+            --bg-primary:#06070d;
+            --bg-secondary:#0b0e19;
+            --bg-tertiary:#111522;
+            --text-main:#f7fbff;
+            --text-muted:#8d9ab3;
+            --border-color:rgba(255,255,255,.08);
+            --accent:#8b5cf6;
+            --accent-hover:#7c3aed;
+            --cyan:#00e5ff;
+            --pink:#ff3ea5;
+            --lime:#b7ff3c;
+            --gold:#ffd76a;
+        }
+        body{
+            background:
+                radial-gradient(circle at 8% 0%,rgba(139,92,246,.28),transparent 25%),
+                radial-gradient(circle at 92% 5%,rgba(0,229,255,.20),transparent 22%),
+                radial-gradient(circle at 55% 105%,rgba(255,62,165,.16),transparent 28%),
+                linear-gradient(135deg,#04050a 0%,#080a13 48%,#05060b 100%);
+            overflow-x:hidden;
+        }
+        body::before{
+            content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+            background:
+                linear-gradient(115deg,transparent 0 42%,rgba(255,255,255,.025) 43%,transparent 44% 100%),
+                linear-gradient(295deg,transparent 0 54%,rgba(255,255,255,.018) 55%,transparent 56% 100%);
+            background-size:280px 280px,360px 360px;
+            mask-image:linear-gradient(to bottom,black,transparent 92%);
+        }
+        body::after{
+            content:"";position:fixed;left:50%;top:16%;width:520px;height:520px;
+            transform:translate(-50%,-50%);pointer-events:none;z-index:-1;
+            background:conic-gradient(from 90deg,rgba(139,92,246,.12),rgba(0,229,255,.09),rgba(255,62,165,.08),rgba(139,92,246,.12));
+            filter:blur(90px);opacity:.8;
+            animation:aurora 10s ease-in-out infinite alternate;
+        }
+        @keyframes aurora{
+            0%{transform:translate(-55%,-48%) scale(.9) rotate(0deg);opacity:.55}
+            100%{transform:translate(-45%,-42%) scale(1.08) rotate(18deg);opacity:.9}
+        }
+        .sidebar{
+            width:78px;
+            background:
+                linear-gradient(180deg,rgba(12,14,25,.98),rgba(5,7,13,.99));
+            border-right:1px solid rgba(0,229,255,.10);
+            box-shadow:12px 0 40px rgba(0,0,0,.35);
+            backdrop-filter:blur(18px);
+        }
+        .logo{
+            width:46px;height:46px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+            font-family:'Orbitron',sans-serif;font-weight:900;font-size:18px;letter-spacing:1px;
+            background:
+                linear-gradient(135deg,rgba(139,92,246,.22),rgba(0,229,255,.12));
+            border:1px solid rgba(139,92,246,.35);
+            box-shadow:0 0 28px rgba(139,92,246,.15),inset 0 0 18px rgba(0,229,255,.05);
+            color:#fff !important;-webkit-background-clip:initial!important;background-clip:initial!important;
+            text-shadow:0 0 16px rgba(0,229,255,.45);
+        }
+        .nav-item{
+            width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+            font-size:18px;border-radius:15px;color:#7c8aa6;
+        }
+        .nav-item:hover,.nav-item.active{
+            color:#fff;
+            background:linear-gradient(135deg,rgba(139,92,246,.24),rgba(0,229,255,.10));
+            box-shadow:0 0 24px rgba(139,92,246,.14),inset 0 0 16px rgba(0,229,255,.04);
+        }
+        .main-container{margin-left:78px}
+        header{
+            height:72px;
+            background:rgba(7,9,16,.82);
+            border-bottom:1px solid rgba(255,255,255,.06);
+            backdrop-filter:blur(24px);
+        }
+        .header-title{font-family:'Orbitron',sans-serif;letter-spacing:1.6px;font-size:17px}
+        .user-profile{gap:12px}
+        .avatar-wrapper{width:48px;height:48px}
+        .avatar{width:40px;height:40px;border:1px solid rgba(255,255,255,.15)}
+        .lock-btn{
+            width:42px;height:42px;border-radius:14px;
+            border:1px solid rgba(0,229,255,.25);
+            background:linear-gradient(145deg,rgba(139,92,246,.15),rgba(0,229,255,.06));
+            color:#fff;box-shadow:0 0 24px rgba(0,229,255,.08);
+        }
+        .lock-btn:hover{border-color:rgba(0,229,255,.65);box-shadow:0 0 28px rgba(0,229,255,.2),0 0 8px rgba(139,92,246,.28) inset}
+        .page-content{padding:34px}
+        .page-content.active{gap:22px}
+        .card{
+            background:
+                linear-gradient(180deg,rgba(18,22,35,.86),rgba(10,13,22,.92));
+            border:1px solid rgba(255,255,255,.075);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,.28),
+                inset 0 1px 0 rgba(255,255,255,.035);
+            border-radius:18px;
+        }
+        .card:hover{border-color:rgba(139,92,246,.22)}
+        .btn{
+            border-radius:12px;
+            font-family:'Rajdhani',sans-serif;
+            letter-spacing:.3px;
+            font-weight:800;
+        }
+        .btn-primary{
+            background:
+                linear-gradient(110deg,#7c3aed 0%,#8b5cf6 38%,#00cfe8 100%);
+            box-shadow:0 10px 28px rgba(139,92,246,.25);
+            border:1px solid rgba(255,255,255,.12);
+        }
+        .btn-primary:hover{
+            background:linear-gradient(110deg,#6d28d9,#a78bfa,#22d3ee);
+            transform:translateY(-2px);
+        }
+        .stats-card{
+            min-height:132px;
+            background:
+                radial-gradient(circle at 92% 10%,rgba(0,229,255,.13),transparent 24%),
+                radial-gradient(circle at 10% 92%,rgba(139,92,246,.13),transparent 27%),
+                linear-gradient(145deg,#101424,#0a0d17);
+            position:relative;overflow:hidden;
+        }
+        .stats-card::before{
+            content:"";position:absolute;left:-35px;bottom:-45px;width:170px;height:170px;border-radius:50%;
+            border:1px solid rgba(139,92,246,.18);box-shadow:0 0 50px rgba(0,229,255,.09);
+        }
+        .stat-title{font-family:'Orbitron',sans-serif;color:#7c8aa6;letter-spacing:1.2px}
+        .stat-value{
+            font-family:'Orbitron',sans-serif;
+            font-size:34px;
+            color:#fff !important;
+            background:linear-gradient(90deg,#fff,#a78bfa 40%,#22d3ee 80%);
+            -webkit-background-clip:text;background-clip:text;color:transparent !important;
+            filter:drop-shadow(0 0 12px rgba(139,92,246,.18));
+        }
+
+        /* Hero / brand */
+        #page-matches > .card:first-child{
+            position:relative;overflow:hidden;
+            min-height:260px;
+            display:flex;flex-direction:column;justify-content:center;
+            padding:42px 44px !important;
+            background:
+                radial-gradient(circle at 86% 18%,rgba(0,229,255,.17),transparent 22%),
+                radial-gradient(circle at 14% 86%,rgba(139,92,246,.18),transparent 28%),
+                radial-gradient(circle at 60% 40%,rgba(255,62,165,.08),transparent 28%),
+                linear-gradient(120deg,#080a13,#11152a 55%,#0a0d17);
+        }
+        #page-matches > .card:first-child::after{
+            content:"FREE ELO";
+            position:absolute;right:-30px;bottom:-35px;
+            font-family:'Orbitron',sans-serif;font-weight:900;font-size:110px;letter-spacing:5px;
+            color:rgba(255,255,255,.022);transform:rotate(-9deg);
+            white-space:nowrap;
+        }
+        .brand-title{
+            font-family:'Orbitron',sans-serif !important;
+            font-size:58px !important;line-height:1;
+            font-weight:900;letter-spacing:5px;
+            background:
+                linear-gradient(90deg,#ffffff 0%,#d8ccff 25%,#a78bfa 40%,#22d3ee 65%,#ff79c6 84%,#fff 100%);
+            -webkit-background-clip:text;background-clip:text;color:transparent !important;
+            text-shadow:0 0 30px rgba(139,92,246,.22);
+            filter:drop-shadow(0 0 14px rgba(0,229,255,.10));
+            background-size:180% 100%;
+            animation:brandSweep 7s linear infinite;
+        }
+        @keyframes brandSweep{0%{background-position:0% 50%}100%{background-position:180% 50%}}
+        .brand-sub{
+            color:#9ca8bf !important;
+            font-family:'Rajdhani',sans-serif !important;
+            font-size:14px !important;
+            letter-spacing:4px !important;
+            text-transform:uppercase;
+            margin-top:14px !important;
+        }
+        .hero-orbit{
+            position:absolute;right:8%;top:20%;width:210px;height:210px;border-radius:50%;
+            border:1px solid rgba(0,229,255,.25);
+            box-shadow:0 0 35px rgba(0,229,255,.07),inset 0 0 35px rgba(139,92,246,.06);
+            animation:spin 16s linear infinite;
+        }
+        .hero-orbit::before,.hero-orbit::after{
+            content:"";position:absolute;border-radius:50%;
+            background:#00e5ff;box-shadow:0 0 22px #00e5ff;
+        }
+        .hero-orbit::before{width:8px;height:8px;right:8px;top:34px}
+        .hero-orbit::after{width:6px;height:6px;left:22px;bottom:12px;background:#ff3ea5;box-shadow:0 0 22px #ff3ea5}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* Top players */
+        .top-players{
+            background:linear-gradient(180deg,rgba(16,19,30,.95),rgba(9,12,20,.98));
+            overflow:hidden;
+        }
+        .top-players h3{
+            font-family:'Orbitron',sans-serif;letter-spacing:1.5px;
+            color:#fff;
+        }
+        .top-players table tbody tr{transition:.2s ease}
+        .top-players table tbody tr:hover{
+            background:linear-gradient(90deg,rgba(139,92,246,.08),rgba(0,229,255,.05));
+        }
+        th{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.8px;color:#76859f}
+        td{font-family:'Rajdhani',sans-serif;font-weight:700}
+        td strong,td b{font-family:'Rajdhani',sans-serif}
+
+        /* Count cards */
+        #platformGamesCount,#platformClansCount{font-size:40px}
+        .magnetic{transition:transform .22s ease,box-shadow .22s ease}
+        .magnetic:hover{transform:translateY(-4px);box-shadow:0 24px 70px rgba(0,0,0,.34),0 0 30px rgba(139,92,246,.08)}
+
+        /* Streamers */
+        .streamer-card{
+            background:
+                linear-gradient(180deg,rgba(18,22,35,.94),rgba(10,13,20,.98));
+            border:1px solid rgba(255,255,255,.07);
+            box-shadow:0 18px 50px rgba(0,0,0,.24);
+        }
+        .streamer-card.priority-high{border-color:rgba(0,229,255,.32);box-shadow:0 0 32px rgba(0,229,255,.08)}
+        .priority-badge{
+            background:linear-gradient(135deg,#8b5cf6,#22d3ee);
+            box-shadow:0 0 18px rgba(139,92,246,.22);
+        }
+
+        /* Modal */
+        .auth-card{
+            width:440px;
+            background:
+                radial-gradient(circle at 85% 10%,rgba(0,229,255,.10),transparent 28%),
+                radial-gradient(circle at 10% 90%,rgba(139,92,246,.13),transparent 30%),
+                linear-gradient(180deg,#0f1220,#090b13);
+            border:1px solid rgba(139,92,246,.25);
+            border-radius:22px;
+            box-shadow:0 35px 100px rgba(0,0,0,.7),0 0 70px rgba(139,92,246,.09);
+        }
+
+        /* Mobile */
+        @media(max-width:900px){
+            .brand-title{font-size:38px !important}
+            .page-content{padding:18px}
+            .sidebar{width:64px}
+            .main-container{margin-left:64px}
+        }
+
 </style>
 </head>
 <body>
@@ -387,42 +719,46 @@
                     <img id="userFrame" class="avatar-frame" src="" alt="Frame">
                 </div>
                 <span id="userName" class="clickable-player" onclick="showPlayerHistory(getCurrentUser()?.id)">Игрок</span>
-                <span id="roleBadge" class="role-badge">Гость</span><button id="creatorLoginBtn" class="btn btn-secondary" style="padding:6px 10px;font-size:11px;" onclick="openCreatorLogin()">Создатель</button>
+                <button id="secureLoginBtn" class="lock-btn" title="Вход для стримера / создателя" onclick="openSecureLogin()"><i class="fas fa-lock"></i></button>
+                <span id="roleBadge" class="role-badge">Гость</span>
             </div>
         </header>
 
         <div id="page-matches" class="page-content active">
+            <div class="card magnetic" style="grid-column:span 12;padding:28px 30px;background:
+                radial-gradient(circle at 90% 20%,rgba(34,211,238,.16),transparent 28%),
+                radial-gradient(circle at 10% 80%,rgba(139,92,246,.18),transparent 30%),
+                linear-gradient(135deg,#11111b,#171625);border-color:rgba(139,92,246,.18);">
+                <div class="hero-orbit"></div><div class="brand-title">FREE ELO</div>
+                <div class="brand-sub">ESPORTS RANKING • MATCHES • CLANS • STREAMERS</div>
+            </div>
+
             <div class="card stats-card"><span class="stat-title">Текущий ELO</span><span id="userElo" class="stat-value">1000</span></div>
             <div class="card stats-card"><span class="stat-title">Уровень</span><div><span class="level-badge" id="userLevel">1</span></div></div>
             <div class="card stats-card"><span class="stat-title">Сыграно матчей</span><span class="stat-value" id="userMatches" style="color: white;">0</span></div>
             <div class="card stats-card"><span class="stat-title">Винрейт</span><span class="stat-value" id="userWinrate" style="color: white;">0 %</span></div>
 
-            <div class="card top-players">
+            
+            <div style="grid-column:span 12;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;">
+                <div class="card stats-card magnetic">
+                    <span class="stat-title">Всего игр</span>
+                    <span class="stat-value" id="platformGamesCount">0</span>
+                    <div style="color:#9da3b8;font-size:12px;">Завершённые игры платформы</div>
+                </div>
+                <div class="card stats-card magnetic">
+                    <span class="stat-title">Всего кланов</span>
+                    <span class="stat-value" id="platformClansCount">0</span>
+                    <div style="color:#9da3b8;font-size:12px;">Кланы, участвующие на платформе</div>
+                </div>
+            </div>
+<div class="card top-players">
                 <h3>ТОП ИГРОКОВ ПЛАТФОРМЫ</h3>
                 <table>
                     <thead><tr><th>#</th><th>Игрок</th><th>Уровень</th><th>ELO</th><th>Матчи</th><th>Роль</th></tr></thead>
                     <tbody id="leaderboardBody"></tbody>
                 </table>
             </div>
-
-            <div class="card profile-widget">
-                <div class="profile-avatar-wrapper">
-                    <img id="widgetAvatar" class="profile-avatar-lg" src="https://api.dicebear.com/7.x/bottts/svg?seed=sayan" alt="Avatar">
-                    <img id="widgetFrame" class="profile-frame-lg" src="" alt="Frame">
-                </div>
-                <h3 id="widgetName" class="clickable-player" onclick="showPlayerHistory(getCurrentUser()?.id)">Игрок</h3>
-                <p style="font-size: 12px; color: var(--text-muted);" id="widgetClan">Клан: Нет клана</p>
-            </div>
-
-            <div class="history-cells-grid" style="grid-column: span 12;">
-                <div class="card history-cell">
-                    <div class="history-cell-head">
-                        <div><span class="history-kicker">PLAYER</span><h2>История матчей</h2></div>
-                        <button class="btn btn-secondary" onclick="showPlayerHistory(getCurrentUser()?.id)">Открыть</button>
-                    </div>
-                    <div id="myRecentMatches" class="history-mini-list"></div>
-                </div>
-                <div class="card history-cell">
+<div class="card history-cell">
                     <div class="history-cell-head">
                         <div><span class="history-kicker">CLAN</span><h2>История игр клана</h2></div>
                         <button class="btn btn-secondary" onclick="showClanHistory(getCurrentUser()?.clan)">Открыть</button>
@@ -495,6 +831,7 @@
         </div>
 
         <div id="page-streamers" class="page-content">
+            <div class="card magnetic" style="grid-column: span 12;padding:18px 20px;background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(34,211,238,.06));"><div class="brand-sub">LOCKED STREAMER AREA</div><div style="font-size:15px;margin-top:6px;">Войдите через замок сверху, чтобы открыть свой аккаунт стримера.</div></div>
             <div class="card" style="grid-column: span 12;">
                 <h2><i class="fas fa-video" style="color: var(--accent);"></i> Прямые трансляции и Персональные панели стримеров</h2>
                 <p style="color: var(--text-muted); margin-bottom: 15px;">У каждого стримера здесь своя отдельная панель управления матчами, аниме-ареной и OBS оверлеями.</p>
@@ -602,7 +939,20 @@
                 </div>
             </div>
 
-            <div class="card" style="grid-column: span 12;">
+            
+            <div class="card magnetic" style="grid-column:span 12;border-color:rgba(34,211,238,.25);">
+                <h2 style="color:#22d3ee;"><i class="fas fa-user-plus"></i> Создать аккаунт стримера</h2>
+                <p style="color:var(--text-muted);font-size:12px;margin:6px 0 15px;">Только создатель может создавать и выдавать аккаунты стримеров.</p>
+                <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end;">
+                    <div class="form-group" style="margin:0;"><label>Ник стримера</label><input id="createStreamerName" placeholder="Korean"></div>
+                    <div class="form-group" style="margin:0;"><label>Gmail</label><input id="createStreamerEmail" type="email" placeholder="streamer@gmail.com"></div>
+                    <div class="form-group" style="margin:0;"><label>Пароль</label><input id="createStreamerPassword" type="password" placeholder="Пароль"></div>
+                    <div class="form-group" style="margin:0;"><label>Клан</label><input id="createStreamerClan" placeholder="SERENITY"></div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="createStreamerAccount()">➕ Создать аккаунт стримера</button>
+            </div>
+
+<div class="card" style="grid-column: span 12;">
                 <h2 style="color: #ff3333;"><i class="fas fa-user-cog"></i> Управление Игроками и Ролями</h2>
                 <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; margin-top: 15px;">
                     <div class="form-group" style="flex: 1; min-width: 180px;"><label>Игрок</label><select id="adminUserSelect" onchange="loadUserToAdmin()"></select></div>
@@ -622,18 +972,18 @@
 
     </div>
 
-    <div class="modal-overlay" id="authModal" style="display:none;">
+        <div class="modal-overlay" id="authModal" style="display:none;">
         <div class="auth-card">
-            <h2 style="color:var(--accent);">ПАНЕЛЬ СОЗДАТЕЛЯ</h2>
-            <p style="color:var(--text-muted);margin:8px 0 18px;font-size:12px;">Обычным игрокам регистрация не нужна.</p>
-            <div class="form-group"><label>Gmail</label><input type="email" id="loginEmail" placeholder="Gmail создателя"></div>
+            <div class="brand-title" style="font-size:28px;letter-spacing:2px;">FREE ELO</div>
+            <p style="color:var(--text-muted);margin:8px 0 18px;font-size:12px;">Безопасный вход для стримера или создателя</p>
+            <div class="form-group"><label>Gmail</label><input type="email" id="loginEmail" placeholder="email"></div>
             <div class="form-group"><label>Пароль</label><input type="password" id="loginPassword" placeholder="Пароль"></div>
-            <button class="btn btn-primary" style="width:100%;" onclick="loginUser()">Войти как создатель</button>
+            <button class="btn btn-primary" style="width:100%;" onclick="loginUser()">🔐 Войти</button>
             <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeCreatorLogin()">Закрыть</button>
         </div>
     </div>
 
-    <div id="historyModal" class="history-modal" style="display:none;">
+<div id="historyModal" class="history-modal" style="display:none;">
         <div class="history-modal-backdrop" onclick="closeHistoryModal()"></div>
         <div class="history-modal-card">
             <div class="history-modal-head">
@@ -1018,7 +1368,7 @@
             } else {
                 if(guestName) guestName.textContent=currentUser.name||'';
                 if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge';}
-                const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display=currentUser.role==='creator'?'none':'inline-block';
+                const lockBtn=document.getElementById('secureLoginBtn'); if(lockBtn) lockBtn.innerHTML=currentUser?.role ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
                 const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none'; const createClanCard=document.getElementById('createClanCard'); if(createClanCard) createClanCard.style.display='none';
                 if(currentUser.role==='creator') renderAdminPanel();
             }
@@ -2223,6 +2573,77 @@
             db.streamers=(db.streamers||[]).filter(s=>s.name?.toLowerCase()!==target.name?.toLowerCase());
             if(db.streamDataMap) delete db.streamDataMap[target.name];
             await saveData();
+        }
+
+        function openSecureLogin() {
+            const modal = document.getElementById('authModal');
+            if (modal) modal.style.display = 'flex';
+            const email = document.getElementById('loginEmail');
+            const pass = document.getElementById('loginPassword');
+            if (email) email.focus();
+        }
+
+        function isPrivilegedUser() {
+            const u = getCurrentUser();
+            return !!u && (u.role === 'creator' || u.role === 'streamer');
+        }
+
+        async function createStreamerAccount() {
+            if (!isCreator()) { alert('Только создатель может создавать аккаунты стримеров.'); return; }
+
+            const name = document.getElementById('createStreamerName')?.value.trim();
+            const email = document.getElementById('createStreamerEmail')?.value.trim().toLowerCase();
+            const password = document.getElementById('createStreamerPassword')?.value.trim();
+            const clan = document.getElementById('createStreamerClan')?.value.trim() || 'Нет клана';
+
+            if (!name || !email || !password) {
+                alert('Заполни ник, Gmail и пароль.');
+                return;
+            }
+            if (password.length < 6) {
+                alert('Пароль должен быть не меньше 6 символов.');
+                return;
+            }
+            if ((db?.players || []).some(p => String(p.name || '').toLowerCase() === name.toLowerCase())) {
+                alert('Такой ник уже существует.');
+                return;
+            }
+            if ((db?.players || []).some(p => String(p.email || '').toLowerCase() === email)) {
+                alert('Такой Gmail уже используется.');
+                return;
+            }
+
+            ensureClanExistsByName(clan);
+            const player = sanitizeAndValidateUser({
+                id: Date.now() + Math.floor(Math.random() * 100000),
+                name, email, password,
+                elo: 1000, matches: 0, wins: 0, level: 1,
+                role: 'streamer', clan,
+                avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
+                frame: '', inventory: [], equippedCharacter: ''
+            });
+
+            if (!db.players) db.players = [];
+            db.players.push(player);
+
+            if (!db.streamers) db.streamers = [];
+            db.streamers.push({
+                id: Date.now() + Math.floor(Math.random() * 10000),
+                name, clan, url: 'https://twitch.tv/', priority: 1
+            });
+
+            if (!db.streamDataMap) db.streamDataMap = {};
+            db.streamDataMap[name] = {
+                player1: name, clan1: clan, score1: 0,
+                player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0
+            };
+
+            await saveData();
+            document.getElementById('createStreamerName').value = '';
+            document.getElementById('createStreamerEmail').value = '';
+            document.getElementById('createStreamerPassword').value = '';
+            document.getElementById('createStreamerClan').value = '';
+            alert(`✓ Аккаунт стримера ${name} создан.`);
         }
 
         async function makePlayerStreamerQuick(playerName) {
