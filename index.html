@@ -44,7 +44,7 @@
         .level-badge { display: inline-block; background-color: #00be63; color: #000; font-weight: bold; padding: 4px 10px; border-radius: 4px; }
 
         .top-players { grid-column: span 7; }
-        .profile-widget { grid-column: span 5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; }
+        .profile-widget { display:none !important; grid-column: span 5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; }
         
         .profile-avatar-wrapper { position: relative; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; }
         .profile-avatar-lg { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background-color: #222; position: relative; z-index: 1; }
@@ -373,7 +373,7 @@
                     <img id="userFrame" class="avatar-frame" src="" alt="Frame">
                 </div>
                 <span id="userName" class="clickable-player" onclick="showPlayerHistory(getCurrentUser()?.id)">Игрок</span>
-                <span id="roleBadge" class="role-badge">Игрок</span>
+                <span id="roleBadge" class="role-badge">Гость</span><button id="creatorLoginBtn" class="btn btn-secondary" style="padding:6px 10px;font-size:11px;" onclick="openCreatorLogin()">Создатель</button>
             </div>
         </header>
 
@@ -582,7 +582,7 @@
                     <div class="form-group" style="width: 160px;">
                         <label>Роль</label>
                         <select id="adminRoleSelect">
-                            <option value="player">Игрок</option><option value="streamer">Стример</option><option value="admin">Админ</option><option value="creator">Создатель</option>
+                            <option value="player">Игрок</option><option value="streamer">Стример</option>
                         </select>
                     </div>
                     <button class="btn btn-primary" style="margin-bottom: 15px;" onclick="applyAdminChanges()">Сохранить</button>
@@ -592,47 +592,16 @@
 
     </div>
 
-    <div class="modal-overlay" id="authModal">
+    <div class="modal-overlay" id="authModal" style="display:none;">
         <div class="auth-card">
-            <h2 style="color: var(--accent); margin-bottom: 5px;">FREE ELO</h2>
-            
-            <div class="auth-tabs">
-                <button class="btn btn-primary" id="tabLoginBtn" onclick="switchAuthMode('login')">Вход</button>
-                <button class="btn btn-secondary" id="tabRegisterBtn" onclick="switchAuthMode('register')">Регистрация</button>
-            </div>
-
-            <div id="loginFormBlock">
-                <div class="form-group">
-                    <label>Gmail:</label>
-                    <input type="email" id="loginEmail" placeholder="rommsayan@gmail.com">
-                </div>
-                <div class="form-group">
-                    <label>Пароль:</label>
-                    <input type="password" id="loginPassword" placeholder="Ваш пароль">
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="loginUser()">Войти в аккаунт</button>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">✓ На этом устройстве аккаунт будет запомнен автоматически</div>
-                <button class="btn btn-secondary" style="width: 100%; margin-top: 8px;" onclick="testSupabaseConnection()">🔧 Проверить базу</button>
-            </div>
-
-            <div id="registerFormBlock" style="display: none;">
-                <div class="form-group">
-                    <label>Ваше Имя (Ник в игре):</label>
-                    <input type="text" id="regName" placeholder="Например: Sayan">
-                </div>
-                <div class="form-group">
-                    <label>Ваш Gmail:</label>
-                    <input type="email" id="regEmail" placeholder="example@gmail.com">
-                </div>
-                <div class="form-group">
-                    <label>Придумайте пароль:</label>
-                    <input type="password" id="regPassword" placeholder="Минимум 6 символов">
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="registerUser()">Зарегистрироваться</button>
-            </div>
+            <h2 style="color:var(--accent);">ПАНЕЛЬ СОЗДАТЕЛЯ</h2>
+            <p style="color:var(--text-muted);margin:8px 0 18px;font-size:12px;">Обычным игрокам регистрация не нужна.</p>
+            <div class="form-group"><label>Gmail</label><input type="email" id="loginEmail" placeholder="Gmail создателя"></div>
+            <div class="form-group"><label>Пароль</label><input type="password" id="loginPassword" placeholder="Пароль"></div>
+            <button class="btn btn-primary" style="width:100%;" onclick="loginUser()">Войти как создатель</button>
+            <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeCreatorLogin()">Закрыть</button>
         </div>
     </div>
-
 
     <div id="historyModal" class="history-modal" style="display:none;">
         <div class="history-modal-backdrop" onclick="closeHistoryModal()"></div>
@@ -865,17 +834,42 @@
         }
 
         function getCurrentUser() {
-            if (!currentUserId) return null;
-            let user = db?.players?.find(p => p.id == currentUserId) || null;
-            // Если интернет/облако временно недоступно, используем сохранённую на устройстве сессию.
-            if (!user && cachedSession && String(cachedSession.id) === String(currentUserId)) {
-                user = { ...cachedSession };
-            }
-            if (user && (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com')) {
-                user.role = 'creator';
-            }
+            if (!currentUserId || !db?.players) return null;
+            let user = db.players.find(p => p.id == currentUserId) || null;
+            if (user && (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com')) user.role = 'creator';
             return user;
         }
+
+        function getGuestPlayerByName(name) {
+            const n=String(name||'').trim();
+            if(!n) return null;
+            return (db?.players||[]).find(p=>String(p.name||'').toLowerCase()===n.toLowerCase()) || null;
+        }
+
+        function ensureUniquePlayerName(name) {
+            const n=String(name||'').trim();
+            return n && !(db?.players||[]).some(p=>String(p.name||'').toLowerCase()===n.toLowerCase());
+        }
+
+        async function getOrCreateGuestPlayer(name) {
+            const n=String(name||'').trim();
+            if(!n) return null;
+            let existing=getGuestPlayerByName(n);
+            if(existing) return existing;
+            if(!db.players) db.players=[];
+            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:1000,matches:0,wins:0,level:1,role:'player',clan:'Нет клана',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
+            db.players.push(player);
+            await saveDataToCloud();
+            return player;
+        }
+
+        function isCreator() {
+            const u=getCurrentUser();
+            return !!u && u.role==='creator' && (u.name?.toLowerCase()==='sayan' || u.email?.toLowerCase()==='rommsayan@gmail.com');
+        }
+
+        function openCreatorLogin(){ document.getElementById('authModal').style.display='flex'; }
+        function closeCreatorLogin(){ document.getElementById('authModal').style.display='none'; }
 
         function sanitizeAndValidateUser(user) {
             if (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com') {
@@ -937,82 +931,18 @@
         }
 
         async function loginUser() {
-            const gmail = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const password = document.getElementById('loginPassword').value;
-            if (!gmail || !password) { alert("Введите Gmail и Пароль!"); return; }
-
+            const gmail=document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password=document.getElementById('loginPassword').value;
             await loadDataFromCloud();
-            const foundUser = db?.players?.find(p => p.email?.toLowerCase() === gmail && p.password === password);
-            if (foundUser) {
-                if (foundUser.name?.toLowerCase() === 'sayan' || foundUser.email?.toLowerCase() === 'rommsayan@gmail.com') {
-                    foundUser.role = 'creator';
-                }
-                rememberDeviceSession(foundUser);
-                document.getElementById('authModal').style.display = 'none';
-                initApp();
-            } else {
-                alert("Неверный Gmail или пароль!");
+            const foundUser=(db?.players||[]).find(p=>p.email?.toLowerCase()===gmail && p.password===password);
+            if(foundUser && (foundUser.name?.toLowerCase()==='sayan' || foundUser.email?.toLowerCase()==='rommsayan@gmail.com')){
+                foundUser.role='creator'; currentUserId=foundUser.id; localStorage.setItem('fe_current_user_id',String(currentUserId));
+                closeCreatorLogin(); initApp(); return;
             }
+            alert('Доступ только для создателя.');
         }
 
-        async function registerUser() {
-            const name = document.getElementById('regName').value.trim();
-            const gmail = document.getElementById('regEmail').value.trim().toLowerCase();
-            const password = document.getElementById('regPassword').value.trim();
-
-            if (!name || !gmail || !password) { alert("Заполните все поля для регистрации!"); return; }
-            if (password.length < 6) { alert("Пароль должен быть не менее 6 символов!"); return; }
-
-            await loadDataFromCloud();
-            if (!db.players) db.players = [];
-            if (db.players.some(p => p.email?.toLowerCase() === gmail)) {
-                alert("Аккаунт с таким Gmail уже зарегистрирован!");
-                return;
-            }
-
-            let role = (name.toLowerCase() === 'sayan' || gmail === 'rommsayan@gmail.com') ? 'creator' : 'player';
-
-            const newUser = sanitizeAndValidateUser({
-                id: Date.now(),
-                name: name,
-                email: gmail,
-                password: password,
-                elo: 1000,
-                matches: 0,
-                wins: 0,
-                level: 1,
-                role: role,
-                clan: 'Нет клана',
-                avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
-                frame: '',
-                inventory: [],
-                equippedCharacter: 'gojo'
-            });
-
-            db.players.push(newUser);
-            const saved = await saveDataToCloud();
-            if (!saved) {
-                db.players = db.players.filter(p => p.id !== newUser.id);
-                return;
-            }
-
-            rememberDeviceSession(newUser);
-            document.getElementById('authModal').style.display = 'none';
-            initApp();
-        }
-
-        function setFeedTab(tab) {
-            const overview = document.getElementById('feedOverviewSection');
-            const news = document.getElementById('feedNewsSection');
-            const overviewBtn = document.getElementById('feedTabOverview');
-            const newsBtn = document.getElementById('feedTabNews');
-            const isNews = tab === 'news';
-            if (overview) overview.style.display = isNews ? 'none' : 'block';
-            if (news) news.style.display = isNews ? 'block' : 'none';
-            if (overviewBtn) overviewBtn.classList.toggle('active', !isNews);
-            if (newsBtn) newsBtn.classList.toggle('active', isNews);
-            if (isNews) renderNews(); else renderFeed();
-        }
+        async function registerUser(){ alert('Обычным игрокам регистрация не нужна. Просто укажи ник в стримерской или магазине.'); }
 
         function switchPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
@@ -1039,60 +969,22 @@
         }
 
         function initApp() {
-            loadAnimeImages();
-            ensureCreatorRights();
-            ensureAnimeShopItems();
-            let currentUser = getCurrentUser();
-            if (!currentUser) {
-                document.getElementById('authModal').style.display = 'flex';
-                return;
-            }
-
-            document.getElementById('userName').textContent = currentUser.name || '';
-            document.getElementById('userAvatar').src = currentUser.avatar || '';
-            document.getElementById('userElo').textContent = currentUser.elo || 0;
-            document.getElementById('userLevel').textContent = currentUser.level || 1;
-            document.getElementById('userMatches').textContent = currentUser.matches || 0;
-            
-            let winrate = (currentUser.matches > 0) ? Math.round(((currentUser.wins || 0) / currentUser.matches) * 100) : 0;
-            document.getElementById('userWinrate').textContent = winrate + ' %';
-
-            const badge = document.getElementById('roleBadge');
-            if (badge) {
-                badge.textContent = (currentUser.role || 'player').toUpperCase();
-                if (currentUser.role === 'creator') badge.className = 'role-badge creator';
-                else badge.className = 'role-badge';
-            }
-            
-            const adminNav = document.getElementById('nav-admin');
-            const adminCard = document.getElementById('createClanCard');
-
-            if (currentUser.role === 'admin' || currentUser.role === 'creator') {
-                if (adminNav) adminNav.style.display = 'block';
-                if (adminCard) adminCard.style.display = 'block';
+            ensureCreatorRights(); ensureAnimeShopItems();
+            let currentUser=getCurrentUser();
+            const guestName=document.getElementById('userName'); const badge=document.getElementById('roleBadge');
+            if(!currentUser){
+                if(guestName) guestName.textContent='Гость';
+                if(badge){badge.textContent='ГОСТЬ'; badge.className='role-badge';}
+                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display='none';
+                const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display='inline-block';
             } else {
-                if (adminNav) adminNav.style.display = 'none';
-                if (adminCard) adminCard.style.display = 'none';
+                if(guestName) guestName.textContent=currentUser.name||'';
+                if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge';}
+                const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display=currentUser.role==='creator'?'none':'inline-block';
+                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none';
+                if(currentUser.role==='creator') renderAdminPanel();
             }
-
-            document.getElementById('widgetName').textContent = currentUser.name || '';
-            document.getElementById('widgetAvatar').src = currentUser.avatar || '';
-            document.getElementById('widgetClan').textContent = `Клан: ${currentUser.clan || 'Нет клана'}`;
-
-            if (!db.streamDataMap) db.streamDataMap = {};
-            if (!db.matchHistory) db.matchHistory = [];
-
-            renderLeaderboard();
-            renderTop100();
-            renderSeasonLeaderboard();
-            renderStreamers();
-            renderClans();
-            renderShop();
-            renderInventory();
-            renderHistoryCells();
-            renderFeed();
-            renderNews();
-            renderAdminPanel();
+            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderShop(); renderInventory(); renderHistoryCells?.();
         }
 
         function renderLeaderboard() {
@@ -1109,7 +1001,7 @@
                         <td><span class="level-badge">${p.level || 1}</span></td>
                         <td style="color: var(--accent); font-weight: bold;">${p.elo || 0}</td>
                         <td>${p.matches || 0}</td>
-                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
+                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span>${p.role==='streamer'?`<div style="font-size:10px;color:var(--accent);margin-top:3px;">Клан: ${p.clan||'Нет клана'}</div>`:''}</td>
                     </tr>
                 `;
             });
@@ -1131,7 +1023,7 @@
                         <td><span class="level-badge">${p.level || 1}</span></td>
                         <td style="color: var(--accent); font-weight: bold;">${p.elo || 0} ELO</td>
                         <td>${p.matches || 0} / <span style="color: #00be63;">${p.wins || 0} (${wr}%)</span></td>
-                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
+                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span>${p.role==='streamer'?`<div style="font-size:10px;color:var(--accent);margin-top:3px;">Клан: ${p.clan||'Нет клана'}</div>`:''}</td>
                     </tr>
                 `;
             });
@@ -1164,7 +1056,7 @@
             }
 
             let currentUser = getCurrentUser();
-            let isAdminOrCreator = currentUser && (currentUser.role === 'admin' || currentUser.role === 'creator');
+            let isAdminOrCreator = isCreator();
             let isStreamerUser = currentUser && currentUser.role === 'streamer';
 
             let streamersToShow = db.streamers;
@@ -1185,7 +1077,7 @@
                 let linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(s.name)}`;
                 let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(s.name)}`;
 
-                let showObsControl = isAdminOrCreator || (isStreamerUser && currentUser.name?.toLowerCase() === s.name?.toLowerCase());
+                let showObsControl = isCreator() || (isStreamerUser && currentUser.name?.toLowerCase() === s.name?.toLowerCase());
                 let obsControlSection = '';
 
                 if (showObsControl) {
@@ -1624,11 +1516,13 @@
         }
 
         async function joinClan(clanName) {
-            let currentUser = getCurrentUser();
-            if (!currentUser) return;
-            currentUser.clan = clanName;
-            await saveData();
-            alert(`Вы вступили в клан ${clanName}!`);
+            const name=prompt(`Введите свой ник, чтобы вступить в клан «${clanName}»:`);
+            if(!name) return;
+            const player=await getOrCreateGuestPlayer(name);
+            if(!player) return;
+            player.clan=clanName;
+            await saveDataToCloud(); renderClans(); renderLeaderboard();
+            alert(`✓ ${player.name} теперь в клане ${clanName}.`);
         }
 
         function renderShop() {
@@ -1662,7 +1556,7 @@
                         ${isCharacter ? `<span class="anime-item-badge">⚡ ${EPIC_MOMENTS[item.characterKey] || 'EPIC MOMENT'}</span>` : ''}
                         <p style="color: var(--accent); font-weight:bold;">${item.price || 0} ELO</p>
                         <button class="btn ${already ? 'btn-secondary' : 'btn-primary'}" onclick="buyItem(${item.id})" ${already ? 'disabled' : ''}>
-                            ${already ? '✓ Куплен' : 'Купить за ' + (item.price || 0)}
+                            ${already ? '✓ Забрано' : 'Забрать за ' + (item.price || 0) + ' ELO'}
                         </button>
                     </div>
                 `;
@@ -1670,25 +1564,16 @@
         }
 
         async function buyItem(id) {
-            const item = (db?.shopItems || []).find(i => i.id === id);
-            const currentUser = getCurrentUser();
-            if (!item || !currentUser) return;
-
-            if (!currentUser.inventory) currentUser.inventory = [];
-            if (currentUser.inventory.some(i => i.id === id)) return;
-
-            if ((currentUser.elo || 0) < item.price) {
-                alert(`Недостаточно ELO. Нужно ${item.price}, у вас ${currentUser.elo || 0}.`);
-                return;
-            }
-
-            currentUser.elo -= item.price;
-            currentUser.inventory.push({...item});
-                        await saveData();
-            renderShop();
-            renderInventory();
-            renderAnimeArena();
-            alert(`✓ Товар куплен!`);
+            const item=(db?.shopItems||[]).find(i=>i.id===id); if(!item) return;
+            const name=prompt(`Введите ваш ник, чтобы забрать «${item.name}» за ${item.price||0} ELO:`);
+            if(!name) return;
+            const player=await getOrCreateGuestPlayer(name); if(!player) return;
+            player.inventory=player.inventory||[];
+            if(player.inventory.some(i=>i.id===id)){ alert('У этого игрока предмет уже есть.'); return; }
+            if((player.elo||0)<(item.price||0)){ alert(`Недостаточно ELO. У игрока ${player.elo||0}, нужно ${item.price||0}.`); return; }
+            player.elo-=item.price||0; player.inventory.push({...item,claimedBy:player.name,claimedAt:new Date().toISOString()});
+            await saveDataToCloud(); renderShop(); renderLeaderboard();
+            alert(`✓ ${item.name} выдан игроку ${player.name}.`);
         }
 
         function renderInventory() {
@@ -1776,7 +1661,7 @@
                             <td><b>${p.name || ''}</b></td>
                             <td style="color: var(--text-muted);">${p.email || ''}</td>
                             <td><span style="color: var(--accent); font-weight: bold;">${p.elo || 0} ELO</span> (Ур. ${p.level || 1})</td>
-                            <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span></td>
+                            <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span>${p.role==='streamer'?`<div style="font-size:10px;color:var(--accent);margin-top:3px;">Клан: ${p.clan||'Нет клана'}</div>`:''}</td>
                             <td>
                                 <div style="font-size: 11px; color: #ff5500;">⚔️ Аниме Арена: <a href="${linkAnime}" target="_blank" style="color: #ff5500;">Открыть</a></div>
                                 <div style="font-size: 11px; color: #ff4757;">HUD Кланов: <a href="${linkC}" target="_blank" style="color: #ff4757;">Открыть</a></div>
@@ -1883,19 +1768,20 @@
         }
 
         async function makePlayerStreamerQuick(playerName) {
-            let targetPlayer = (db?.players || []).find(p => p.name === playerName);
-            if (targetPlayer && targetPlayer.role !== 'creator' && targetPlayer.role !== 'admin') targetPlayer.role = 'streamer';
-
-            if (!db.streamers) db.streamers = [];
-            if (!db.streamers.some(s => s.name?.toLowerCase() === playerName.toLowerCase())) {
-                db.streamers.push({ id: Date.now(), name: playerName, url: 'https://twitch.tv/', priority: 1 });
-            }
-            if (!db.streamDataMap) db.streamDataMap = {};
-            if (!db.streamDataMap[playerName]) {
-                db.streamDataMap[playerName] = { player1: playerName, clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
-            }
-            await saveData();
-            alert(`Игроку "${playerName}" выдан оверлей и роль стримера!`);
+            if(!isCreator()){alert('Только создатель может выдавать статус стримера.');return;}
+            let targetPlayer=(db?.players||[]).find(p=>p.name===playerName);
+            if(!targetPlayer) return;
+            if(targetPlayer.role==='creator'){alert('Создатель уже имеет максимальный статус.');return;}
+            const clan=prompt(`Клан стримера ${playerName}:`,targetPlayer.clan||'Нет клана');
+            targetPlayer.role='streamer'; targetPlayer.clan=(clan||'Нет клана').trim();
+            if(!db.streamers) db.streamers=[];
+            const existing=db.streamers.find(s=>s.name?.toLowerCase()===playerName.toLowerCase());
+            if(!existing) db.streamers.push({id:Date.now(),name:playerName,clan:targetPlayer.clan,url:'https://twitch.tv/',priority:1});
+            else existing.clan=targetPlayer.clan;
+            if(!db.streamDataMap) db.streamDataMap={};
+            if(!db.streamDataMap[playerName]) db.streamDataMap[playerName]={player1:playerName,clan1:targetPlayer.clan,score1:0,player2:'PLAYER2',clan2:'WAKANDA',score2:0};
+            await saveData(); renderStreamers(); renderLeaderboard();
+            alert(`✓ ${playerName} получил статус стримера.`);
         }
 
         async function removeStreamerByName(playerName) {
@@ -1922,6 +1808,7 @@
         }
 
         async function applyAdminChanges() {
+            if(!isCreator()){alert('Только создатель может менять роли.');return;}
             const userSelect = document.getElementById('adminUserSelect');
             if (!userSelect) return;
             const userId = parseInt(userSelect.value);
@@ -2026,15 +1913,7 @@
             await loadDataFromCloud();
             // Автоматически восстанавливаем последний аккаунт на этом устройстве.
             if (!currentUserId && cachedSession?.id) currentUserId = cachedSession.id;
-            if (!currentUserId || !getCurrentUser()) {
-                document.getElementById('authModal').style.display = 'flex';
-            } else {
-                // Обновляем локальную сессию свежими данными из облака.
-                const restoredUser = getCurrentUser();
-                if (restoredUser) rememberDeviceSession(restoredUser);
-                document.getElementById('authModal').style.display = 'none';
-                initApp();
-            }
+            if (currentUserId && getCurrentUser()) { initApp(); } else { currentUserId=null; initApp(); }
 
             setInterval(async () => {
                 let prevDataStr = JSON.stringify(db);
@@ -2045,3 +1924,5 @@
     </script>
 </body>
 </html>
+
+<style>.stats-card{display:none!important}.profile-widget{display:none!important}.page-matches>.card[style*='МОЙ ИНВЕНТАРЬ']{display:none!important}#registerFormBlock,#tabRegisterBtn{display:none!important}</style>
