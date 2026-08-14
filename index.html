@@ -213,54 +213,95 @@
         #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
         body.obs-overlay #obsOverlayRoot { display:block; }
 
+        /* OBS VS — персонажи по бокам, как в игровом VS-экране */
         .obs-vs {
-            position:absolute; left:50%; top:18%; transform:translateX(-50%);
-            width:min(1100px,94vw); display:grid; grid-template-columns:1fr 120px 1fr;
-            align-items:start; gap:18px;
+            position:absolute; left:50%; top:9%; transform:translateX(-50%);
+            width:min(1180px,94vw); display:grid; grid-template-columns:1fr 150px 1fr;
+            align-items:start; gap:20px;
         }
-        .obs-char { position:relative; min-height:125px; display:flex; justify-content:center; }
-        .obs-character-img { display:none !important; }
-        .obs-avatar-wrap { position:relative; width:62px; height:62px; display:flex; align-items:center; justify-content:center; margin-bottom:2px; }
-        .obs-avatar { width:58px; height:58px; border-radius:50%; object-fit:cover; display:block; background:#15171d; border:2px solid rgba(255,255,255,.78); box-shadow:0 0 18px rgba(255,85,0,.35); }
-        .obs-avatar-frame { position:absolute; inset:-5px; width:72px; height:72px; object-fit:contain; display:block; pointer-events:none; z-index:2; }
+        .obs-char {
+            position:relative; height:360px; display:flex; justify-content:center;
+            align-items:flex-end; overflow:visible;
+        }
+
+        /* Персонаж из магазина/экипировки */
+        .obs-character-img {
+            display:block !important;
+            position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+            width:min(360px,30vw); height:350px; object-fit:contain;
+            object-position:center bottom; z-index:1;
+            filter:drop-shadow(0 14px 24px rgba(0,0,0,.7));
+            animation:obsCharacterFloat 1.8s ease-in-out infinite;
+        }
+        .obs-char.right .obs-character-img { animation-delay:-.9s; }
+
+        /* Убраны круглые аватарки. Аватар теперь обычная прямоугольная карточка. */
+        .obs-avatar-wrap {
+            position:relative; width:150px; height:82px; display:flex;
+            align-items:center; justify-content:center; margin-bottom:2px;
+        }
+        .obs-avatar {
+            width:150px; height:82px; border-radius:7px; object-fit:cover;
+            display:block; background:#15171d; border:1px solid rgba(255,255,255,.22);
+            box-shadow:0 8px 22px rgba(0,0,0,.55);
+        }
+        .obs-avatar-frame {
+            position:absolute; inset:-4px; width:158px; height:90px;
+            object-fit:contain; display:block; pointer-events:none; z-index:2;
+        }
+
         .obs-player-card {
-            position:relative; z-index:3; width:min(360px,34vw); min-height:88px;
-            padding:14px 24px 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px;
-            border-radius:7px; background:rgba(9,10,14,.92);
+            position:absolute; left:50%; top:8px; transform:translateX(-50%);
+            z-index:4; width:min(330px,30vw); min-height:72px;
+            padding:10px 16px; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:5px;
+            border-radius:7px; background:rgba(9,10,14,.90);
             border:1px solid rgba(255,255,255,.16);
-            box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+            box-shadow:0 8px 24px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
         }
         .obs-char:first-child .obs-player-card { border-top:3px solid #ff5500; }
         .obs-char.right .obs-player-card { border-top:3px solid #00bfff; }
-        .obs-char.right .obs-avatar { box-shadow:0 0 18px rgba(0,191,255,.35); }
+
+        /* Если аватара нет — карточка содержит только ник. */
+        .obs-player-card.obs-name-only {
+            min-height:58px; padding:13px 18px;
+        }
         .obs-name {
             position:static !important; transform:none !important; width:100%;
-            color:#fff; font-size:29px; font-weight:1000; line-height:1.05;
+            color:#fff; font-size:28px; font-weight:1000; line-height:1.05;
             text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
             text-shadow:0 3px 12px #000; letter-spacing:.8px;
         }
         .obs-clan-label {
-            font-size:11px; color:#aeb4c0; font-weight:900; text-transform:uppercase;
-            letter-spacing:1.8px; line-height:1;
+            font-size:10px; color:#aeb4c0; font-weight:900;
+            text-transform:uppercase; letter-spacing:1.5px; line-height:1;
         }
         .obs-vs-text {
-            text-align:center; padding-top:25px; font-size:46px; line-height:1;
+            text-align:center; padding-top:125px; font-size:52px; line-height:1;
             font-weight:1000; font-style:italic; color:#fff;
             text-shadow:0 0 20px rgba(255,85,0,.75),0 4px 8px #000;
+            animation:obsVs 1.2s ease-in-out infinite;
         }
         .obs-char::before, .obs-char::after { display:none !important; }
 
-        @keyframes obsCharIn {
-            from { opacity:0; transform:translateY(30px) scale(.85); }
-            to { opacity:1; transform:translateY(0) scale(1); }
-        }
-        @keyframes obsFloat {
+        @keyframes obsCharacterFloat {
             0%,100% { margin-bottom:0; }
-            50% { margin-bottom:10px; }
+            50% { margin-bottom:9px; }
         }
         @keyframes obsVs {
             0%,100% { transform:scale(1); }
             50% { transform:scale(1.08); }
+        }
+
+        @media(max-width:900px){
+            .obs-vs { grid-template-columns:1fr 90px 1fr; gap:8px; }
+            .obs-char { height:300px; }
+            .obs-character-img { width:42vw; height:290px; }
+            .obs-player-card { width:min(280px,42vw); }
+            .obs-avatar-wrap,.obs-avatar { width:125px; height:68px; }
+            .obs-avatar-frame { width:133px; height:76px; }
+            .obs-name { font-size:22px; }
+            .obs-vs-text { font-size:40px; padding-top:105px; }
         }
 
         /* === КРАСИВЫЙ ДИЗАЙН HUD КЛАНОВ === */
@@ -3635,27 +3676,42 @@
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
+                            // Показываем купленный/надетый аватар только если он действительно надет.
+                            // Старый круглый DiceBear-аватар больше не показывается.
+                            const hasAvatar1 = !!(p1Obj?.activeAvatarId && p1Obj?.avatar);
+                            const hasAvatar2 = !!(p2Obj?.activeAvatarId && p2Obj?.avatar);
+
+                            const safeName1 = escapeHistoryText(sd.player1 || 'PLAYER 1');
+                            const safeName2 = escapeHistoryText(sd.player2 || 'PLAYER 2');
+                            const safeClan1 = escapeHistoryText(sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА');
+                            const safeClan2 = escapeHistoryText(sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА');
+
+                            const avatar1 = hasAvatar1
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p1Obj.avatar}" alt="">${p1Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p1Obj.equippedFrame}" alt="">` : ''}</div>`
+                                : '';
+                            const avatar2 = hasAvatar2
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p2Obj.avatar}" alt="">${p2Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p2Obj.equippedFrame}" alt="">` : ''}</div>`
+                                : '';
+
                             obsContainer.innerHTML = `
                                 <div class="obs-vs">
                                     <div class="obs-char">
-                                        <div class="obs-player-card">
-                                            <div class="obs-avatar-wrap">
-                                                <img class="obs-avatar" src="${p1Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(sd.player1 || 'player1')}" alt="">
-                                                ${p1Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p1Obj.equippedFrame}" alt="">` : ''}
-                                            </div>
-                                            <div class="obs-clan-label">${sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА'}</div>
-                                            <div class="obs-name">${sd.player1 || 'PLAYER 1'}</div>
+                                        <img class="obs-character-img" src="${char1Img}" alt="">
+                                        <div class="obs-player-card ${hasAvatar1 ? '' : 'obs-name-only'}">
+                                            ${avatar1}
+                                            ${hasAvatar1 ? `<div class="obs-clan-label">${safeClan1}</div>` : ''}
+                                            <div class="obs-name">${safeName1}</div>
                                         </div>
                                     </div>
+
                                     <div class="obs-vs-text">VS</div>
+
                                     <div class="obs-char right">
-                                        <div class="obs-player-card">
-                                            <div class="obs-avatar-wrap">
-                                                <img class="obs-avatar" src="${p2Obj?.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(sd.player2 || 'player2')}" alt="">
-                                                ${p2Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p2Obj.equippedFrame}" alt="">` : ''}
-                                            </div>
-                                            <div class="obs-clan-label">${sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА'}</div>
-                                            <div class="obs-name">${sd.player2 || 'PLAYER 2'}</div>
+                                        <img class="obs-character-img" src="${char2Img}" alt="">
+                                        <div class="obs-player-card ${hasAvatar2 ? '' : 'obs-name-only'}">
+                                            ${avatar2}
+                                            ${hasAvatar2 ? `<div class="obs-clan-label">${safeClan2}</div>` : ''}
+                                            <div class="obs-name">${safeName2}</div>
                                         </div>
                                     </div>
                                 </div>
