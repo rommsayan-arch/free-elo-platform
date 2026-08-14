@@ -1400,6 +1400,117 @@
             }
         }
 
+
+        .player-top100-card{
+            overflow:hidden;
+            background:
+                radial-gradient(circle at 88% 12%,rgba(0,229,255,.08),transparent 24%),
+                radial-gradient(circle at 10% 88%,rgba(139,92,246,.10),transparent 28%),
+                linear-gradient(180deg,#0e1220,#090c14);
+        }
+        .player-top100-heading{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:18px;
+            margin-bottom:18px;
+        }
+        .player-top100-heading h2{
+            margin:0 0 5px;
+            font-family:'Orbitron',sans-serif;
+            font-size:22px;
+            color:#fff;
+        }
+        .player-top100-heading h2 i{color:#ffd76a;margin-right:7px}
+        .player-top100-heading p{
+            margin:0;
+            color:#7f8ca5;
+            font-size:12px;
+        }
+        .player-top100-badge{
+            flex:0 0 auto;
+            padding:8px 12px;
+            border-radius:999px;
+            background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(0,229,255,.08));
+            border:1px solid rgba(139,92,246,.28);
+            color:#d7dcff;
+            font-family:'Orbitron',sans-serif;
+            font-size:9px;
+            letter-spacing:.8px;
+        }
+        .player-top100-table{
+            width:100%;
+            min-width:720px;
+            table-layout:auto !important;
+        }
+        .player-top100-table th,
+        .player-top100-table td{
+            white-space:nowrap !important;
+            writing-mode:horizontal-tb !important;
+            word-break:normal !important;
+            overflow-wrap:normal !important;
+            vertical-align:middle !important;
+        }
+        .player-top100-table tbody tr{
+            height:52px;
+            border-top:1px solid rgba(255,255,255,.06);
+        }
+        .rank-number{
+            font-family:'Orbitron',sans-serif;
+            font-size:11px;
+            color:#b7bfd0;
+        }
+        .player-rank-name{
+            font-weight:800;
+            color:#fff;
+            letter-spacing:.2px;
+        }
+        .player-cell:hover .player-rank-name,
+        .clan-cell:hover{
+            color:#22d3ee;
+        }
+        .clan-cell{
+            color:#abb5c8;
+            font-weight:700;
+        }
+        .elo-cell b{
+            color:#a78bfa;
+            font-family:'Orbitron',sans-serif;
+            text-shadow:0 0 12px rgba(167,139,250,.18);
+        }
+        .matches-cell{color:#dfe5f4;font-weight:800}
+        .wins-cell{color:#64f39a;font-weight:800}
+        .player-top100-table small{color:#78e9b0}
+        @media(max-width:768px){
+            .player-top100-card{
+                padding:16px !important;
+            }
+            .player-top100-heading{
+                flex-direction:column;
+                gap:10px;
+            }
+            .player-top100-heading h2{
+                font-size:17px;
+                line-height:1.2;
+            }
+            .player-top100-heading p{
+                font-size:10px;
+                line-height:1.35;
+            }
+            .player-top100-badge{
+                font-size:8px;
+                padding:7px 10px;
+            }
+            .player-top100-table{
+                min-width:650px !important;
+            }
+            .player-top100-table th,
+            .player-top100-table td{
+                font-size:10px !important;
+                padding:10px 9px !important;
+            }
+        }
+
 </style>
 </head>
 <body>
@@ -1523,19 +1634,26 @@
         </div>
 
         <div id="page-leaderboard" class="page-content">
-            <div class="card global-top100-card" style="grid-column: span 12;">
-                <h2><i class="fas fa-crown" style="color: var(--accent);"></i> Официальный глобальный Топ-100 игроков</h2>
-                <div class="table-scroll-container">
-                    <table>
+            <div class="card global-top100-card player-top100-card" style="grid-column: span 12;">
+                <div class="player-top100-heading">
+                    <div>
+                        <span class="section-kicker">GLOBAL RANKING</span>
+                        <h2><i class="fas fa-crown"></i> ТОП-100 ИГРОКОВ ПЛАТФОРМЫ</h2>
+                        <p>Здесь только игроки — кланы отображаются как отдельная информация в строке игрока.</p>
+                    </div>
+                    <div class="player-top100-badge"><i class="fas fa-users"></i> 100 МЕСТ</div>
+                </div>
+                <div class="table-scroll-container global-top100-table-wrap">
+                    <table class="player-top100-table">
                         <thead>
                             <tr>
-                                <th style="width: 80px;"># Место</th>
-                                <th>Ник игрока</th>
+                                <th>#</th>
+                                <th>Игрок</th>
                                 <th>Клан</th>
-                                <th>Уровень</th>
-                                <th>ELO очки</th>
+                                <th>Ур.</th>
+                                <th>ELO</th>
                                 <th>Матчи / Победы</th>
-                                <th>Статус / Роль</th>
+                                <th>Роль</th>
                             </tr>
                         </thead>
                         <tbody id="top100TableBody"></tbody>
@@ -2078,7 +2196,7 @@
             const titles = {
                 'matches': 'МАТЧИ И СТАТИСТИКА',
                 'feed': 'ЛЕНТА',
-                'leaderboard': 'ТОП 100 ИГРОКОВ ПЛАТФОРМЫ',
+                'leaderboard': 'ТОП-100 ИГРОКОВ',
                 'season': 'ТОП СЕЗОНА',
                 'streamers': 'ПРЯМЫЕ ТРАНСЛЯЦИИ И OBS ОВЕРЛЕИ',
                 'clans': 'КЛАНЫ ПЛАТФОРМЫ',
@@ -2131,23 +2249,38 @@
         function renderTop100() {
             const tbody = document.getElementById('top100TableBody');
             if (!tbody) return;
-            tbody.innerHTML = '';
-            let sorted = [...(db?.players || [])].sort((a, b) => (b.elo || 0) - (a.elo || 0));
-            sorted.forEach((p, index) => {
-                let wr = (p.matches > 0) ? Math.round(((p.wins || 0) / p.matches) * 100) : 0;
-                let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>#${index + 1}</b></td>
-                        <td class="clickable-player" onclick="showPlayerHistory(${p.id})"><b>${p.name || ''}</b></td>
-                        <td class="clickable-clan" onclick="showClanHistory(${JSON.stringify(p.clan || '')})">${p.clan || 'Нет клана'}</td>
-                        <td><span class="level-badge">${p.level || 1}</span></td>
-                        <td style="color: var(--accent); font-weight: bold;">${p.elo || 0} ELO</td>
-                        <td>${p.matches || 0} / <span style="color: #00be63;">${p.wins || 0} (${wr}%)</span></td>
-                        <td><span class="${roleClass}">${(p.role || 'player').toUpperCase()}</span>${p.role==='streamer'?`<div style="font-size:10px;color:var(--accent);margin-top:3px;">Клан: ${p.clan||'Нет клана'}</div>`:''}</td>
-                    </tr>
-                `;
-            });
+
+            const players = [...(db?.players || [])]
+                .filter(Boolean)
+                .sort((a, b) =>
+                    (Number(b.elo || 0) - Number(a.elo || 0)) ||
+                    (Number(b.wins || 0) - Number(a.wins || 0)) ||
+                    (Number(b.matches || 0) - Number(a.matches || 0))
+                )
+                .slice(0, 100);
+
+            tbody.innerHTML = players.map((p, index) => {
+                const matches = Number(p.matches || 0);
+                const wins = Number(p.wins || 0);
+                const wr = matches > 0 ? Math.round((wins / matches) * 100) : 0;
+                const roleClass = p.role === 'creator' ? 'role-badge creator' : 'role-badge';
+                const clan = p.clan || 'Нет клана';
+
+                return `<tr>
+                    <td><span class="rank-number">#${index + 1}</span></td>
+                    <td class="player-cell clickable-player" onclick="showPlayerHistory(${p.id})">
+                        <span class="player-rank-name">${escapeHistoryText(p.name || 'Игрок')}</span>
+                    </td>
+                    <td class="clan-cell ${clan !== 'Нет клана' ? 'clickable-clan' : ''}"
+                        ${clan !== 'Нет клана' ? `onclick="showClanHistory(${JSON.stringify(clan)})"` : ''}>
+                        ${escapeHistoryText(clan)}
+                    </td>
+                    <td><span class="level-badge">${Number(p.level || 1)}</span></td>
+                    <td class="elo-cell"><b>${Number(p.elo || 0)}</b></td>
+                    <td><span class="matches-cell">${matches}</span> / <span class="wins-cell">${wins}</span> <small>(${wr}%)</small></td>
+                    <td><span class="${roleClass}">${String(p.role || 'player').toUpperCase()}</span></td>
+                </tr>`;
+            }).join('');
         }
 
         function getCurrentSeasonNumber(){ return Math.max(1, parseInt(db?.currentSeason,10)||1); }
