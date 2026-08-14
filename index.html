@@ -866,7 +866,7 @@
             .top-players table{min-width:620px}
             .top-players td,.top-players th{padding:9px 8px;font-size:11px}
             .card{border-radius:15px}
-            .table-scroll-container{max-width:100%;overflow-x:auto}
+            .table-scroll-container{max-width:100%;overflow-x:auto;min-width:0}.table-scroll-container table{min-width:0}
             .feed-layout,.news-grid,.clan-grid,.streamers-grid,.shop-grid,.inventory-grid{
                 display:grid!important;grid-template-columns:1fr!important;
             }
@@ -889,6 +889,202 @@
             .stat-value{font-size:22px}
             .top-players h3{font-size:12px}
             .top-players table{min-width:590px}
+        }
+
+
+        /* --- FINAL MOBILE TOP 100 / CLANS FIX --- */
+        .global-top100-card,
+        #page-leaderboard > .card:first-child {
+            width:100%;
+            max-width:100%;
+            box-sizing:border-box;
+        }
+        .global-top100-table-wrap {
+            width:100%;
+            overflow-x:auto;
+            overflow-y:hidden;
+            -webkit-overflow-scrolling:touch;
+            scrollbar-width:thin;
+        }
+        .global-top100-table-wrap table {
+            width:100%;
+            min-width:0 !important;
+            table-layout:fixed;
+        }
+        .global-top100-table-wrap th,
+        .global-top100-table-wrap td {
+            white-space:normal !important;
+            word-break:break-word;
+            overflow-wrap:anywhere;
+            line-height:1.2;
+        }
+        .global-top100-table-wrap th {
+            font-size:10px;
+        }
+        .global-top100-table-wrap td {
+            font-size:11px;
+        }
+        .global-top100-table-wrap .elo-cell {
+            white-space:nowrap !important;
+        }
+        .global-top100-table-wrap .player-cell {
+            min-width:0;
+        }
+        #page-clans .clan-card {
+            width:100%;
+            box-sizing:border-box;
+        }
+        #page-clans .clan-card h3 {
+            min-width:0;
+            max-width:100%;
+            white-space:normal;
+            overflow-wrap:anywhere;
+            word-break:break-word;
+            line-height:1.15;
+        }
+        #page-clans .clan-card p {
+            white-space:normal;
+            overflow-wrap:anywhere;
+            word-break:break-word;
+        }
+
+        @media (max-width:768px) {
+            /* One-column full-width sections for mobile */
+            #page-leaderboard.active,
+            #page-clans.active,
+            #page-season.active {
+                grid-template-columns:1fr !important;
+            }
+
+            #page-leaderboard > .card,
+            #page-clans > .card,
+            #page-season > .card {
+                grid-column:1 !important;
+                width:100% !important;
+                max-width:100% !important;
+            }
+
+            #page-leaderboard .global-top100-card {
+                padding:14px !important;
+            }
+
+            #page-leaderboard .global-top100-card h2 {
+                font-size:17px !important;
+                line-height:1.15;
+                overflow-wrap:anywhere;
+            }
+
+            #page-leaderboard .global-top100-table-wrap {
+                margin:0;
+                border-radius:12px;
+            }
+
+            /* Fixed balanced column widths so text does not become one-letter vertical */
+            #page-leaderboard .global-top100-table-wrap table {
+                table-layout:fixed !important;
+                width:100% !important;
+            }
+            #page-leaderboard .global-top100-table-wrap th:nth-child(1),
+            #page-leaderboard .global-top100-table-wrap td:nth-child(1){width:8%}
+            #page-leaderboard .global-top100-table-wrap th:nth-child(2),
+            #page-leaderboard .global-top100-table-wrap td:nth-child(2){width:20%}
+            #page-leaderboard .global-top100-table-wrap th:nth-child(3),
+            #page-leaderboard .global-top100-table-wrap td:nth-child(3){width:18%}
+            #page-leaderboard .global-top100-table-wrap th:nth-child(4),
+            #page-leaderboard .global-top100-table-wrap td:nth-child(4){width:12%}
+            #page-leaderboard .global-top100-table-wrap th:nth-child(5),
+            #page-leaderboard .global-top100-table-wrap td:nth-child(5){width:13%}
+            #page-leaderboard .global-top100-table-wrap th:nth-child(6),
+            #page-leaderboard .global-top100-table-wrap td:nth-child(6){width:13%}
+            #page-leaderboard .global-top100-table-wrap th:nth-child(7),
+            #page-leaderboard .global-top100-table-wrap td:nth-child(7){width:16%}
+
+            #page-clans .card[style*="grid-column: span 12"] {
+                padding:16px !important;
+            }
+            #page-clans .clan-card {
+                min-height:0;
+                padding:16px !important;
+                border-radius:16px;
+            }
+            #page-clans .clan-card h3 {
+                font-size:17px !important;
+            }
+
+            /* Season: same visual hero concept as main page */
+            #page-season .season-hero {
+                position:relative;
+                overflow:hidden;
+                min-height:225px;
+                display:flex;
+                flex-direction:column;
+                justify-content:center;
+                padding:25px 20px !important;
+                border-radius:18px;
+                background:
+                    radial-gradient(circle at 86% 18%,rgba(0,229,255,.16),transparent 22%),
+                    radial-gradient(circle at 14% 86%,rgba(139,92,246,.18),transparent 30%),
+                    linear-gradient(120deg,#0a0c15,#11152a 55%,#0a0d17) !important;
+                border:1px solid rgba(139,92,246,.20);
+                box-shadow:0 24px 60px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.035);
+            }
+            #page-season .season-hero::after{
+                content:"SEASON";
+                position:absolute;
+                right:-12px;
+                bottom:-28px;
+                font-family:'Orbitron',sans-serif;
+                font-weight:900;
+                font-size:70px;
+                letter-spacing:4px;
+                color:rgba(255,255,255,.022);
+                transform:rotate(-8deg);
+                white-space:nowrap;
+            }
+            #page-season .season-hero .season-title {
+                font-family:'Orbitron',sans-serif !important;
+                font-size:28px !important;
+                line-height:1.08;
+                letter-spacing:1.5px;
+                margin:0;
+                max-width:92%;
+                background:linear-gradient(90deg,#fff,#a78bfa,#22d3ee,#ff79c6);
+                -webkit-background-clip:text;
+                background-clip:text;
+                color:transparent !important;
+                position:relative;
+                z-index:2;
+            }
+            #page-season .season-hero .season-subtitle {
+                font-size:12px !important;
+                line-height:1.4;
+                max-width:78%;
+                color:#a9b4c9;
+                margin-top:10px;
+                position:relative;
+                z-index:2;
+            }
+            #page-season .season-hero .season-days {
+                align-self:flex-start;
+                margin-top:18px;
+                font-family:'Orbitron',sans-serif;
+                font-size:13px;
+                padding:10px 14px;
+                border-radius:12px;
+                background:rgba(15,18,28,.72);
+                border:1px solid rgba(139,92,246,.25);
+                box-shadow:0 8px 30px rgba(0,0,0,.24);
+                position:relative;
+                z-index:2;
+            }
+        }
+
+        @media (max-width:420px) {
+            #page-leaderboard .global-top100-card h2 {font-size:15px !important}
+            #page-leaderboard .global-top100-table-wrap th {font-size:9px}
+            #page-leaderboard .global-top100-table-wrap td {font-size:10px}
+            #page-clans .clan-card h3 {font-size:16px !important}
+            #page-season .season-hero .season-title {font-size:24px !important}
         }
 
 </style>
@@ -1014,7 +1210,7 @@
         </div>
 
         <div id="page-leaderboard" class="page-content">
-            <div class="card" style="grid-column: span 12;">
+            <div class="card global-top100-card" style="grid-column: span 12;">
                 <h2><i class="fas fa-crown" style="color: var(--accent);"></i> Официальный глобальный Топ-100 игроков</h2>
                 <div class="table-scroll-container">
                     <table>
@@ -1036,7 +1232,13 @@
         </div>
 
         <div id="page-season" class="page-content">
-            <div class="card" style="grid-column: span 12;">
+            <div class="card season-hero">
+                    <div class="section-kicker">SEASON 2</div>
+                    <h2 class="season-title">СЕЗОН 2: БИТВА ЗА ЛЕГЕНДУ</h2>
+                    <p class="season-subtitle">Сражайтесь в матчах, поднимайте ELO и забирайте награды!</p>
+                    <div class="season-days"><i class="fas fa-clock"></i> До конца: <b>30 дн.</b></div>
+                </div>
+<div class="card" style="grid-column: span 12;">
                 <div class="season-banner">
                     <div>
                         <h1 id="seasonPageTitle" style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-trophy"></i> СЕЗОН 1: БИТВА ЗА ЛЕГЕНДУ</h1>
