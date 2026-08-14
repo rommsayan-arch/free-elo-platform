@@ -2290,7 +2290,7 @@
             let existing=getGuestPlayerByName(n);
             if(existing) return existing;
             if(!db.players) db.players=[];
-            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:1000,matches:0,wins:0,level:1,role:'player',clan:'Нет клана',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
+            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'Нет клана',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
             db.players.push(player);
             await saveDataToCloud();
             return player;
@@ -2758,7 +2758,7 @@
 
             const makeNewPlayer = (name) => ({
                 id: Date.now() + Math.floor(Math.random() * 100000),
-                name, email:'', password:'', elo:1000, matches:0, wins:0, level:1,
+                name, email:'', password:'', elo:0, matches:0, wins:0, level:1,
                 role:'player', clan:'Нет клана',
                 avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
                 frame:'', inventory:[], equippedCharacter:''
@@ -2968,9 +2968,9 @@
                     cards.push(`<div class="feed-card">
                         <div class="feed-head"><div class="feed-logo"><i class="fas fa-trophy"></i></div><div><div class="feed-title">Результат матча</div><div class="feed-time">${formatMatchDate(m.date)}${m.streamer ? ' • '+feedEscape(m.streamer) : ''}</div></div></div>
                         <div class="feed-match">
-                            <div class="feed-team"><div class="feed-team-name clickable-player" onclick="showPlayerHistory(${m.player1Id})">${feedEscape(m.player1)}</div><div class="feed-team-clan clickable-clan" onclick="showClanHistory('${String(m.clan1||'').replace(/'/g,"\\'")}')">${m.clan1 && m.clan1 !== 'Нет клана' && m.clan1 !== 'Без клана' ? feedEscape(m.clan1) : ''}</div></div>
+                            <div class="feed-team"><div class="feed-team-name clickable-player" onclick="showPlayerHistory(${m.player1Id})">${feedEscape(m.player1)}</div><div class="feed-team-clan clickable-clan" onclick="showClanHistory('${String(m.clan1||'').replace(/'/g,"\\'")}')">${feedEscape(m.clan1 || 'Без клана')}</div></div>
                             <div class="feed-result">${winnerId ? 'ПОБЕДА' : 'VS'}<small>${winnerId ? feedEscape(winner) : ''}</small></div>
-                            <div class="feed-team right"><div class="feed-team-name clickable-player" onclick="showPlayerHistory(${m.player2Id})">${feedEscape(m.player2)}</div><div class="feed-team-clan clickable-clan" onclick="showClanHistory('${String(m.clan2||'').replace(/'/g,"\\'")}')">${m.clan2 && m.clan2 !== 'Нет клана' && m.clan2 !== 'Без клана' ? feedEscape(m.clan2) : ''}</div></div>
+                            <div class="feed-team right"><div class="feed-team-name clickable-player" onclick="showPlayerHistory(${m.player2Id})">${feedEscape(m.player2)}</div><div class="feed-team-clan clickable-clan" onclick="showClanHistory('${String(m.clan2||'').replace(/'/g,"\\'")}')">${feedEscape(m.clan2 || 'Без клана')}</div></div>
                         </div>
                         <div class="feed-actions"><button class="btn btn-secondary" onclick="showPlayerHistory(${m.player1Id})">История ${feedEscape(m.player1)}</button><button class="btn btn-secondary" onclick="showPlayerHistory(${m.player2Id})">История ${feedEscape(m.player2)}</button></div>
                     </div>`);
@@ -3090,17 +3090,17 @@
                 const ownResult = m.winnerId == user.id ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
                 const ownClass = m.winnerId == user.id ? 'result-win' : 'result-loss';
                 return `<div class="history-mini-row">
-                    <div class="history-mini-team"><div class="history-mini-name">${escapeHistoryText(user.name)}</div><div class="history-mini-clan">${escapeHistoryText((m.player1Id == user.id ? m.clan1 : m.clan2) === 'Нет клана' || (m.player1Id == user.id ? m.clan1 : m.clan2) === 'Без клана' ? '' : (m.player1Id == user.id ? m.clan1 : m.clan2))}</div><div class="history-mini-result ${ownClass}">${ownResult}</div></div>
+                    <div class="history-mini-team"><div class="history-mini-name">${escapeHistoryText(user.name)}</div><div class="history-mini-clan">${escapeHistoryText(m.player1Id == user.id ? m.clan1 : m.clan2)}</div><div class="history-mini-result ${ownClass}">${ownResult}</div></div>
                     <div class="history-mini-vs">VS</div>
-                    <div class="history-mini-team right"><div class="history-mini-name">${escapeHistoryText(other)}</div><div class="history-mini-clan">${escapeHistoryText((m.player1Id == user.id ? m.clan2 : m.clan1) === 'Нет клана' || (m.player1Id == user.id ? m.clan2 : m.clan1) === 'Без клана' ? '' : (m.player1Id == user.id ? m.clan2 : m.clan1))}</div><div class="history-mini-result">${formatMatchDate(m.date)}</div></div>
+                    <div class="history-mini-team right"><div class="history-mini-name">${escapeHistoryText(other)}</div><div class="history-mini-clan">${escapeHistoryText(m.player1Id == user.id ? m.clan2 : m.clan1)}</div><div class="history-mini-result">${formatMatchDate(m.date)}</div></div>
                 </div>`;
             }).join('') : '<div class="history-empty">История матчей пока пустая.</div>';
 
             const ch = getMatchHistory().filter(m => user.clan && user.clan !== 'Нет клана' && (m.clan1 === user.clan || m.clan2 === user.clan)).slice(0,6);
             clanBox.innerHTML = ch.length ? ch.map(m => `<div class="history-mini-row">
-                <div class="history-mini-team"><div class="history-mini-name">${escapeHistoryText(m.clan1 === 'Нет клана' || m.clan1 === 'Без клана' ? '' : m.clan1)}</div><div class="history-mini-clan">${escapeHistoryText(m.player1)}</div></div>
+                <div class="history-mini-team"><div class="history-mini-name">${escapeHistoryText(m.clan1)}</div><div class="history-mini-clan">${escapeHistoryText(m.player1)}</div></div>
                 <div class="history-mini-vs">${m.winnerId && (m.player1Id == m.winnerId || m.player2Id == m.winnerId) ? '✓' : 'VS'}</div>
-                <div class="history-mini-team right"><div class="history-mini-name">${escapeHistoryText(m.clan2 === 'Нет клана' || m.clan2 === 'Без клана' ? '' : m.clan2)}</div><div class="history-mini-clan">${escapeHistoryText(m.player2)}</div></div>
+                <div class="history-mini-team right"><div class="history-mini-name">${escapeHistoryText(m.clan2)}</div><div class="history-mini-clan">${escapeHistoryText(m.player2)}</div></div>
             </div>`).join('') : '<div class="history-empty">У твоего клана пока нет записанных игр.</div>';
         }
 
@@ -3195,7 +3195,7 @@
                 const d1 = m.winnerId == m.player1Id ? 'WIN' : 'LOSS';
                 const d2 = m.winnerId == m.player2Id ? 'WIN' : 'LOSS';
                 const change = focusedPlayer ? (m.winnerId == focusedPlayer ? `+${m.eloChangeWinner || 0}` : `${m.eloChangeLoser || 0}`) : '—';
-                return `<tr><td>${formatMatchDate(m.date)}</td><td class="${r1}">${escapeHistoryText(m.player1)}</td><td>${escapeHistoryText(m.clan1 === 'Нет клана' || m.clan1 === 'Без клана' ? '' : m.clan1)}</td><td style="text-align:center;">VS</td><td class="${r2}">${escapeHistoryText(m.player2)}</td><td>${escapeHistoryText(m.clan2 === 'Нет клана' || m.clan2 === 'Без клана' ? '' : m.clan2)}</td><td class="${m.winnerId == m.player1Id ? 'result-win' : 'result-win'}">${escapeHistoryText(m.winner)}</td><td>${change}</td></tr>`;
+                return `<tr><td>${formatMatchDate(m.date)}</td><td class="${r1}">${escapeHistoryText(m.player1)}</td><td>${escapeHistoryText(m.clan1)}</td><td style="text-align:center;">VS</td><td class="${r2}">${escapeHistoryText(m.player2)}</td><td>${escapeHistoryText(m.clan2)}</td><td class="${m.winnerId == m.player1Id ? 'result-win' : 'result-win'}">${escapeHistoryText(m.winner)}</td><td>${change}</td></tr>`;
             }).join('')}</tbody></table></div>`;
         }
 
@@ -3966,9 +3966,4 @@
 .clan-history-elo{margin-left:8px;font-size:14px;}
 .clickable-clan{user-select:none;}
 @media(max-width:600px){.clan-history-name{font-size:14px}.clan-history-versus{gap:7px}.clan-history-result{font-size:11px}.clan-history-elo{font-size:13px;margin-left:5px}}
-</style>
-
-<style id="hide-no-clan-label">
-/* Не показываем служебную надпись для игроков без клана. */
-.feed-team-clan:empty, .history-mini-clan:empty { display:none !important; }
 </style>
