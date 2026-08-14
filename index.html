@@ -313,7 +313,6 @@
         .clickable-player, .clickable-clan { cursor:pointer; transition:.18s ease; }
         .clickable-player:hover, .clickable-clan:hover { color:var(--accent) !important; text-shadow:0 0 12px rgba(255,85,0,.35); }
         .clan-card.clickable-clan { position:relative; }
-        .clan-card.clickable-clan::after { content:'ИСТОРИЯ ИГР →'; position:absolute; top:12px; right:12px; color:var(--text-muted); font-size:9px; font-weight:900; letter-spacing:1px; opacity:.7; }
         .history-modal { position:fixed; inset:0; z-index:1000000; display:flex; align-items:center; justify-content:center; padding:24px; }
         .history-modal-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(6px); }
         .history-modal-card { position:relative; width:min(1050px,96vw); max-height:86vh; overflow:auto; background:#111217; border:1px solid #3b3d46; border-radius:14px; box-shadow:0 25px 80px rgba(0,0,0,.65); padding:20px; }
@@ -354,7 +353,14 @@
         @media(max-width:900px){.feed-layout{grid-template-columns:1fr}}
         .section-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}.section-tab{background:#1b1c21;border:1px solid #30333b;color:#c9ccd4;border-radius:9px;padding:10px 16px;cursor:pointer;font-weight:800}.section-tab.active,.section-tab:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
         .news-grid{grid-column:span 12;display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:18px;align-items:start}.news-list,.creator-panel{display:flex;flex-direction:column;gap:14px}.news-card{background:linear-gradient(180deg,#17181d,#111216);border:1px solid var(--border-color);border-radius:14px;overflow:hidden;box-shadow:0 10px 35px rgba(0,0,0,.18)}.news-card-body{padding:18px}.news-card img{display:block;width:100%;max-height:420px;object-fit:cover;background:#0d0e11}.news-title{font-size:20px;font-weight:1000;margin-bottom:8px}.news-meta{font-size:10px;color:var(--text-muted);margin-bottom:12px}.news-text{font-size:13px;line-height:1.6;color:#e7e8eb;white-space:pre-wrap}.creator-panel .card{position:sticky;top:85px}.creator-only{border-color:#ff5500}.creator-label{display:inline-block;background:linear-gradient(45deg,#ff5500,#ff0055);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:900}.news-empty{padding:40px;text-align:center;color:var(--text-muted);border:1px dashed #30333b;border-radius:12px}@media(max-width:900px){.news-grid{grid-template-columns:1fr}.creator-panel .card{position:static}}
-    </style>
+    
+        .clan-card.clickable-clan:hover {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 18px rgba(255,85,0,.14);
+            transform: translateY(-2px);
+        }
+        .clan-card.clickable-clan { transition: .18s ease; }
+</style>
 </head>
 <body>
 
@@ -1867,26 +1873,40 @@
         function renderClans() {
             const container = document.getElementById('clanList');
             if (!container) return;
-            renderClanLeaderboard();
             container.innerHTML = '';
+
             if (!db?.clans || db.clans.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-muted);">Пока нет созданных кланов.</p>';
                 return;
             }
+
             db.clans.forEach(c => {
-                const matches=seasonMatches().filter(m=>m.clan1===c.name||m.clan2===c.name).slice(0,3);
-                const recent=matches.length?matches.map(m=>{
-                    const other=m.clan1===c.name?m.clan2:m.clan1;
-                    const winnerClan=m.winnerClan || (m.winnerId===m.player1Id?m.clan1:m.winnerId===m.player2Id?m.clan2:'');
-                    return `<div style="font-size:11px;padding:7px 0;border-top:1px solid var(--border-color)">
-                        <span class="clan-history-link" onclick="event.stopPropagation();showClanHistory(${JSON.stringify(c.name)})">${escapeHistoryText(c.name)}</span>
-                        <b style="color:var(--text-muted)"> VS </b>
-                        ${escapeHistoryText(other)}
-                        · <span class="result-win">ПОБЕДИЛ: ${escapeHistoryText(winnerClan || '—')}</span>
-                        · ${formatMatchDate(m.date)}
-                    </div>`;
-                }).join(''):'<div style="font-size:11px;color:var(--text-muted);padding-top:8px">Игр этого сезона пока нет.</div>';
-                container.innerHTML += `<div class="clan-card clickable-clan" onclick="showClanHistory(${JSON.stringify(c.name||'')})" style="background:linear-gradient(135deg,rgba(255,85,0,0.06),#26262b);border:1px solid var(--border-color);border-radius:10px;padding:20px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><h3 style="color:#fff;font-size:20px"><span style="color:var(--accent)">[${escapeHistoryText(c.tag||'')}]</span> ${escapeHistoryText(c.name||'')}</h3><span class="level-badge" style="background:var(--accent);color:#fff">Клан</span></div><p style="color:var(--text-muted);font-size:12px;margin-bottom:8px">Нажмите, чтобы открыть всю историю игр</p>${recent}</div>`;
+                const memberCount = (db?.players || []).filter(
+                    p => String(p.clan || '').toLowerCase() === String(c.name || '').toLowerCase()
+                ).length;
+
+                const clanName = String(c.name || '');
+                const clanTag = String(c.tag || '');
+
+                container.innerHTML += `
+                    <div class="clan-card clickable-clan"
+                         onclick="showClanHistory(${JSON.stringify(clanName)})"
+                         style="background:linear-gradient(135deg,rgba(255,85,0,0.06),#26262b);border:1px solid var(--border-color);border-radius:10px;padding:20px;cursor:pointer;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <h3 style="color:#fff;font-size:20px;margin:0;">
+                                <span style="color:var(--accent);">[${escapeHistoryText(clanTag)}]</span>
+                                ${escapeHistoryText(clanName)}
+                            </h3>
+                            <span class="level-badge" style="background:var(--accent);color:#fff;">Клан</span>
+                        </div>
+                        <p style="color:var(--text-muted);font-size:12px;margin:10px 0 0;">
+                            Участников: <b style="color:#fff;">${memberCount}</b>
+                        </p>
+                        <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">
+                            Нажмите на клан, чтобы открыть всю историю игр
+                        </p>
+                    </div>
+                `;
             });
         }
 
