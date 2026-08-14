@@ -804,7 +804,7 @@
             background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.18);color:#7eefff
         }
         .top-players-live i{font-size:6px;margin-right:5px;color:#84ff7a;vertical-align:2px}
-        .top-players .table-scroll-container{max-height:520px;overflow:auto}
+        .top-players .table-scroll-container{max-height:760px;overflow:auto}
         .top-players table{min-width:690px}
         .top-players td,.top-players th{white-space:nowrap}
         .page-content,.card,.table-scroll-container{max-width:100%;overflow-x:hidden}
@@ -995,12 +995,14 @@
             /* One-column full-width sections for mobile */
             #page-leaderboard.active,
             #page-clans.active,
+            #page-clan-top.active,
             #page-season.active {
                 grid-template-columns:1fr !important;
             }
 
             #page-leaderboard > .card,
             #page-clans > .card,
+            #page-clan-top > .card,
             #page-season > .card {
                 grid-column:1 !important;
                 width:100% !important;
@@ -1733,23 +1735,42 @@
         </div>
 
         <div id="page-clans" class="page-content">
-            <div class="card" style="grid-column:span 12;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-                    <div><span class="history-kicker">CLANS</span><h2>Официальный топ-100 кланов</h2><p style="color:var(--text-muted);font-size:12px;margin-top:5px;">Рейтинг сезона. Здесь только история игр кланов: против кого играли, когда и кто победил.</p></div>
-                    <span class="season-control-badge"><i class="fas fa-trophy"></i> Сезон <span id="clanSeasonNumber">1</span></span>
-                </div>
-                <div class="table-scroll-container">
-                    <table class="clan-top-table">
-                        <thead><tr><th>#</th><th>Клан</th><th>ELO</th><th>Игр</th><th>Побед</th><th>Поражений</th><th>С кем играли</th><th>Последняя игра</th></tr></thead>
-                        <tbody id="clanTop100Body"></tbody>
-                    </table>
+            <div class="card" style="grid-column:span 12;padding:12px 14px;">
+                <div class="section-tabs" style="margin-bottom:0;">
+                    <button id="clansTabOverview" class="section-tab active" onclick="setClansTab('clans')"><i class="fas fa-users"></i> Кланы</button>
+                    <button id="clansTabRating" class="section-tab" onclick="setClansTab('rating')"><i class="fas fa-ranking-star"></i> Рейтинг кланов</button>
                 </div>
             </div>
-            <div class="card" style="grid-column:span 12;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                    <div><span class="history-kicker">HISTORY</span><h2>Все кланы платформы</h2><p style="color:var(--text-muted);font-size:12px;margin-top:5px;">Нажми на клан, чтобы открыть полную историю его игр.</p></div>
+
+            <div id="clansOverviewSection" style="grid-column:span 12;">
+                <div class="card" style="margin-bottom:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <div><span class="history-kicker">CLANS</span><h2>Кланы платформы</h2><p style="color:var(--text-muted);font-size:12px;margin-top:5px;">Все кланы находятся в одном разделе. Нажми на клан, чтобы открыть его историю игр.</p></div>
+                        <span class="season-control-badge"><i class="fas fa-trophy"></i> Сезон <span id="clanSeasonNumber">1</span></span>
+                    </div>
                 </div>
-                <div class="clan-grid" id="clanList"></div>
+                <div class="card" style="margin-top:16px;">
+                    <div class="clan-grid" id="clanList"></div>
+                </div>
+            </div>
+
+            <div id="clansRatingSection" style="display:none;grid-column:span 12;">
+                <div class="card global-top100-card">
+                    <div class="player-top100-heading">
+                        <div>
+                            <span class="section-kicker">OFFICIAL CLAN RANKING</span>
+                            <h2><i class="fas fa-ranking-star"></i> ТОП-700 КЛАНОВ ПЛАТФОРМЫ</h2>
+                            <p>Официальный рейтинг кланов текущего сезона — так же, как отдельная вкладка «Обзор / Новости» в ленте.</p>
+                        </div>
+                        <div class="player-top100-badge"><i class="fas fa-users"></i> 700 МЕСТ</div>
+                    </div>
+                    <div class="table-scroll-container global-top100-table-wrap">
+                        <table class="clan-top-table">
+                            <thead><tr><th>#</th><th>Клан</th><th>ELO</th><th>Игр</th><th>Побед</th><th>Поражений</th><th>С кем играли</th><th>Последняя игра</th></tr></thead>
+                            <tbody id="officialClanTop700Body"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -2340,7 +2361,7 @@
                 const createClanCard=document.getElementById('createClanCard'); if(createClanCard) createClanCard.style.display='none';
                 if(currentUser.role==='creator') renderAdminPanel();
             }
-            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderClanLeaderboard(); renderShop(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
+            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderClanLeaderboard(); if(typeof setClansTab==='function') setClansTab('clans'); renderShop(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
         }
 
         function renderLeaderboard() {
@@ -2861,6 +2882,19 @@
 
         }
 
+        function setClansTab(tab) {
+            const clans=document.getElementById('clansOverviewSection');
+            const rating=document.getElementById('clansRatingSection');
+            const b1=document.getElementById('clansTabOverview');
+            const b2=document.getElementById('clansTabRating');
+            const isRating=tab==='rating';
+            if(clans) clans.style.display=isRating?'none':'block';
+            if(rating) rating.style.display=isRating?'block':'none';
+            if(b1) b1.classList.toggle('active',!isRating);
+            if(b2) b2.classList.toggle('active',isRating);
+            if(isRating) renderClanLeaderboard(); else renderClans();
+        }
+
         function setFeedTab(tab) {
             const overview=document.getElementById('feedOverviewSection');
             const news=document.getElementById('feedNewsSection');
@@ -3098,8 +3132,8 @@
         }
 
         function renderClanLeaderboard() {
-            const body = document.getElementById('clanLeaderboardBody') || document.getElementById('clanTop100Body');
-            if (!body) return;
+            const bodies = [document.getElementById('clanLeaderboardBody'), document.getElementById('clanTop100Body'), document.getElementById('officialClanTop700Body')].filter(Boolean);
+            if (!bodies.length) return;
 
             const byName = new Map();
             (db?.clans || []).forEach(c => {
@@ -3170,9 +3204,9 @@
 
             const stats = [...byName.values()]
                 .sort((a, b) => (b.elo - a.elo) || (b.wins - a.wins) || (b.games - a.games))
-                .slice(0, 100);
+                .slice(0, 700);
 
-            body.innerHTML = stats.length
+            const rowsHtml = stats.length
                 ? stats.map((s, i) => {
                     const ops = [...s.opponents.entries()]
                         .sort((a, b) => b[1] - a[1])
@@ -3192,7 +3226,8 @@
                         <td>${s.lastDate ? formatMatchDate(s.lastDate.toISOString()) : '—'}</td>
                     </tr>`;
                 }).join('')
-                : '<tr><td colspan="7"><div class="history-empty">Пока нет игр кланов.</div></td></tr>';
+                : '<tr><td colspan="8"><div class="history-empty">Пока нет игр кланов.</div></td></tr>';
+            bodies.forEach(b => b.innerHTML = rowsHtml);
         }
 
         function ensureClanExistsByName(name){
