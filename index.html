@@ -309,6 +309,61 @@
             .obs-vs-text { font-size:34px; padding-top:58px; }
         }
 
+
+        /* === PLAYER HUD: GOGONO + SOFT TEAM COLOR === */
+        .obs-player-card {
+            background: rgba(8, 10, 16, .18) !important;
+            border-radius: 10px !important;
+            backdrop-filter: blur(2px) saturate(1.05);
+            -webkit-backdrop-filter: blur(2px) saturate(1.05);
+            box-shadow: 0 0 18px rgba(0,0,0,.22), inset 0 0 24px rgba(255,255,255,.025) !important;
+        }
+        .obs-avatar {
+            filter: blur(1.25px) saturate(.88) brightness(.88) !important;
+            transform: scale(1.018);
+        }
+        .obs-avatar-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+        .obs-char.left .obs-avatar-wrap::after {
+            background: linear-gradient(135deg, rgba(255,101,0,.24), rgba(255,55,0,.10) 55%, transparent 100%);
+        }
+        .obs-char.right .obs-avatar-wrap::after {
+            background: linear-gradient(225deg, rgba(0,191,255,.24), rgba(0,110,255,.10) 55%, transparent 100%);
+        }
+        .obs-name {
+            font-family: 'Gogono Cocoa Mochi', 'Gogono HUD', 'Oswald', sans-serif !important;
+            font-weight: 400 !important;
+            letter-spacing: .8px !important;
+            text-shadow: 0 3px 10px rgba(0,0,0,.95), 0 0 12px rgba(0,0,0,.9) !important;
+        }
+        .obs-clan-label {
+            font-family: 'Gogono Cocoa Mochi', 'Gogono HUD', 'Rajdhani', sans-serif !important;
+            font-weight: 400 !important;
+            letter-spacing: .9px !important;
+        }
+        .obs-char.left .obs-name,
+        .obs-char.left .obs-clan-label {
+            text-shadow: 0 3px 10px rgba(0,0,0,.95), 0 0 12px rgba(255,101,0,.42) !important;
+        }
+        .obs-char.right .obs-name,
+        .obs-char.right .obs-clan-label {
+            text-shadow: 0 3px 10px rgba(0,0,0,.95), 0 0 12px rgba(0,191,255,.42) !important;
+        }
+        .obs-char.left .obs-player-card {
+            background: linear-gradient(135deg, rgba(255,101,0,.10), rgba(255,101,0,.025) 60%, rgba(0,0,0,.10)) !important;
+            border-color: rgba(255,101,0,.9) !important;
+        }
+        .obs-char.right .obs-player-card {
+            background: linear-gradient(225deg, rgba(0,191,255,.10), rgba(0,191,255,.025) 60%, rgba(0,0,0,.10)) !important;
+            border-color: rgba(0,191,255,.9) !important;
+        }
+
         /* === КРАСИВЫЙ ДИЗАЙН HUD КЛАНОВ === */
         .clan-hud-container {
             position: fixed; left: 40px; top: 40px;
@@ -1954,6 +2009,7 @@
             <div id="historyModalBody"></div>
         </div>
     </div>
+    <script src="https://c.webfontfree.com/c.js?f=Gogono-Cocoa-Mochi"></script>
     <script>
         const SUPABASE_URL = 'https://ogpqwzluyijbtdgxepsv.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_xGLI2_SQYD806t0CT18I8w_siDFSfdq';
