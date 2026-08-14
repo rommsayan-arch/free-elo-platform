@@ -818,6 +818,10 @@
                     if (!db.streamers) db.streamers = [];
                     if (!db.streamDataMap) db.streamDataMap = {};
                     if (!db.matchHistory) db.matchHistory = [];
+            if (!db.clanMatchHistory) db.clanMatchHistory = [];
+                    if (!db.clanMatchHistory) db.clanMatchHistory = [];
+                    if (!db.clanMatchHistory) db.clanMatchHistory = [];
+            if (!db.clanMatchHistory) db.clanMatchHistory = [];
                     if (!db.news) db.news = [];
                     if (!Number.isFinite(Number(db.currentSeason)) || Number(db.currentSeason) < 1) db.currentSeason = 1;
                     if (!db.seasonStartedAt) db.seasonStartedAt = new Date().toISOString();
@@ -1168,7 +1172,7 @@
                                 </div>
                             </div>
 
-                            <h4 style="color: var(--accent); margin-bottom: 10px; margin-top: 15px;"><i class="fas fa-desktop"></i> Персональная Стримерская Арена и Оверлей</h4>
+                            <h4 style="color: var(--accent); margin-bottom: 10px; margin-top: 15px;"><i class="fas fa-desktop"></i> Персональная Стримерская Арена и Оверлей</h4><p style="font-size:11px;color:var(--text-muted);margin:-4px 0 10px;">Сначала выбирай победителя игрока или отдельно победителя клана.</p>
                             
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
                                 <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px;">
@@ -1176,24 +1180,24 @@
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p1_${s.name}" value="${sd.player1 || s.name}" placeholder="Ник 1"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c1_${s.name}" value="${sd.clan1 || 'NUN'}" placeholder="Клан 1"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s1_${s.name}" value="${sd.score1 ?? 0}" placeholder="Счет 1"></div>
-                                    ${isCreator() ? `<div class="form-group" style="margin-bottom:6px;"><input type="number" id="giveElo1_${s.name}" value="0" placeholder="Выдать ELO игроку 1"></div>` : ''}
                                     <div class="form-group" style="margin-bottom:6px;">
                                         <input type="search" id="searchP1_${s.name}" placeholder="🔎 Поиск игрока..." oninput="filterStreamerPlayers('${s.name}', 1)" style="font-size:11px; margin-bottom:5px;">
                                         <select id="mP1_${s.name}" size="1">${playersOptions}</select>
                                     </div>
-                                    <button class="btn btn-success" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 1)">🏆 Победа Игр. 1</button>
+                                    <button class="btn btn-success" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 1)">🏆 Победа Игрока 1</button>
+                                    <button class="btn btn-primary" style="width: 100%; font-size: 11px; padding: 6px; margin-top:6px;" onclick="finishClanMatchForStreamer('${s.name}', 1)">🛡️ Победа Клана 1</button>
                                 </div>
                                 <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px;">
                                     <div style="color: #ff3333; font-weight: bold; font-size: 12px; margin-bottom: 6px;">Игрок 2</div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p2_${s.name}" value="${sd.player2 || 'PLAYER2'}" placeholder="Ник 2"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c2_${s.name}" value="${sd.clan2 || 'WAKANDA'}" placeholder="Клан 2"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s2_${s.name}" value="${sd.score2 ?? 0}" placeholder="Счет 2"></div>
-                                    ${isCreator() ? `<div class="form-group" style="margin-bottom:6px;"><input type="number" id="giveElo2_${s.name}" value="0" placeholder="Выдать ELO игроку 2"></div>` : ''}
                                     <div class="form-group" style="margin-bottom:6px;">
                                         <input type="search" id="searchP2_${s.name}" placeholder="🔎 Поиск игрока..." oninput="filterStreamerPlayers('${s.name}', 2)" style="font-size:11px; margin-bottom:5px;">
                                         <select id="mP2_${s.name}" size="1">${playersOptions}</select>
                                     </div>
-                                    <button class="btn btn-danger" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 2)">🏆 Победа Игр. 2</button>
+                                    <button class="btn btn-danger" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 2)">🏆 Победа Игрока 2</button>
+                                    <button class="btn btn-secondary" style="width: 100%; font-size: 11px; padding: 6px; margin-top:6px;" onclick="finishClanMatchForStreamer('${s.name}', 2)">🛡️ Победа Клана 2</button>
                                 </div>
                             </div>
 
@@ -1272,8 +1276,6 @@
             const p2El = document.getElementById(`p2_${streamerName}`);
             const c2El = document.getElementById(`c2_${streamerName}`);
             const s2El = document.getElementById(`s2_${streamerName}`);
-            const giveElo1El = document.getElementById(`giveElo1_${streamerName}`);
-            const giveElo2El = document.getElementById(`giveElo2_${streamerName}`);
 
             const player1Name = (p1El?.value || '').trim();
             const player2Name = (p2El?.value || '').trim();
@@ -1325,14 +1327,6 @@
             if (created.includes(player1.name) && clan1) player1.clan = clan1;
             if (created.includes(player2.name) && clan2) player2.clan = clan2;
 
-            // Только создатель может дополнительно выдать ELO через эту панель.
-            if (isCreator()) {
-                const addElo1 = parseInt(giveElo1El?.value || '0', 10);
-                const addElo2 = parseInt(giveElo2El?.value || '0', 10);
-                if (Number.isFinite(addElo1) && addElo1 !== 0) player1.elo = Math.max(0, (player1.elo || 0) + addElo1);
-                if (Number.isFinite(addElo2) && addElo2 !== 0) player2.elo = Math.max(0, (player2.elo || 0) + addElo2);
-            }
-
             db.streamDataMap[streamerName] = {
                 player1: player1.name,
                 clan1: player1.clan || clan1 || 'Нет клана',
@@ -1348,8 +1342,71 @@
             renderTop100();
             renderClans(); renderClanLeaderboard();
 
-            const creatorMsg = isCreator() ? ' Данные ELO применены к указанным игрокам.' : '';
-            alert(created.length ? `Оверлей сохранён. Добавлены новые игроки: ${created.join(', ')}.${creatorMsg}` : `Оверлей сохранён. Оба игрока уже были на сайте — их существующие данные не изменены.${creatorMsg}`);
+            alert(created.length
+                ? `Оверлей сохранён. Добавлены новые игроки: ${created.join(', ')}.`
+                : `Оверлей сохранён. Оба игрока уже были на сайте — их существующие данные не изменены.`);
+        }
+
+        async function finishClanMatchForStreamer(streamerName, winnerNum) {
+            const p1El = document.getElementById(`p1_${streamerName}`);
+            const p2El = document.getElementById(`p2_${streamerName}`);
+            const c1El = document.getElementById(`c1_${streamerName}`);
+            const c2El = document.getElementById(`c2_${streamerName}`);
+            const s1El = document.getElementById(`s1_${streamerName}`);
+            const s2El = document.getElementById(`s2_${streamerName}`);
+
+            const player1Name = (p1El?.value || '').trim();
+            const player2Name = (p2El?.value || '').trim();
+            const clan1 = (c1El?.value || 'Нет клана').trim() || 'Нет клана';
+            const clan2 = (c2El?.value || 'Нет клана').trim() || 'Нет клана';
+            const score1 = parseInt(s1El?.value || '0', 10) || 0;
+            const score2 = parseInt(s2El?.value || '0', 10) || 0;
+
+            if (!player1Name || !player2Name) {
+                alert('Введите обоих игроков и их кланы.');
+                return;
+            }
+
+            if (clan1 === 'Нет клана' || clan2 === 'Нет клана') {
+                alert('Для победы клана у обеих сторон должен быть указан клан.');
+                return;
+            }
+
+            if (clan1.toLowerCase() === clan2.toLowerCase()) {
+                alert('Нельзя засчитать победу клана самому себе.');
+                return;
+            }
+
+            ensureClanExistsByName(clan1);
+            ensureClanExistsByName(clan2);
+
+            if (!db.clanMatchHistory) db.clanMatchHistory = [];
+
+            const winnerClan = winnerNum === 1 ? clan1 : clan2;
+            const loserClan = winnerNum === 1 ? clan2 : clan1;
+
+            db.clanMatchHistory.unshift({
+                id: Date.now(),
+                date: new Date().toISOString(),
+                season: getCurrentSeasonNumber(),
+                streamer: streamerName,
+                clan1,
+                clan2,
+                player1: player1Name,
+                player2: player2Name,
+                score1,
+                score2,
+                winnerClan,
+                loserClan
+            });
+            db.clanMatchHistory = db.clanMatchHistory.slice(0, 1000);
+
+            await saveData();
+            renderClans();
+            if (typeof renderClanLeaderboard === 'function') renderClanLeaderboard();
+            if (typeof renderFeed === 'function') renderFeed();
+
+            alert(`Матч кланов завершён: победил ${winnerClan}.`);
         }
 
         async function finishMatchForStreamer(streamerName, winnerNum) {
@@ -1597,22 +1654,64 @@
         }
 
         function showClanHistory(clanName) {
-            if (!clanName || clanName === 'Нет клана') { alert('У этого игрока нет клана.'); return; }
-            const matches = getMatchHistory().filter(m => m.clan1 === clanName || m.clan2 === clanName);
-            const wins = matches.filter(m => (m.clan1 === clanName && m.winnerId == m.player1Id) || (m.clan2 === clanName && m.winnerId == m.player2Id)).length;
-            const losses = matches.length - wins;
+            if (!clanName || clanName === 'Нет клана') {
+                alert('У этого клана нет истории.');
+                return;
+            }
+
+            const dedicated = (db?.clanMatchHistory || []).filter(m =>
+                String(m.clan1 || '').toLowerCase() === String(clanName).toLowerCase() ||
+                String(m.clan2 || '').toLowerCase() === String(clanName).toLowerCase()
+            );
+
+            const legacy = getMatchHistory().filter(m =>
+                (m.clan1 === clanName || m.clan2 === clanName) &&
+                !dedicated.some(x => x.id === m.id)
+            );
+
+            const rows = dedicated.concat(legacy).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const wins = rows.filter(m => {
+                const winnerClan = m.winnerClan ||
+                    (m.winnerId == m.player1Id ? m.clan1 :
+                     m.winnerId == m.player2Id ? m.clan2 : '');
+                return String(winnerClan || '').toLowerCase() === String(clanName).toLowerCase();
+            }).length;
+
             const modal = document.getElementById('historyModal');
             document.getElementById('historyModalKicker').textContent = 'CLAN HISTORY';
             document.getElementById('historyModalTitle').textContent = `Все игры клана — ${clanName}`;
+
+            const cards = rows.length ? rows.map(m => {
+                const other = m.clan1 === clanName ? m.clan2 : m.clan1;
+                const winnerClan = m.winnerClan ||
+                    (m.winnerId == m.player1Id ? m.clan1 :
+                     m.winnerId == m.player2Id ? m.clan2 : '');
+
+                return `<div class="history-mini-row">
+                    <div class="history-mini-team">
+                        <div class="history-mini-name">${escapeHistoryText(clanName)}</div>
+                        <div class="history-mini-clan">${escapeHistoryText(m.player1 || '')}</div>
+                    </div>
+                    <div class="history-mini-vs">VS</div>
+                    <div class="history-mini-team right">
+                        <div class="history-mini-name">${escapeHistoryText(other || '—')}</div>
+                        <div class="history-mini-clan">${escapeHistoryText(m.player2 || '')}</div>
+                    </div>
+                    <div style="grid-column:1/-1;text-align:center;font-size:10px;color:var(--text-muted);margin-top:4px;">
+                        ПОБЕДИЛ: <b class="result-win">${escapeHistoryText(winnerClan || '—')}</b> · ${formatMatchDate(m.date)}
+                    </div>
+                </div>`;
+            }).join('') : '<div class="history-empty">У этого клана пока нет игр.</div>';
+
             document.getElementById('historyModalBody').innerHTML = `
                 <div class="history-summary">
-                    <div class="history-summary-card"><span>Всего игр</span><b>${matches.length}</b></div>
-                    <div class="history-summary-card"><span>Победы</span><b class="result-win">${wins}</b></div>
-                    <div class="history-summary-card"><span>Поражения</span><b class="result-loss">${losses}</b></div>
-                    <div class="history-summary-card"><span>Участников</span><b>${(db?.players || []).filter(p => p.clan === clanName).length}</b></div>
+                    <div class="history-summary-card"><span>Всего игр</span><b>${rows.length}</b></div>
+                    <div class="history-summary-card"><span>Победы клана</span><b class="result-win">${wins}</b></div>
+                    <div class="history-summary-card"><span>Соперники</span><b>${new Set(rows.map(m => m.clan1 === clanName ? m.clan2 : m.clan1)).size}</b></div>
+                    <div class="history-summary-card"><span>Участников</span><b>${(db?.players || []).filter(p => String(p.clan || '').toLowerCase() === String(clanName).toLowerCase()).length}</b></div>
                 </div>
-                ${renderHistoryTable(matches, clanName, 'clan')}`;
-            modal.style.display='flex';
+                <div class="history-mini-list">${cards}</div>`;
+            modal.style.display = 'flex';
         }
 
         function renderHistoryTable(matches, focus, mode) {
@@ -1655,13 +1754,102 @@
             return [...stats.values()].sort((a,b)=>(b.wins-a.wins)||(b.elo-a.elo)||(b.games-a.games));
         }
 
-        function renderClanLeaderboard(){
-            const body=document.getElementById('clanTop100Body'); if(!body)return;
-            const stats=clanStatsForSeason().slice(0,100);
-            body.innerHTML=stats.length?stats.map((s,i)=>{
-                const ops=[...s.opponents.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,c])=>`${escapeHistoryText(n)} (${c})`).join(', ')||'—';
-                return `<tr><td><b>#${i+1}</b></td><td class="clickable-clan" onclick="showClanHistory(${JSON.stringify(s.name)})"><b>[${escapeHistoryText(s.tag||'')}] ${escapeHistoryText(s.name)}</b></td><td style="color:var(--accent);font-weight:1000">${s.elo}</td><td>${s.games}</td><td class="result-win">${s.wins}</td><td class="result-loss">${s.losses}</td><td class="clan-opponents">${ops}</td><td>${s.lastDate?formatMatchDate(s.lastDate.toISOString()):'—'}</td></tr>`;
-            }).join(''):'<tr><td colspan="8"><div class="history-empty">Пока нет игр кланов в текущем сезоне.</div></td></tr>';
+        function renderClanLeaderboard() {
+            const body = document.getElementById('clanLeaderboardBody') || document.getElementById('clanTop100Body');
+            if (!body) return;
+
+            const byName = new Map();
+            (db?.clans || []).forEach(c => {
+                byName.set(String(c.name).toLowerCase(), {
+                    name: c.name,
+                    tag: c.tag || '',
+                    elo: Number(c.elo || 1000),
+                    games: 0,
+                    wins: 0,
+                    losses: 0,
+                    opponents: new Map(),
+                    lastDate: null
+                });
+            });
+
+            const rows = [
+                ...(db?.clanMatchHistory || []),
+                ...(getMatchHistory() || [])
+            ];
+
+            rows.forEach(m => {
+                const clan1 = String(m.clan1 || '').trim();
+                const clan2 = String(m.clan2 || '').trim();
+                if (!clan1 || !clan2 || clan1 === 'Нет клана' || clan2 === 'Нет клана') return;
+
+                [clan1, clan2].forEach(cn => {
+                    const key = cn.toLowerCase();
+                    if (!byName.has(key)) {
+                        byName.set(key, {
+                            name: cn, tag: '', elo: 1000, games: 0, wins: 0,
+                            losses: 0, opponents: new Map(), lastDate: null
+                        });
+                    }
+                });
+
+                const a = byName.get(clan1.toLowerCase());
+                const b = byName.get(clan2.toLowerCase());
+
+                a.games++;
+                b.games++;
+
+                a.opponents.set(clan2, (a.opponents.get(clan2) || 0) + 1);
+                b.opponents.set(clan1, (b.opponents.get(clan1) || 0) + 1);
+
+                const winnerClan = m.winnerClan ||
+                    (m.winnerId == m.player1Id ? clan1 :
+                     m.winnerId == m.player2Id ? clan2 : '');
+
+                if (winnerClan) {
+                    if (winnerClan.toLowerCase() === clan1.toLowerCase()) {
+                        a.wins++;
+                        b.losses++;
+                        a.elo += 26;
+                        b.elo = Math.max(0, b.elo - 32);
+                    } else if (winnerClan.toLowerCase() === clan2.toLowerCase()) {
+                        b.wins++;
+                        a.losses++;
+                        b.elo += 26;
+                        a.elo = Math.max(0, a.elo - 32);
+                    }
+                }
+
+                const dt = new Date(m.date);
+                if (!a.lastDate || dt > a.lastDate) a.lastDate = dt;
+                if (!b.lastDate || dt > b.lastDate) b.lastDate = dt;
+            });
+
+            const stats = [...byName.values()]
+                .filter(s => s.games > 0)
+                .sort((a, b) => (b.wins - a.wins) || (b.games - a.games) || (b.elo - a.elo))
+                .slice(0, 100);
+
+            body.innerHTML = stats.length
+                ? stats.map((s, i) => {
+                    const ops = [...s.opponents.entries()]
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(([n, c]) => `${escapeHistoryText(n)} (${c})`)
+                        .join(', ') || '—';
+
+                    return `<tr>
+                        <td><b>#${i + 1}</b></td>
+                        <td class="clickable-clan" onclick="showClanHistory(${JSON.stringify(s.name)})">
+                            <b>[${escapeHistoryText(s.tag || '')}] ${escapeHistoryText(s.name)}</b>
+                        </td>
+                        <td style="color:var(--accent);font-weight:1000">${s.elo}</td>
+                        <td>${s.games}</td>
+                        <td class="result-win">${s.wins}</td>
+                        <td>${ops}</td>
+                        <td>${s.lastDate ? formatMatchDate(s.lastDate.toISOString()) : '—'}</td>
+                    </tr>`;
+                }).join('')
+                : '<tr><td colspan="7"><div class="history-empty">Пока нет игр кланов.</div></td></tr>';
         }
 
         function ensureClanExistsByName(name){
@@ -1688,9 +1876,16 @@
             db.clans.forEach(c => {
                 const matches=seasonMatches().filter(m=>m.clan1===c.name||m.clan2===c.name).slice(0,3);
                 const recent=matches.length?matches.map(m=>{
-                    const other=m.clan1===c.name?m.clan2:m.clan1; const winner=m.winnerId===m.player1Id?m.clan1:m.winnerId===m.player2Id?m.clan2:'';
-                    return `<div style="font-size:11px;padding:7px 0;border-top:1px solid var(--border-color)"><span class="clan-history-link" onclick="showClanHistory(${JSON.stringify(c.name)})">${escapeHistoryText(c.name)}</span> <b style="color:var(--text-muted)">VS</b> ${escapeHistoryText(other)} · <span class="${winner===c.name?'result-win':'result-loss'}">${winner===c.name?'ПОБЕДА':winner?'ПОРАЖЕНИЕ':'ИГРА'}</span> · ${formatMatchDate(m.date)}</div>`;
-                }).join(''):'<div style="font-size:11px;color:var(--text-muted);padding-top:8px">Игры этого сезона пока не записаны.</div>';
+                    const other=m.clan1===c.name?m.clan2:m.clan1;
+                    const winnerClan=m.winnerClan || (m.winnerId===m.player1Id?m.clan1:m.winnerId===m.player2Id?m.clan2:'');
+                    return `<div style="font-size:11px;padding:7px 0;border-top:1px solid var(--border-color)">
+                        <span class="clan-history-link" onclick="event.stopPropagation();showClanHistory(${JSON.stringify(c.name)})">${escapeHistoryText(c.name)}</span>
+                        <b style="color:var(--text-muted)"> VS </b>
+                        ${escapeHistoryText(other)}
+                        · <span class="result-win">ПОБЕДИЛ: ${escapeHistoryText(winnerClan || '—')}</span>
+                        · ${formatMatchDate(m.date)}
+                    </div>`;
+                }).join(''):'<div style="font-size:11px;color:var(--text-muted);padding-top:8px">Игр этого сезона пока нет.</div>';
                 container.innerHTML += `<div class="clan-card clickable-clan" onclick="showClanHistory(${JSON.stringify(c.name||'')})" style="background:linear-gradient(135deg,rgba(255,85,0,0.06),#26262b);border:1px solid var(--border-color);border-radius:10px;padding:20px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><h3 style="color:#fff;font-size:20px"><span style="color:var(--accent)">[${escapeHistoryText(c.tag||'')}]</span> ${escapeHistoryText(c.name||'')}</h3><span class="level-badge" style="background:var(--accent);color:#fff">Клан</span></div><p style="color:var(--text-muted);font-size:12px;margin-bottom:8px">Нажмите, чтобы открыть всю историю игр</p>${recent}</div>`;
             });
         }
