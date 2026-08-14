@@ -312,14 +312,15 @@
 
         /* === PLAYER HUD: GOGONO + SOFT TEAM COLOR === */
         .obs-player-card {
-            background: rgba(8, 10, 16, .18) !important;
+            background: rgba(8, 10, 16, .78) !important;
             border-radius: 10px !important;
-            backdrop-filter: blur(2px) saturate(1.05);
-            -webkit-backdrop-filter: blur(2px) saturate(1.05);
-            box-shadow: 0 0 18px rgba(0,0,0,.22), inset 0 0 24px rgba(255,255,255,.025) !important;
+            backdrop-filter: blur(5px) saturate(1.18);
+            -webkit-backdrop-filter: blur(5px) saturate(1.18);
+            box-shadow: 0 0 22px rgba(0,0,0,.38), inset 0 0 28px rgba(255,255,255,.035) !important;
+            overflow: hidden !important;
         }
         .obs-avatar {
-            filter: blur(2.2px) saturate(.92) brightness(.86) !important;
+            filter: blur(3px) saturate(.95) brightness(.88) !important;
             transform: scale(1.018);
         }
         .obs-avatar-wrap::after {
@@ -360,8 +361,9 @@
             border-color: rgba(255,101,0,.9) !important;
         }
         .obs-char.right .obs-player-card {
-            background: linear-gradient(225deg, rgba(0,191,255,.10), rgba(0,191,255,.025) 60%, rgba(0,0,0,.10)) !important;
-            border-color: rgba(0,191,255,.9) !important;
+            background: linear-gradient(225deg, rgba(0,191,255,.72), rgba(0,191,255,.42) 55%, rgba(3,20,30,.78)) !important;
+            border-color: rgba(70,215,255,1) !important;
+            box-shadow: 0 0 26px rgba(0,191,255,.28), inset 0 0 28px rgba(100,225,255,.10) !important;
         }
 
         /* === КРАСИВЫЙ ДИЗАЙН HUD КЛАНОВ === */
