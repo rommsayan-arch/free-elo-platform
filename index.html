@@ -1087,6 +1087,221 @@
             #page-season .season-hero .season-title {font-size:24px !important}
         }
 
+
+        /* === FINAL SEASON / FEED VISUAL OVERRIDE === */
+
+        /* The real season banner is the only season hero on the season page. */
+        .season-banner{
+            position:relative;
+            overflow:hidden;
+            display:flex !important;
+            justify-content:space-between !important;
+            align-items:center !important;
+            gap:24px;
+            padding:28px 30px !important;
+            min-height:165px;
+            border-radius:18px !important;
+            margin-bottom:24px !important;
+            background:
+                radial-gradient(circle at 86% 18%,rgba(0,229,255,.16),transparent 22%),
+                radial-gradient(circle at 16% 85%,rgba(139,92,246,.22),transparent 30%),
+                radial-gradient(circle at 52% 44%,rgba(255,62,165,.10),transparent 28%),
+                linear-gradient(120deg,#0c0b1b 0%,#15122f 48%,#07141d 100%) !important;
+            border:1px solid rgba(139,92,246,.28) !important;
+            box-shadow:
+                0 22px 60px rgba(0,0,0,.34),
+                inset 0 1px 0 rgba(255,255,255,.05),
+                0 0 55px rgba(139,92,246,.08);
+        }
+        .season-banner::before{
+            content:"";
+            position:absolute;
+            width:240px;height:240px;
+            right:-90px;top:-110px;
+            border-radius:50%;
+            border:1px solid rgba(0,229,255,.24);
+            box-shadow:0 0 55px rgba(0,229,255,.08),inset 0 0 45px rgba(139,92,246,.06);
+            animation:seasonOrbit 12s linear infinite;
+            pointer-events:none;
+        }
+        .season-banner::after{
+            content:"SEASON 02";
+            position:absolute;
+            right:22px;bottom:-28px;
+            font-family:'Orbitron',sans-serif;
+            font-weight:900;
+            font-size:68px;
+            letter-spacing:4px;
+            color:rgba(255,255,255,.025);
+            transform:rotate(-8deg);
+            pointer-events:none;
+        }
+        @keyframes seasonOrbit{to{transform:rotate(360deg)}}
+        .season-banner > div:first-child,
+        .season-banner .season-timer{position:relative;z-index:2}
+        .season-banner h1,
+        #seasonPageTitle{
+            margin:0 0 7px !important;
+            font-family:'Orbitron',sans-serif !important;
+            font-size:30px !important;
+            line-height:1.08;
+            letter-spacing:1px;
+            background:linear-gradient(90deg,#fff,#c7b6ff 28%,#22d3ee 63%,#ff7cc9 90%);
+            -webkit-background-clip:text;
+            background-clip:text;
+            color:transparent !important;
+            text-shadow:none !important;
+        }
+        .season-banner p{
+            margin:0 !important;
+            color:#aab6cb !important;
+            font-size:13px;
+            letter-spacing:.4px;
+            max-width:620px;
+        }
+        .season-timer{
+            min-width:150px;
+            padding:11px 15px !important;
+            border-radius:12px !important;
+            background:rgba(7,10,17,.72) !important;
+            border:1px solid rgba(0,229,255,.20) !important;
+            box-shadow:0 8px 28px rgba(0,0,0,.28),inset 0 0 18px rgba(139,92,246,.05);
+            color:#e9f4ff;
+            font-family:'Orbitron',sans-serif;
+            font-size:12px !important;
+            text-align:center;
+        }
+        .season-timer i{color:#22d3ee}
+        .season-timer span,#seasonDaysLeft{
+            color:#ff7cc9 !important;
+            text-shadow:0 0 12px rgba(255,124,201,.25);
+        }
+
+        /* Feed: Overview + News get a premium distinct identity. */
+        #page-feed{
+            background:
+                radial-gradient(circle at 0% 0%,rgba(139,92,246,.06),transparent 24%),
+                radial-gradient(circle at 100% 0%,rgba(0,229,255,.05),transparent 22%);
+        }
+        #page-feed > .card:first-child{
+            padding:9px !important;
+            border-radius:16px;
+            background:linear-gradient(135deg,rgba(16,17,30,.96),rgba(10,14,23,.96));
+            border:1px solid rgba(139,92,246,.18);
+            box-shadow:0 16px 45px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.035);
+        }
+        #page-feed .section-tabs{
+            display:grid !important;
+            grid-template-columns:1fr 1fr;
+            gap:8px;
+            margin:0 !important;
+        }
+        #page-feed .section-tab{
+            min-height:48px;
+            border-radius:12px !important;
+            font-family:'Orbitron',sans-serif !important;
+            font-size:11px;
+            letter-spacing:.5px;
+            border:1px solid rgba(255,255,255,.06) !important;
+            background:rgba(255,255,255,.025) !important;
+            color:#8896ad !important;
+            transition:.22s ease;
+        }
+        #page-feed .section-tab:first-child.active,
+        #page-feed .section-tab:first-child:hover{
+            background:linear-gradient(135deg,rgba(139,92,246,.28),rgba(94,74,221,.14)) !important;
+            border-color:rgba(139,92,246,.42) !important;
+            color:#fff !important;
+            box-shadow:0 0 28px rgba(139,92,246,.14),inset 0 0 22px rgba(139,92,246,.05);
+        }
+        #page-feed .section-tab:last-child.active,
+        #page-feed .section-tab:last-child:hover{
+            background:linear-gradient(135deg,rgba(0,229,255,.20),rgba(34,211,238,.08)) !important;
+            border-color:rgba(0,229,255,.35) !important;
+            color:#fff !important;
+            box-shadow:0 0 28px rgba(0,229,255,.12),inset 0 0 22px rgba(0,229,255,.04);
+        }
+
+        /* Overview cards */
+        #feedOverviewSection .feed-card{
+            background:
+                radial-gradient(circle at 88% 8%,rgba(139,92,246,.08),transparent 24%),
+                linear-gradient(180deg,#111525,#0b0f1a);
+            border:1px solid rgba(139,92,246,.16);
+            box-shadow:0 20px 50px rgba(0,0,0,.28);
+        }
+        #feedOverviewSection .feed-logo{
+            background:linear-gradient(135deg,#8b5cf6,#5b5ce2);
+            box-shadow:0 0 26px rgba(139,92,246,.28);
+        }
+        #feedOverviewSection .feed-title{
+            color:#f3f5ff !important;
+        }
+        #feedOverviewSection .feed-match{
+            background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(0,229,255,.03)) !important;
+            border:1px solid rgba(139,92,246,.13) !important;
+        }
+        #feedOverviewSection .feed-result{
+            color:#a78bfa !important;
+            text-shadow:0 0 12px rgba(167,139,250,.22);
+        }
+        #feedOverviewSection .feed-banner{
+            border:1px solid rgba(0,229,255,.16) !important;
+            background:
+                radial-gradient(circle at 72% 28%,rgba(0,229,255,.10),transparent 28%),
+                radial-gradient(circle at 28% 78%,rgba(139,92,246,.13),transparent 32%),
+                linear-gradient(135deg,#101626,#0a0e17) !important;
+        }
+
+        /* News cards */
+        #feedNewsSection .news-card{
+            background:
+                radial-gradient(circle at 90% 10%,rgba(255,62,165,.07),transparent 25%),
+                linear-gradient(180deg,#171122,#0e0c17);
+            border:1px solid rgba(255,62,165,.16);
+            box-shadow:0 20px 52px rgba(0,0,0,.28);
+        }
+        #feedNewsSection .news-title{
+            font-family:'Orbitron',sans-serif !important;
+            color:#fff !important;
+            letter-spacing:.4px;
+        }
+        #feedNewsSection .news-meta{
+            color:#9da6bb !important;
+        }
+        #feedNewsSection .news-text{
+            color:#e8ebf7 !important;
+        }
+        #feedNewsSection .creator-only{
+            border-color:rgba(255,62,165,.28) !important;
+            box-shadow:0 0 28px rgba(255,62,165,.06);
+        }
+        #feedNewsSection .creator-label{
+            background:linear-gradient(135deg,#ff3ea5,#8b5cf6) !important;
+            box-shadow:0 0 18px rgba(255,62,165,.2);
+        }
+        #feedNewsSection .news-empty{
+            border-color:rgba(255,62,165,.18) !important;
+            background:rgba(255,62,165,.025);
+        }
+
+        @media(max-width:768px){
+            .season-banner{
+                flex-direction:column !important;
+                align-items:flex-start !important;
+                padding:22px 18px !important;
+                min-height:0;
+            }
+            .season-banner h1,#seasonPageTitle{
+                font-size:22px !important;
+                max-width:100%;
+            }
+            .season-banner p{font-size:11px;max-width:94%}
+            .season-timer{width:auto;min-width:0;font-size:10px !important;padding:9px 12px !important}
+            .season-banner::after{font-size:42px;right:-6px;bottom:-18px}
+            #page-feed .section-tab{min-height:44px;font-size:10px}
+        }
+
 </style>
 </head>
 <body>
@@ -1232,16 +1447,10 @@
         </div>
 
         <div id="page-season" class="page-content">
-            <div class="card season-hero">
-                    <div class="section-kicker">SEASON 2</div>
-                    <h2 class="season-title">СЕЗОН 2: БИТВА ЗА ЛЕГЕНДУ</h2>
-                    <p class="season-subtitle">Сражайтесь в матчах, поднимайте ELO и забирайте награды!</p>
-                    <div class="season-days"><i class="fas fa-clock"></i> До конца: <b>30 дн.</b></div>
-                </div>
 <div class="card" style="grid-column: span 12;">
                 <div class="season-banner">
                     <div>
-                        <h1 id="seasonPageTitle" style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-trophy"></i> СЕЗОН 1: БИТВА ЗА ЛЕГЕНДУ</h1>
+                        <h1 id="seasonPageTitle" style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-trophy"></i> СЕЗОН 2: БИТВА ЗА ЛЕГЕНДУ</h1>
                         <p style="color: #ddd;">Сражайтесь в матчах, поднимайте ELO и забирайте награды!</p>
                     </div>
                     <div class="season-timer">
