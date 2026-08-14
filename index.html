@@ -213,89 +213,89 @@
         #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
         body.obs-overlay #obsOverlayRoot { display:block; }
 
-        /* OBS VS — персонажи по бокам, как в игровом VS-экране */
+        /* === OBS PLAYER HUD — простой VS HUD как на референсе === */
         .obs-vs {
-            position:absolute; left:50%; top:8%; transform:translateX(-50%);
-            width:min(820px,90vw); display:grid; grid-template-columns:1fr 100px 1fr;
-            align-items:start; gap:10px;
+            position:fixed; left:50%; top:8%; transform:translateX(-50%);
+            width:min(820px,92vw); display:grid; grid-template-columns:1fr 100px 1fr;
+            align-items:start; gap:10px; z-index:20;
         }
         .obs-char {
-            position:relative; height:220px; display:flex; justify-content:center;
+            position:relative; height:190px; display:flex; justify-content:center;
             align-items:flex-start; overflow:visible;
         }
-
-        /* Персонаж из магазина/экипировки */
         .obs-character-img { display:none !important; }
 
-        /* Убраны круглые аватарки. Аватар теперь обычная прямоугольная карточка. */
-        .obs-avatar-wrap {
-            position:relative; width:210px; height:112px; display:flex;
-            align-items:center; justify-content:center; margin:0 auto;
+        .obs-match-strip {
+            position:fixed; left:50%; top:2%; transform:translateX(-50%);
+            width:min(820px,92vw); height:48px; display:flex; align-items:flex-start; justify-content:center;
+            z-index:30; pointer-events:none;
         }
-        .obs-avatar {
-            width:210px; height:112px; border-radius:5px; object-fit:cover;
-            display:block; background:transparent; border:1px solid rgba(255,255,255,.22);
-            opacity:.84;
-            box-shadow:0 5px 18px rgba(0,0,0,.38);
+        .obs-match-strip .obs-clock {
+            position:absolute; left:0; top:0; color:#fff; font:900 20px/1 'Orbitron',sans-serif;
+            text-shadow:0 3px 10px #000;
         }
-        .obs-avatar-frame {
-            position:absolute; inset:-5px; width:220px; height:122px;
-            object-fit:contain; display:block; pointer-events:none; z-index:2;
+        .obs-match-strip .obs-goal {
+            position:absolute; left:0; top:23px; color:#fff; font:800 9px/1 'Rajdhani',sans-serif;
+            letter-spacing:1px; text-shadow:0 2px 7px #000;
         }
+        .obs-score-box {
+            min-width:112px; height:48px; display:flex; align-items:center; justify-content:center; gap:20px;
+            padding:0 18px; border-radius:0 0 8px 8px;
+            background:linear-gradient(180deg,#ff6500,#ef4c00); box-shadow:0 7px 20px rgba(0,0,0,.4);
+            font:900 28px/1 'Orbitron',sans-serif; color:#fff; transform:skewX(-8deg);
+        }
+        .obs-score-box span { transform:skewX(8deg); }
 
         .obs-player-card {
             position:absolute; left:50%; top:20px; transform:translateX(-50%);
-            z-index:4; width:210px; min-height:0;
-            padding:0; display:flex; flex-direction:column;
-            align-items:center; justify-content:center; gap:4px;
-            border-radius:0; background:transparent;
-            border:0; box-shadow:none;
-            overflow:visible;
+            z-index:4; width:272px; height:150px; box-sizing:border-box;
+            padding:10px 12px 12px; display:flex; flex-direction:column;
+            align-items:center; justify-content:flex-start; gap:7px;
+            border-radius:8px; background:rgba(9,10,15,.88);
+            border:2px solid #ff6500; box-shadow:0 8px 26px rgba(0,0,0,.45);
+            overflow:hidden;
         }
-        .obs-char:first-child .obs-player-card,
-        .obs-char.right .obs-player-card { border-top:0; }
-
-        /* Если аватара нет — карточка содержит только ник. */
+        .obs-char.right .obs-player-card { border-color:#00bfff; }
         .obs-player-card.obs-name-only {
-            min-height:0; padding:0;
-            background:transparent; border:0; box-shadow:none;
+            height:150px; justify-content:center; padding:12px 18px;
+        }
+        .obs-avatar-wrap {
+            position:relative; width:100%; height:92px; flex:0 0 92px;
+            display:flex; align-items:center; justify-content:center;
+            overflow:hidden; border-radius:5px; background:#0c0d12;
+        }
+        .obs-avatar {
+            width:100%; height:100%; border:0; border-radius:4px;
+            object-fit:cover; object-position:center; display:block; opacity:1;
+            box-shadow:none;
+        }
+        .obs-avatar-frame {
+            position:absolute; inset:0; width:100%; height:100%;
+            object-fit:fill; display:block; pointer-events:none; z-index:2;
         }
         .obs-name {
             position:static !important; transform:none !important; width:100%;
-            color:#fff; font-size:20px; font-weight:1000; line-height:1.05;
+            color:#fff; font-size:23px; font-weight:1000; line-height:1;
             text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
             text-shadow:0 3px 10px #000, 0 0 7px rgba(0,0,0,.8);
-            opacity:.94;
-            letter-spacing:.8px;
+            opacity:.98; letter-spacing:.8px;
         }
-        .obs-clan-label {
-            display:none !important;
-            font-size:10px; color:#fff; font-weight:900;
-            text-transform:uppercase; letter-spacing:1.5px; line-height:1;
-            text-shadow:0 2px 8px #000;
-        }
+        .obs-player-card.obs-name-only .obs-name { font-size:26px; }
+        .obs-clan-label { display:none !important; }
         .obs-vs-text {
-            text-align:center; padding-top:55px; font-size:42px; line-height:1;
+            text-align:center; padding-top:58px; font-size:42px; line-height:1;
             font-weight:1000; font-style:italic; color:#fff;
             text-shadow:0 0 20px rgba(255,85,0,.75),0 4px 8px #000;
-            animation:obsVs 1.2s ease-in-out infinite;
         }
         .obs-char::before, .obs-char::after { display:none !important; }
-
-        @keyframes obsVs {
-            0%,100% { transform:scale(1); }
-            50% { transform:scale(1.03); }
-        }
-
         @media(max-width:900px){
-            .obs-vs { grid-template-columns:1fr 90px 1fr; gap:8px; }
-            .obs-char { height:300px; }
-            .obs-character-img { width:48vw; height:330px; }
-            .obs-player-card { width:min(250px,44vw); }
-            .obs-avatar-wrap,.obs-avatar { width:180px; height:96px; }
-            .obs-avatar-frame { width:190px; height:106px; }
-            .obs-name { font-size:22px; }
-            .obs-vs-text { font-size:40px; padding-top:105px; }
+            .obs-vs { grid-template-columns:1fr 75px 1fr; gap:6px; }
+            .obs-char { height:175px; }
+            .obs-player-card { width:min(260px,40vw); height:142px; }
+            .obs-avatar-wrap { height:82px; flex-basis:82px; }
+            .obs-name { font-size:19px; }
+            .obs-player-card.obs-name-only .obs-name { font-size:22px; }
+            .obs-vs-text { font-size:34px; padding-top:58px; }
         }
 
         /* === КРАСИВЫЙ ДИЗАЙН HUD КЛАНОВ === */
@@ -1748,7 +1748,17 @@
 
         <div id="page-shop" class="page-content">
             <div class="card" style="grid-column: span 12;">
-                <h2>Магазин наград</h2>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;">
+                    <div>
+                        <h2>Магазин</h2>
+                        <p style="color:var(--text-muted);font-size:12px;margin-top:4px;">Напиши ник игрока — магазин покажет его купленные вещи.</p>
+                    </div>
+                    <div style="display:flex;gap:8px;min-width:min(420px,100%);">
+                        <input id="shopPlayerName" type="text" placeholder="Ник игрока" style="flex:1;min-width:0;">
+                        <button class="btn btn-primary" onclick="loadShopPlayerByName()">Показать</button>
+                    </div>
+                </div>
+                <div id="shopPlayerInfo" class="shop-equip-note" style="margin-top:10px;text-align:left;">Игрок не выбран.</div>
                 <div class="shop-tabs">
                     <button class="tab-btn active" onclick="filterShop('all', this)">Все</button>
                     <button class="tab-btn" onclick="filterShop('avatar', this)">Аватарки</button>
@@ -1756,6 +1766,15 @@
                     <button class="tab-btn" onclick="filterShop('decor', this)">Украшения</button>
                 </div>
                 <div class="shop-grid" id="shopGrid"></div>
+            </div>
+            <div class="card" style="grid-column:span 12;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                    <div>
+                        <h2>Инвентарь</h2>
+                        <p id="inventoryTargetLabel" style="color:var(--text-muted);font-size:12px;margin-top:4px;">Сначала введи ник игрока.</p>
+                    </div>
+                </div>
+                <div class="inventory-grid" id="inventoryGrid"></div>
             </div>
         </div>
 
@@ -1899,7 +1918,7 @@
                     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=sayan`, 
                     frame: '', 
                     inventory: [],
-                    equippedCharacter: 'gojo'
+                    equippedCharacter: ''
                 }
             ],
             clans: [
@@ -2001,7 +2020,7 @@
                         type: 'character',
                         price: 1200,
                         characterKey: key,
-                        img: ''
+                        img: c.image || animeFallbackImage(key) || ''
                     });
                     changed = true;
                 }
@@ -2274,6 +2293,7 @@
 
         function initApp() {
             ensureCreatorRights(); ensureAnimeShopItems();
+            loadAnimeImages().catch(()=>{});
             let currentUser=getCurrentUser();
             const guestName=document.getElementById('userName'); const badge=document.getElementById('roleBadge');
             if(!currentUser){
@@ -3221,43 +3241,74 @@
 
         let shopTargetPlayerId = null;
 
-        function shopTargetPlayer(){ return shopTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==shopTargetPlayerId) : null; }
-
-        function renderShop() {
-            document.querySelectorAll('.shop-tabs .tab-btn').forEach(btn => {
-                const label = (btn.textContent || '').toLowerCase();
-                if (label.includes('аниме') || label.includes('персонаж')) btn.remove();
-            });
-            filterShop('all', document.querySelector('.shop-tabs .tab-btn'));
+        function shopTargetPlayer(){
+            return shopTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==shopTargetPlayerId) : null;
         }
 
-        function filterShop(type, btn) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            const grid = document.getElementById('shopGrid'); if (!grid) return;
+        function loadShopPlayerByName(){
+            const input=document.getElementById('shopPlayerName');
+            const name=input?.value.trim();
+            if(!name){ alert('Введите ник игрока.'); return; }
+            const p=getGuestPlayerByName(name);
+            if(!p){ alert('Игрок с таким ником пока не найден на сайте.'); return; }
+            shopTargetPlayerId=p.id;
+            renderShop();
+            renderInventory();
+        }
+
+        function renderShop(){
+            document.querySelectorAll('.shop-tabs .tab-btn').forEach(btn=>{
+                const label=(btn.textContent||'').toLowerCase();
+                if(label.includes('аниме')||label.includes('персонаж')) btn.remove();
+            });
             const target=shopTargetPlayer();
-            const items=(db?.shopItems||[]).filter(i=>i.type!=='character');
+            const info=document.getElementById('shopPlayerInfo');
+            if(info) info.innerHTML=target
+                ? `Выбран игрок: <b>${escapeHistoryText(target.name)}</b> · ELO: <b>${target.elo||0}</b>`
+                : 'Игрок не выбран.';
+            filterShop('all',document.querySelector('.shop-tabs .tab-btn'));
+            renderInventory();
+        }
+
+        function filterShop(type,btn){
+            document.querySelectorAll('.shop-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            const grid=document.getElementById('shopGrid'); if(!grid)return;
+            const target=shopTargetPlayer();
+            const items=(db?.shopItems||[]).filter(i=>i.type!=='decor'&&i.type!=='character');
             const filtered=type==='all'?items:items.filter(i=>i.type===type);
             grid.innerHTML=filtered.map(item=>{
                 const owned=!!target?.inventory?.some(i=>i.id===item.id);
-                const equipped=!!target && ((item.type==='avatar'&&target.activeAvatarId===item.id)||(item.type==='frame'&&target.activeFrameId===item.id));
+                const equipped=!!target&&((item.type==='avatar'&&target.activeAvatarId===item.id)||(item.type==='frame'&&target.activeFrameId===item.id));
                 let action='';
-                if(item.type==='avatar'||item.type==='frame') action=owned?`<button class="btn ${equipped?'btn-secondary':'btn-success'}" onclick="equipShopItem(${item.id})">${equipped?'✓ Надето':'Надеть'}</button>`:`<button class="btn btn-primary" onclick="buyItem(${item.id})">Забрать за ${item.price||0} ELO</button>`;
-                else action=owned?'<button class="btn btn-secondary" disabled>✓ Забрано</button>':`<button class="btn btn-primary" onclick="buyItem(${item.id})">Забрать за ${item.price||0} ELO</button>`;
-                const targetNote=target?`<div class="shop-equip-note">Игрок: <b>${escapeHistoryText(target.name)}</b></div>`:`<div class="shop-equip-note">Нажмите кнопку — сайт попросит ник игрока.</div>`;
+                if(item.type==='avatar'||item.type==='frame'){
+                    action=owned
+                        ? `<button class="btn ${equipped?'btn-secondary':'btn-success'}" onclick="equipShopItem(${item.id})">${equipped?'✓ Надето':'Надеть'}</button>`
+                        : `<button class="btn btn-primary" onclick="buyItem(${item.id})">Купить за ${item.price||0} ELO</button>`;
+                }else{
+                    action=owned?'<button class="btn btn-secondary" disabled>✓ Куплено</button>':`<button class="btn btn-primary" onclick="buyItem(${item.id})">Купить за ${item.price||0} ELO</button>`;
+                }
+                const targetNote=target
+                    ? `<div class="shop-equip-note">Для игрока: <b>${escapeHistoryText(target.name)}</b></div>`
+                    : '<div class="shop-equip-note">Сначала введи ник игрока.</div>';
                 return `<div class="shop-item"><img src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.3"><h4>${escapeHistoryText(item.name||'')}</h4><p style="color:var(--accent);font-weight:bold">${item.price||0} ELO</p>${targetNote}${action}</div>`;
             }).join('');
         }
 
         async function getShopTarget(){
             if(shopTargetPlayer()) return shopTargetPlayer();
-            const name=prompt('Введите ник игрока:'); if(!name) return null;
-            const p=await getOrCreateGuestPlayer(name); if(!p) return null;
-            shopTargetPlayerId=p.id; return p;
+            const input=document.getElementById('shopPlayerName');
+            const name=input?.value.trim();
+            if(!name){ alert('Сначала введи ник игрока.'); return null; }
+            const p=getGuestPlayerByName(name);
+            if(!p){ alert('Игрок с таким ником пока не найден на сайте.'); return null; }
+            shopTargetPlayerId=p.id;
+            return p;
         }
 
         async function buyItem(id){
             const item=(db?.shopItems||[]).find(i=>i.id===id); if(!item)return;
+            if(item.type==='character'){ alert('Персонажи больше не используются.'); return; }
             const p=await getShopTarget(); if(!p)return;
             p.inventory=p.inventory||[];
             const owned=p.inventory.find(i=>i.id===id);
@@ -3265,14 +3316,15 @@
                 if(item.type==='avatar'||item.type==='frame'){await equipItemForPlayer(id,p.id); return;}
                 alert('Этот предмет уже куплен.'); return;
             }
-            if((p.elo||0)<(item.price||0)){alert(`Недостаточно ELO. У игрока ${p.elo||0}, нужно ${item.price||0}.`);return;}
+            if((p.elo||0)<(item.price||0)){
+                alert(`Недостаточно ELO. У игрока ${p.elo||0}, нужно ${item.price||0}.`); return;
+            }
             p.elo-=item.price||0;
             p.inventory.push({...item,claimedBy:p.name,claimedAt:new Date().toISOString()});
-            if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;}
-            if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
+            // Покупка только добавляет вещь в инвентарь. Надевание делается кнопкой «Надеть».
             await saveDataToCloud();
-            renderShop(); renderLeaderboard(); renderTop100();
-            alert(`✓ ${item.name} куплено игроком ${p.name}${item.type==='avatar'||item.type==='frame'?' и сразу надето.':'.'}`);
+            renderShop(); renderInventory(); renderLeaderboard(); renderTop100();
+            alert(`✓ ${item.name} куплено игроком ${p.name}. Теперь его можно надеть в инвентаре.`);
         }
 
         async function equipShopItem(id){
@@ -3284,31 +3336,36 @@
         let inventoryTargetPlayerId = null;
 
         function loadInventoryByName(){
-            const name=document.getElementById('inventoryPlayerName')?.value.trim();
+            const name=document.getElementById('shopPlayerName')?.value.trim() || document.getElementById('inventoryPlayerName')?.value.trim();
             if(!name){alert('Введите ник игрока.');return;}
             const p=getGuestPlayerByName(name);
             if(!p){alert('Игрок с таким ником пока не найден на сайте.');return;}
             inventoryTargetPlayerId=p.id;
+            shopTargetPlayerId=p.id;
             renderInventory();
+            renderShop();
         }
 
         function renderInventory(){
             const grid=document.getElementById('inventoryGrid');
             const label=document.getElementById('inventoryTargetLabel');
-            if(!grid) return;
-            let target=inventoryTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==inventoryTargetPlayerId) : null;
+            if(!grid)return;
+            let target=inventoryTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==inventoryTargetPlayerId) : shopTargetPlayer();
             if(!target) target=getCurrentUser();
             grid.innerHTML='';
-            if(label) label.textContent=target?`Инвентарь игрока: ${target.name}`:'Чтобы посмотреть инвентарь, введите ник игрока.';
-            if(!target?.inventory?.length){grid.innerHTML='<p style="color:var(--text-muted);">У этого игрока пока нет купленных предметов.</p>';return;}
+            if(label) label.textContent=target?`Инвентарь игрока: ${target.name}`:'Сначала введи ник игрока.';
+            if(!target?.inventory?.length){
+                grid.innerHTML='<p style="color:var(--text-muted);">У этого игрока пока нет купленных предметов.</p>';
+                return;
+            }
             target.inventory.filter(item=>item.type!=='character').forEach(item=>{
                 const isAvatar=item.type==='avatar', isFrame=item.type==='frame';
-                const equipped=(isAvatar&&target.avatar===item.img)||(isFrame&&target.frame===item.img);
+                const equipped=(isAvatar&&target.activeAvatarId===item.id)||(isFrame&&target.activeFrameId===item.id);
                 grid.innerHTML+=`<div class="inventory-item"><img src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.35"><h4>${escapeHistoryText(item.name||'')}</h4>${equipped?'<span class="anime-item-badge">✓ Сейчас надето</span>':''}${(isAvatar||isFrame)?`<button class="btn ${equipped?'btn-secondary':'btn-success'}" onclick="equipItemForPlayer(${item.id},${target.id})">${equipped?'Надето':'Надеть'}</button>`:'<span style="font-size:11px;color:var(--text-muted);">Предмет</span>'}</div>`;
             });
         }
 
-        async function equipItemForPlayer(itemId, playerId){
+        async function equipItemForPlayer(itemId,playerId){
             const p=(db?.players||[]).find(x=>x.id==playerId); if(!p)return;
             const item=(p.inventory||[]).find(x=>x.id==itemId); if(!item)return;
             if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;}
@@ -3316,22 +3373,21 @@
             else return;
             await saveDataToCloud();
             inventoryTargetPlayerId=p.id;
+            shopTargetPlayerId=p.id;
             renderInventory(); renderShop(); renderLeaderboard();
             alert(`✓ ${item.name} надето игроку ${p.name}.`);
         }
 
         async function equipItem(id){
-            let p=getCurrentUser();
-            if(!p){const name=prompt('Введите ник игрока, чтобы надеть предмет:'); if(!name)return; p=getGuestPlayerByName(name);}
+            let p=shopTargetPlayer()||getCurrentUser();
+            if(!p){const name=document.getElementById('shopPlayerName')?.value.trim(); if(!name)return; p=getGuestPlayerByName(name);}
             if(!p){alert('Игрок не найден.');return;}
             return equipItemForPlayer(id,p.id);
         }
 
-
-        function renderAnimeArena() {
-            // Anime characters are intentionally disabled.
-            const arena = document.getElementById('animeArena');
-            if (arena) arena.remove();
+        function renderAnimeArena(){
+            const arena=document.getElementById('animeArena');
+            if(arena) arena.remove();
         }
 
         function renderAdminPanel() {
@@ -3663,52 +3719,47 @@
 
                     let p1Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player1?.toLowerCase());
                     let p2Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player2?.toLowerCase());
-                    let char1Key = p1Obj?.equippedCharacter || 'gojo';
-                    let char2Key = p2Obj?.equippedCharacter || 'goku';
-                    let char1Img = animeCharacterImg(char1Key);
-                    let char2Img = animeCharacterImg(char2Key);
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
-                            // Показываем купленный/надетый аватар только если он действительно надет.
-                            // Старый круглый DiceBear-аватар больше не показывается.
                             const hasAvatar1 = !!(p1Obj?.activeAvatarId && p1Obj?.avatar);
                             const hasAvatar2 = !!(p2Obj?.activeAvatarId && p2Obj?.avatar);
-
                             const safeName1 = escapeHistoryText(sd.player1 || 'PLAYER 1');
                             const safeName2 = escapeHistoryText(sd.player2 || 'PLAYER 2');
-                            const safeClan1 = escapeHistoryText(sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА');
-                            const safeClan2 = escapeHistoryText(sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА');
+                            const score1 = Number(sd.score1 ?? 0);
+                            const score2 = Number(sd.score2 ?? 0);
 
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p1Obj.avatar}" alt="">${p1Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p1Obj.equippedFrame}" alt="">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p1Obj.avatar}" alt="">${p1Obj?.activeFrameId && p1Obj?.frame ? `<img class="obs-avatar-frame" src="${p1Obj.frame}" alt="">` : ''}</div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p2Obj.avatar}" alt="">${p2Obj?.equippedFrame ? `<img class="obs-avatar-frame" src="${p2Obj.equippedFrame}" alt="">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p2Obj.avatar}" alt="">${p2Obj?.activeFrameId && p2Obj?.frame ? `<img class="obs-avatar-frame" src="${p2Obj.frame}" alt="">` : ''}</div>`
                                 : '';
 
                             obsContainer.innerHTML = `
+                                <div class="obs-match-strip">
+                                    <div class="obs-clock">00:12</div>
+                                    <div class="obs-goal">Цель: 4</div>
+                                    <div class="obs-score-box"><span>${score1}</span><span>${score2}</span></div>
+                                </div>
                                 <div class="obs-vs">
                                     <div class="obs-char">
                                         <div class="obs-player-card ${hasAvatar1 ? '' : 'obs-name-only'}">
                                             ${avatar1}
-                                            ${hasAvatar1 ? `<div class="obs-clan-label">${safeClan1}</div>` : ''}
                                             <div class="obs-name">${safeName1}</div>
                                         </div>
                                     </div>
-
                                     <div class="obs-vs-text">VS</div>
-
                                     <div class="obs-char right">
                                         <div class="obs-player-card ${hasAvatar2 ? '' : 'obs-name-only'}">
                                             ${avatar2}
-                                            ${hasAvatar2 ? `<div class="obs-clan-label">${safeClan2}</div>` : ''}
                                             <div class="obs-name">${safeName2}</div>
                                         </div>
                                     </div>
                                 </div>
                             `;
                         } else if (obsMode === 'clans') {
+
                             /* Обновленный красивый HUD Кланов */
                             obsContainer.innerHTML = `
                                 <div class="clan-hud-container">
@@ -3749,3 +3800,10 @@
 </html>
 
 <style>.stats-card{display:none!important}.profile-widget{display:none!important}.page-matches>.card[style*='МОЙ ИНВЕНТАРЬ']{display:none!important}#registerFormBlock,#tabRegisterBtn{display:none!important}</style>
+
+<style>
+/* Магазин: ник игрока + его инвентарь на одной странице */
+#page-shop .inventory-grid { margin-top:15px; }
+#page-shop .shop-item, #page-shop .inventory-item { min-height:0; }
+#page-shop .shop-item img, #page-shop .inventory-item img { border-radius:5px; }
+</style>
