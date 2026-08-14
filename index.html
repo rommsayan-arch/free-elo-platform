@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FREE ELO — Neon Esports</title>
+    <!-- HUD COLORS PATCH v2: LEFT ORANGE / RIGHT BLUE -->
+<title>FREE ELO — Neon Esports</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -1557,6 +1558,20 @@
                 padding:10px 9px !important;
             }
         }
+
+
+/* FINAL HUD COLORS: LEFT = ORANGE, RIGHT = CYAN */
+.obs-char.left .obs-player-card,
+.obs-char.left .obs-avatar-frame,
+.obs-char.left .obs-avatar-wrap {
+  border-color:#ff6500 !important;
+  box-shadow:0 0 0 2px #ff6500, 0 0 14px rgba(255,101,0,.42) !important;
+}
+.obs-char.right .obs-player-card,
+.obs-char.right .obs-avatar-frame,
+.obs-char.right .obs-avatar-wrap {
+  border-color:#00bfff !important;
+}
 
 </style>
 </head>
