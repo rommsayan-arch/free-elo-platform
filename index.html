@@ -418,7 +418,14 @@
             </div>
 
             <div class="card" style="grid-column: span 12;">
-                <h2>МОЙ ИНВЕНТАРЬ</h2>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div><h2>ИНВЕНТАРЬ ИГРОКА</h2><p style="font-size:12px;color:var(--text-muted);margin-top:5px;">Введите ник игрока, чтобы увидеть купленные предметы и надеть аватарку или рамку.</p></div>
+                    <div style="display:flex;gap:8px;min-width:300px;flex:1;max-width:520px;">
+                        <input id="inventoryPlayerName" placeholder="Ник игрока" autocomplete="off">
+                        <button class="btn btn-primary" onclick="loadInventoryByName()">Открыть</button>
+                    </div>
+                </div>
+                <div id="inventoryTargetLabel" style="margin-top:12px;color:var(--text-muted);font-size:12px;"></div>
                 <div class="inventory-grid" id="inventoryGrid"></div>
             </div>
         </div>
@@ -793,6 +800,7 @@
                     if (!db.streamDataMap) db.streamDataMap = {};
                     if (!db.matchHistory) db.matchHistory = [];
                     if (!db.news) db.news = [];
+                    if (!db.news) db.news = [];
                 }
             } catch (e) {
                 if (e.name !== 'AbortError') console.error("Ошибка загрузки:", e);
@@ -984,7 +992,7 @@
                 const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none';
                 if(currentUser.role==='creator') renderAdminPanel();
             }
-            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderShop(); renderInventory(); renderHistoryCells?.();
+            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderShop(); renderInventory(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
         }
 
         function renderLeaderboard() {
@@ -1104,6 +1112,7 @@
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p1_${s.name}" value="${sd.player1 || s.name}" placeholder="Ник 1"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c1_${s.name}" value="${sd.clan1 || 'NUN'}" placeholder="Клан 1"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s1_${s.name}" value="${sd.score1 ?? 0}" placeholder="Счет 1"></div>
+                                    ${isCreator() ? `<div class="form-group" style="margin-bottom:6px;"><input type="number" id="giveElo1_${s.name}" value="0" placeholder="Выдать ELO игроку 1"></div>` : ''}
                                     <div class="form-group" style="margin-bottom:6px;">
                                         <input type="search" id="searchP1_${s.name}" placeholder="🔎 Поиск игрока..." oninput="filterStreamerPlayers('${s.name}', 1)" style="font-size:11px; margin-bottom:5px;">
                                         <select id="mP1_${s.name}" size="1">${playersOptions}</select>
@@ -1115,6 +1124,7 @@
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p2_${s.name}" value="${sd.player2 || 'PLAYER2'}" placeholder="Ник 2"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c2_${s.name}" value="${sd.clan2 || 'WAKANDA'}" placeholder="Клан 2"></div>
                                     <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s2_${s.name}" value="${sd.score2 ?? 0}" placeholder="Счет 2"></div>
+                                    ${isCreator() ? `<div class="form-group" style="margin-bottom:6px;"><input type="number" id="giveElo2_${s.name}" value="0" placeholder="Выдать ELO игроку 2"></div>` : ''}
                                     <div class="form-group" style="margin-bottom:6px;">
                                         <input type="search" id="searchP2_${s.name}" placeholder="🔎 Поиск игрока..." oninput="filterStreamerPlayers('${s.name}', 2)" style="font-size:11px; margin-bottom:5px;">
                                         <select id="mP2_${s.name}" size="1">${playersOptions}</select>
@@ -1190,23 +1200,89 @@
 
         async function saveStreamerObsData(streamerName) {
             if (!db.streamDataMap) db.streamDataMap = {};
+            if (!db.players) db.players = [];
+
             const p1El = document.getElementById(`p1_${streamerName}`);
             const c1El = document.getElementById(`c1_${streamerName}`);
             const s1El = document.getElementById(`s1_${streamerName}`);
             const p2El = document.getElementById(`p2_${streamerName}`);
             const c2El = document.getElementById(`c2_${streamerName}`);
             const s2El = document.getElementById(`s2_${streamerName}`);
+            const giveElo1El = document.getElementById(`giveElo1_${streamerName}`);
+            const giveElo2El = document.getElementById(`giveElo2_${streamerName}`);
+
+            const player1Name = (p1El?.value || '').trim();
+            const player2Name = (p2El?.value || '').trim();
+            const clan1 = (c1El?.value || 'Нет клана').trim() || 'Нет клана';
+            const clan2 = (c2El?.value || 'Нет клана').trim() || 'Нет клана';
+
+            if (!player1Name || !player2Name) {
+                alert('Введите ник обоих игроков.');
+                return;
+            }
+            if (player1Name.toLowerCase() === player2Name.toLowerCase()) {
+                alert('Игрок 1 и Игрок 2 не могут иметь одинаковый ник.');
+                return;
+            }
+
+            // Сохраняем/создаём игроков только по кнопке «Сохранить оверлей».
+            // Если игрок уже есть, его существующие данные НЕ меняем.
+            function findByName(name) {
+                return db.players.find(p => String(p.name || '').trim().toLowerCase() === name.toLowerCase()) || null;
+            }
+
+            let player1 = findByName(player1Name);
+            let player2 = findByName(player2Name);
+            const created = [];
+
+            const makeNewPlayer = (name) => ({
+                id: Date.now() + Math.floor(Math.random() * 100000),
+                name, email:'', password:'', elo:1000, matches:0, wins:0, level:1,
+                role:'player', clan:'Нет клана',
+                avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
+                frame:'', inventory:[], equippedCharacter:''
+            });
+
+            if (!player1) {
+                player1 = makeNewPlayer(player1Name);
+                db.players.push(player1);
+                created.push(player1.name);
+            }
+            if (!player2) {
+                player2 = makeNewPlayer(player2Name);
+                db.players.push(player2);
+                created.push(player2.name);
+            }
+
+            // Для новых игроков клан берём из оверлея. Уже существующим игрокам клан/ELO не меняем.
+            if (created.includes(player1.name) && clan1) player1.clan = clan1;
+            if (created.includes(player2.name) && clan2) player2.clan = clan2;
+
+            // Только создатель может дополнительно выдать ELO через эту панель.
+            if (isCreator()) {
+                const addElo1 = parseInt(giveElo1El?.value || '0', 10);
+                const addElo2 = parseInt(giveElo2El?.value || '0', 10);
+                if (Number.isFinite(addElo1) && addElo1 !== 0) player1.elo = Math.max(0, (player1.elo || 0) + addElo1);
+                if (Number.isFinite(addElo2) && addElo2 !== 0) player2.elo = Math.max(0, (player2.elo || 0) + addElo2);
+            }
 
             db.streamDataMap[streamerName] = {
-                player1: p1El ? p1El.value.trim() : '',
-                clan1: c1El ? c1El.value.trim() : '',
+                player1: player1.name,
+                clan1: player1.clan || clan1 || 'Нет клана',
                 score1: s1El ? (parseInt(s1El.value) || 0) : 0,
-                player2: p2El ? p2El.value.trim() : '',
-                clan2: c2El ? c2El.value.trim() : '',
+                player2: player2.name,
+                clan2: player2.clan || clan2 || 'Нет клана',
                 score2: s2El ? (parseInt(s2El.value) || 0) : 0
             };
+
             await saveData();
-            alert(`Настройки оверлея для стримера "${streamerName}" сохранены!`);
+            renderStreamers();
+            renderLeaderboard();
+            renderTop100();
+            renderClans();
+
+            const creatorMsg = isCreator() ? ' Данные ELO применены к указанным игрокам.' : '';
+            alert(created.length ? `Оверлей сохранён. Добавлены новые игроки: ${created.join(', ')}.${creatorMsg}` : `Оверлей сохранён. Оба игрока уже были на сайте — их существующие данные не изменены.${creatorMsg}`);
         }
 
         async function finishMatchForStreamer(streamerName, winnerNum) {
@@ -1319,6 +1395,19 @@
             }
             main.innerHTML = cards.join('');
 
+        }
+
+        function setFeedTab(tab) {
+            const overview=document.getElementById('feedOverviewSection');
+            const news=document.getElementById('feedNewsSection');
+            const b1=document.getElementById('feedTabOverview');
+            const b2=document.getElementById('feedTabNews');
+            const isNews=tab==='news';
+            if(overview) overview.style.display=isNews?'none':'block';
+            if(news) news.style.display=isNews?'block':'none';
+            if(b1) b1.classList.toggle('active',!isNews);
+            if(b2) b2.classList.toggle('active',isNews);
+            if(isNews) renderNews(); else renderFeed();
         }
 
         function isCreatorUser() {
@@ -1563,60 +1652,71 @@
             }).join('');
         }
 
-        async function buyItem(id) {
-            const item=(db?.shopItems||[]).find(i=>i.id===id); if(!item) return;
-            const name=prompt(`Введите ваш ник, чтобы забрать «${item.name}» за ${item.price||0} ELO:`);
-            if(!name) return;
-            const player=await getOrCreateGuestPlayer(name); if(!player) return;
-            player.inventory=player.inventory||[];
-            if(player.inventory.some(i=>i.id===id)){ alert('У этого игрока предмет уже есть.'); return; }
-            if((player.elo||0)<(item.price||0)){ alert(`Недостаточно ELO. У игрока ${player.elo||0}, нужно ${item.price||0}.`); return; }
-            player.elo-=item.price||0; player.inventory.push({...item,claimedBy:player.name,claimedAt:new Date().toISOString()});
-            await saveDataToCloud(); renderShop(); renderLeaderboard();
-            alert(`✓ ${item.name} выдан игроку ${player.name}.`);
+        async function buyItem(id){
+            const item=(db?.shopItems||[]).find(i=>i.id===id); if(!item)return;
+            const name=prompt(`Введите ваш ник, чтобы забрать «${item.name}» за ${item.price||0} ELO:`); if(!name)return;
+            const p=await getOrCreateGuestPlayer(name); if(!p)return;
+            p.inventory=p.inventory||[];
+            const owned=p.inventory.find(i=>i.id===id);
+            if(owned){
+                if(item.type==='avatar'||item.type==='frame'){await equipItemForPlayer(id,p.id);return;}
+                alert('Этот предмет уже есть у игрока.');return;
+            }
+            if((p.elo||0)<(item.price||0)){alert(`Недостаточно ELO. У игрока ${p.elo||0}, нужно ${item.price||0}.`);return;}
+            p.elo-=item.price||0;
+            p.inventory.push({...item,claimedBy:p.name,claimedAt:new Date().toISOString()});
+            if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;}
+            if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
+            await saveDataToCloud(); inventoryTargetPlayerId=p.id; renderShop(); renderInventory(); renderLeaderboard();
+            alert(`✓ ${item.name} забрано игроком ${p.name}${item.type==='avatar'||item.type==='frame'?' и сразу надето.':'.'}`);
         }
 
-        function renderInventory() {
-            const grid = document.getElementById('inventoryGrid');
-            if (!grid) return;
-            const currentUser = getCurrentUser();
-            grid.innerHTML = '';
+        let inventoryTargetPlayerId = null;
 
-            if (!currentUser?.inventory || currentUser.inventory.length === 0) {
-                grid.innerHTML = '<p style="color:var(--text-muted);">Инвентарь пуст.</p>';
-                return;
-            }
+        function loadInventoryByName(){
+            const name=document.getElementById('inventoryPlayerName')?.value.trim();
+            if(!name){alert('Введите ник игрока.');return;}
+            const p=getGuestPlayerByName(name);
+            if(!p){alert('Игрок с таким ником пока не найден на сайте.');return;}
+            inventoryTargetPlayerId=p.id;
+            renderInventory();
+        }
 
-            currentUser.inventory.filter(item => item.type !== 'character').forEach(item => {
-                const isCharacter = false;
-                const img = isCharacter ? (animeCharacterImg(item.characterKey)) : (item.img || '');
-                const equipped = isCharacter && currentUser.equippedCharacter === item.characterKey;
-                grid.innerHTML += `
-                    <div class="inventory-item">
-                        <img class="${isCharacter ? 'inventory-character-preview' : ''}" src="${img}" alt="${item.name || ''}" onerror="this.src=animeFallbackImage('${item.characterKey || 'item'}')">
-                        <h4>${item.name || ''}</h4>
-                        ${equipped ? '<span class="anime-item-badge">✓ Активен</span>' : ''}
-                        <button class="btn ${equipped ? 'btn-secondary' : 'btn-success'}" onclick="equipItem(${item.id})">
-                            ${equipped ? 'Активен' : 'Надеть'}
-                        </button>
-                    </div>
-                `;
+        function renderInventory(){
+            const grid=document.getElementById('inventoryGrid');
+            const label=document.getElementById('inventoryTargetLabel');
+            if(!grid) return;
+            let target=inventoryTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==inventoryTargetPlayerId) : null;
+            if(!target) target=getCurrentUser();
+            grid.innerHTML='';
+            if(label) label.textContent=target?`Инвентарь игрока: ${target.name}`:'Чтобы посмотреть инвентарь, введите ник игрока.';
+            if(!target?.inventory?.length){grid.innerHTML='<p style="color:var(--text-muted);">У этого игрока пока нет купленных предметов.</p>';return;}
+            target.inventory.filter(item=>item.type!=='character').forEach(item=>{
+                const isAvatar=item.type==='avatar', isFrame=item.type==='frame';
+                const equipped=(isAvatar&&target.avatar===item.img)||(isFrame&&target.frame===item.img);
+                grid.innerHTML+=`<div class="inventory-item"><img src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.35"><h4>${escapeHistoryText(item.name||'')}</h4>${equipped?'<span class="anime-item-badge">✓ Сейчас надето</span>':''}${(isAvatar||isFrame)?`<button class="btn ${equipped?'btn-secondary':'btn-success'}" onclick="equipItemForPlayer(${item.id},${target.id})">${equipped?'Надето':'Надеть'}</button>`:'<span style="font-size:11px;color:var(--text-muted);">Предмет</span>'}</div>`;
             });
         }
 
-        async function equipItem(id) {
-            const currentUser = getCurrentUser();
-            if (!currentUser?.inventory) return;
-            const item = currentUser.inventory.find(i => i.id === id);
-            if (!item) return;
-
-            if (item.type === 'avatar') currentUser.avatar = item.img;
-            else if (item.type === 'frame') currentUser.frame = item.img;
-
-            await saveData();
-            renderInventory();
-            renderAnimeArena();
+        async function equipItemForPlayer(itemId, playerId){
+            const p=(db?.players||[]).find(x=>x.id==playerId); if(!p)return;
+            const item=(p.inventory||[]).find(x=>x.id==itemId); if(!item)return;
+            if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;}
+            else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
+            else return;
+            await saveDataToCloud();
+            inventoryTargetPlayerId=p.id;
+            renderInventory(); renderShop(); renderLeaderboard();
+            alert(`✓ ${item.name} надето игроку ${p.name}.`);
         }
+
+        async function equipItem(id){
+            let p=getCurrentUser();
+            if(!p){const name=prompt('Введите ник игрока, чтобы надеть предмет:'); if(!name)return; p=getGuestPlayerByName(name);}
+            if(!p){alert('Игрок не найден.');return;}
+            return equipItemForPlayer(id,p.id);
+        }
+
 
         function renderAnimeArena() {
             // Anime characters are intentionally disabled.
@@ -1685,6 +1785,15 @@
                 });
                 loadUserToAdmin();
             }
+
+            const invSelect=document.getElementById('adminInventoryPlayerSelect');
+            if(invSelect){
+                const prev=invSelect.value; invSelect.innerHTML='';
+                (db?.players||[]).forEach(p=>{invSelect.innerHTML+=`<option value="${p.id}">${p.name} — ${(p.inventory||[]).length} предмет.</option>`;});
+                if([...(invSelect.options||[])].some(o=>o.value===prev)) invSelect.value=prev;
+                else if(db?.players?.length) invSelect.value=String(db.players[0].id);
+                renderAdminInventoryManager();
+            }
         }
 
         async function deletePlayer(playerId) {
@@ -1716,6 +1825,26 @@
             await saveDataToCloud();
             initApp();
             alert(`Игрок "${player.name}" удалён.`);
+        }
+
+        function renderAdminInventoryManager(){
+            const select=document.getElementById('adminInventoryPlayerSelect'); const box=document.getElementById('adminInventoryManager');
+            if(!select||!box)return;
+            const p=(db?.players||[]).find(x=>x.id==parseInt(select.value));
+            if(!p){box.innerHTML='<div class="history-empty">Выберите игрока.</div>';return;}
+            const inv=(p.inventory||[]).filter(i=>i.type!=='character');
+            box.innerHTML=inv.length?inv.map(item=>`<div style="display:flex;align-items:center;gap:10px;padding:9px;border:1px solid var(--border-color);border-radius:8px;margin-top:8px;background:#17181e;"><img src="${item.img||''}" style="width:42px;height:42px;object-fit:cover;border-radius:6px;"><div style="flex:1"><b>${escapeHistoryText(item.name||'')}</b><div style="font-size:10px;color:var(--text-muted)">${escapeHistoryText(item.type||'item')}</div></div><button class="btn btn-danger" style="padding:6px 10px;font-size:11px" onclick="deletePlayerInventoryItem(${p.id},${item.id})">Удалить</button></div>`).join(''):'<div class="history-empty">У игрока нет предметов.</div>';
+        }
+
+        async function deletePlayerInventoryItem(playerId,itemId){
+            if(!isCreator()){alert('Только создатель может удалять предметы.');return;}
+            const p=(db?.players||[]).find(x=>x.id==playerId); if(!p)return;
+            const item=(p.inventory||[]).find(i=>i.id==itemId); if(!item)return;
+            if(!confirm(`Удалить «${item.name}» у ${p.name}?`))return;
+            p.inventory=(p.inventory||[]).filter(i=>i.id!=itemId);
+            if(p.activeAvatarId==itemId){p.activeAvatarId=null;p.avatar=`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(p.name)}`;}
+            if(p.activeFrameId==itemId){p.activeFrameId=null;p.frame='';}
+            await saveDataToCloud(); renderInventory(); renderAdminPanel(); renderShop();
         }
 
         async function addShopItemByAdmin() {
