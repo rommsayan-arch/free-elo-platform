@@ -209,6 +209,7 @@
     
         /* === OBS TRANSPARENT OVERLAY MODE === */
         body.obs-overlay { background: transparent !important; overflow: hidden !important; }
+        body.obs-overlay::before, body.obs-overlay::after { display:none !important; content:none !important; }
         body.obs-overlay > *:not(#obsOverlayRoot) { display:none !important; }
         #obsOverlayRoot { position:fixed; inset:0; z-index:999999; pointer-events:none; display:none; }
         body.obs-overlay #obsOverlayRoot { display:block; }
@@ -225,7 +226,7 @@
         }
         .obs-character-img { display:none !important; }
 
-        .obs-match-strip {
+        .obs-match-strip { display:none !important;
             position:fixed; left:50%; top:2%; transform:translateX(-50%);
             width:min(820px,92vw); height:48px; display:flex; align-items:flex-start; justify-content:center;
             z-index:30; pointer-events:none;
@@ -249,39 +250,46 @@
         .obs-player-card {
             position:absolute; left:50%; top:20px; transform:translateX(-50%);
             z-index:4; width:272px; height:150px; box-sizing:border-box;
-            padding:10px 12px 12px; display:flex; flex-direction:column;
-            align-items:center; justify-content:flex-start; gap:7px;
-            border-radius:8px; background:rgba(9,10,15,.88);
-            border:2px solid #ff6500; box-shadow:0 8px 26px rgba(0,0,0,.45);
+            padding:0; display:flex; align-items:center; justify-content:center;
+            border-radius:8px; background:transparent;
+            border:2px solid #ff6500; box-shadow:none;
             overflow:hidden;
         }
         .obs-char.right .obs-player-card { border-color:#00bfff; }
         .obs-player-card.obs-name-only {
-            height:150px; justify-content:center; padding:12px 18px;
+            height:150px; padding:0; background:transparent;
         }
         .obs-avatar-wrap {
-            position:relative; width:100%; height:92px; flex:0 0 92px;
-            display:flex; align-items:center; justify-content:center;
-            overflow:hidden; border-radius:5px; background:#0c0d12;
+            position:absolute; inset:0; width:100%; height:100%;
+            display:block; overflow:hidden; border-radius:0; background:transparent;
+            z-index:0;
         }
         .obs-avatar {
-            width:100%; height:100%; border:0; border-radius:4px;
-            object-fit:cover; object-position:center; display:block; opacity:1;
+            width:100%; height:100%; border:0; border-radius:0;
+            object-fit:cover; object-position:center; display:block; opacity:.52;
             box-shadow:none;
         }
         .obs-avatar-frame {
             position:absolute; inset:0; width:100%; height:100%;
-            object-fit:fill; display:block; pointer-events:none; z-index:2;
+            object-fit:fill; display:block; pointer-events:none; z-index:1; opacity:.9;
         }
         .obs-name {
-            position:static !important; transform:none !important; width:100%;
-            color:#fff; font-size:23px; font-weight:1000; line-height:1;
+            position:absolute !important; left:50%; top:50%; transform:translate(-50%,-50%) !important;
+            z-index:3; width:calc(100% - 24px);
+            color:#fff; font-size:25px; font-weight:1000; line-height:1;
             text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-            text-shadow:0 3px 10px #000, 0 0 7px rgba(0,0,0,.8);
-            opacity:.98; letter-spacing:.8px;
+            text-shadow:0 3px 10px #000, 0 0 7px rgba(0,0,0,.9);
+            opacity:1; letter-spacing:.8px;
         }
         .obs-player-card.obs-name-only .obs-name { font-size:26px; }
-        .obs-clan-label { display:none !important; }
+        .obs-clan-label {
+            position:absolute; left:50%; bottom:9px; transform:translateX(-50%);
+            z-index:3; width:calc(100% - 20px);
+            color:#fff; font-size:13px; font-weight:800; line-height:1;
+            text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            text-shadow:0 2px 7px #000, 0 0 5px rgba(0,0,0,.9);
+            letter-spacing:.7px;
+        }
         .obs-vs-text {
             text-align:center; padding-top:58px; font-size:42px; line-height:1;
             font-weight:1000; font-style:italic; color:#fff;
@@ -3726,9 +3734,8 @@
                             const hasAvatar2 = !!(p2Obj?.activeAvatarId && p2Obj?.avatar);
                             const safeName1 = escapeHistoryText(sd.player1 || 'PLAYER 1');
                             const safeName2 = escapeHistoryText(sd.player2 || 'PLAYER 2');
-                            const score1 = Number(sd.score1 ?? 0);
-                            const score2 = Number(sd.score2 ?? 0);
-
+                            const safeClan1 = escapeHistoryText(sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА');
+                            const safeClan2 = escapeHistoryText(sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА');
                             const avatar1 = hasAvatar1
                                 ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p1Obj.avatar}" alt="">${p1Obj?.activeFrameId && p1Obj?.frame ? `<img class="obs-avatar-frame" src="${p1Obj.frame}" alt="">` : ''}</div>`
                                 : '';
@@ -3737,16 +3744,12 @@
                                 : '';
 
                             obsContainer.innerHTML = `
-                                <div class="obs-match-strip">
-                                    <div class="obs-clock">00:12</div>
-                                    <div class="obs-goal">Цель: 4</div>
-                                    <div class="obs-score-box"><span>${score1}</span><span>${score2}</span></div>
-                                </div>
                                 <div class="obs-vs">
                                     <div class="obs-char">
                                         <div class="obs-player-card ${hasAvatar1 ? '' : 'obs-name-only'}">
                                             ${avatar1}
                                             <div class="obs-name">${safeName1}</div>
+                                            <div class="obs-clan-label">${safeClan1}</div>
                                         </div>
                                     </div>
                                     <div class="obs-vs-text">VS</div>
@@ -3754,6 +3757,7 @@
                                         <div class="obs-player-card ${hasAvatar2 ? '' : 'obs-name-only'}">
                                             ${avatar2}
                                             <div class="obs-name">${safeName2}</div>
+                                            <div class="obs-clan-label">${safeClan2}</div>
                                         </div>
                                     </div>
                                 </div>
