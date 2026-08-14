@@ -97,6 +97,14 @@
         .season-banner { background: linear-gradient(135deg, #ff5500 0%, #26262b 100%); padding: 25px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .season-timer { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); }
 
+
+        .season-control-card{grid-column:span 12;background:linear-gradient(135deg,#15171c,#24262d);border:1px solid rgba(255,85,0,.45)}
+        .season-control-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+        .season-control-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,85,0,.14);border:1px solid rgba(255,85,0,.4);padding:9px 13px;border-radius:9px;font-weight:1000}
+        .clan-top-table{margin-top:18px}.clan-top-table th,.clan-top-table td{font-size:12px}.clan-top-table .clan-opponents{max-width:430px;line-height:1.55;color:#d8dbe2}
+        .clan-history-link{cursor:pointer}.clan-history-link:hover{color:var(--accent)!important}
+        .shop-equip-note{font-size:10px;color:var(--text-muted);text-align:center;line-height:1.35}
+        .shop-item .btn{width:100%}
         /* === FREE ELO: Anime VS Characters === */
         .anime-vs-card {
             grid-column: span 12;
@@ -417,17 +425,6 @@
                 </div>
             </div>
 
-            <div class="card" style="grid-column: span 12;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-                    <div><h2>ИНВЕНТАРЬ ИГРОКА</h2><p style="font-size:12px;color:var(--text-muted);margin-top:5px;">Введите ник игрока, чтобы увидеть купленные предметы и надеть аватарку или рамку.</p></div>
-                    <div style="display:flex;gap:8px;min-width:300px;flex:1;max-width:520px;">
-                        <input id="inventoryPlayerName" placeholder="Ник игрока" autocomplete="off">
-                        <button class="btn btn-primary" onclick="loadInventoryByName()">Открыть</button>
-                    </div>
-                </div>
-                <div id="inventoryTargetLabel" style="margin-top:12px;color:var(--text-muted);font-size:12px;"></div>
-                <div class="inventory-grid" id="inventoryGrid"></div>
-            </div>
         </div>
 
         <div id="page-feed" class="page-content">
@@ -476,11 +473,11 @@
             <div class="card" style="grid-column: span 12;">
                 <div class="season-banner">
                     <div>
-                        <h1 style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-trophy"></i> СЕЗОН 1: БИТВА ЗА ЛЕГЕНДУ</h1>
+                        <h1 id="seasonPageTitle" style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-trophy"></i> СЕЗОН 1: БИТВА ЗА ЛЕГЕНДУ</h1>
                         <p style="color: #ddd;">Сражайтесь в матчах, поднимайте ELO и забирайте награды!</p>
                     </div>
                     <div class="season-timer">
-                        <i class="fas fa-clock"></i> До конца: <span style="color: var(--accent);">14 дн.</span>
+                        <i class="fas fa-clock"></i> До конца: <span id="seasonDaysLeft" style="color: var(--accent);">14 дн.</span>
                     </div>
                 </div>
                 <h2>Таблица лидеров текущего сезона</h2>
@@ -500,16 +497,22 @@
         </div>
 
         <div id="page-clans" class="page-content">
-            <div class="card admin-obs-only" id="createClanCard" style="grid-column: span 5; display: none;">
-                <h2>Создать новый клан</h2>
-                <div style="margin-top: 15px;">
-                    <div class="form-group"><label>Название клана</label><input type="text" id="clanNameInput" placeholder="Cyber Warriors"></div>
-                    <div class="form-group"><label>Тег клана (до 4 символов)</label><input type="text" id="clanTagInput" placeholder="CW" maxlength="4"></div>
-                    <button class="btn btn-primary" onclick="createClan()">Создать клан</button>
+            <div class="card" style="grid-column:span 12;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div><span class="history-kicker">CLANS</span><h2>Официальный топ-100 кланов</h2><p style="color:var(--text-muted);font-size:12px;margin-top:5px;">Рейтинг сезона. Здесь только история игр кланов: против кого играли, когда и кто победил.</p></div>
+                    <span class="season-control-badge"><i class="fas fa-trophy"></i> Сезон <span id="clanSeasonNumber">1</span></span>
+                </div>
+                <div class="table-scroll-container">
+                    <table class="clan-top-table">
+                        <thead><tr><th>#</th><th>Клан</th><th>ELO</th><th>Игр</th><th>Побед</th><th>Поражений</th><th>С кем играли</th><th>Последняя игра</th></tr></thead>
+                        <tbody id="clanTop100Body"></tbody>
+                    </table>
                 </div>
             </div>
-            <div class="card" id="clanListCard" style="grid-column: span 12;">
-                <h2>Список кланов</h2>
+            <div class="card" style="grid-column:span 12;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                    <div><span class="history-kicker">HISTORY</span><h2>Все кланы платформы</h2><p style="color:var(--text-muted);font-size:12px;margin-top:5px;">Нажми на клан, чтобы открыть полную историю его игр.</p></div>
+                </div>
                 <div class="clan-grid" id="clanList"></div>
             </div>
         </div>
@@ -528,6 +531,20 @@
         </div>
 
         <div id="page-admin" class="page-content">
+<div id="seasonControlCard" class="card season-control-card" style="display:none;">
+                <div class="season-control-row">
+                    <div>
+                        <span class="history-kicker">ADMIN / CREATOR</span>
+                        <h2 style="margin-top:4px;"><i class="fas fa-rotate"></i> Новый сезон</h2>
+                        <p style="color:var(--text-muted);font-size:12px;margin-top:6px;">Полностью сбрасывает сезонные ELO, победы, поражения и количество матчей у игроков. Старая история матчей сохраняется.</p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span class="season-control-badge">Текущий сезон: <b id="adminSeasonNumber">1</b></span>
+                        <button class="btn btn-danger" onclick="startNewSeason()"><i class="fas fa-rotate"></i> Начать новый сезон</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="card" style="grid-column: span 12; border-color: #00be63;">
                 <h2 style="color: #00be63;"><i class="fas fa-shopping-cart"></i> Управление магазином</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-top: 15px; align-items: flex-end;">
@@ -657,7 +674,9 @@
                 "sayan": { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 }
             },
             matchHistory: [],
-            news: []
+            news: [],
+            currentSeason: 1,
+            seasonStartedAt: new Date().toISOString()
         };
 
         const EPIC_ANIME_ART = {
@@ -715,7 +734,7 @@
                 }catch(_){ }
             });
             await Promise.allSettled(jobs);
-            renderAnimeArena(); renderShop(); renderInventory();
+            renderAnimeArena(); renderShop();
         }
 
         function animeCharacterImg(key) {
@@ -800,7 +819,8 @@
                     if (!db.streamDataMap) db.streamDataMap = {};
                     if (!db.matchHistory) db.matchHistory = [];
                     if (!db.news) db.news = [];
-                    if (!db.news) db.news = [];
+                    if (!Number.isFinite(Number(db.currentSeason)) || Number(db.currentSeason) < 1) db.currentSeason = 1;
+                    if (!db.seasonStartedAt) db.seasonStartedAt = new Date().toISOString();
                 }
             } catch (e) {
                 if (e.name !== 'AbortError') console.error("Ошибка загрузки:", e);
@@ -812,7 +832,7 @@
         function ensureCreatorRights() {
             if (!db || !db.players) return;
             db.players.forEach(p => {
-                if (p.name?.toLowerCase() === 'sayan' || p.email?.toLowerCase() === 'rommsayan@gmail.com') {
+                if (p.email?.toLowerCase() === 'rommsayan@gmail.com') {
                     p.role = 'creator';
                     p.email = 'rommsayan@gmail.com';
                 }
@@ -844,7 +864,7 @@
         function getCurrentUser() {
             if (!currentUserId || !db?.players) return null;
             let user = db.players.find(p => p.id == currentUserId) || null;
-            if (user && (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com')) user.role = 'creator';
+            if (user && user.email?.toLowerCase() === 'rommsayan@gmail.com') user.role = 'creator';
             return user;
         }
 
@@ -873,14 +893,14 @@
 
         function isCreator() {
             const u=getCurrentUser();
-            return !!u && u.role==='creator' && (u.name?.toLowerCase()==='sayan' || u.email?.toLowerCase()==='rommsayan@gmail.com');
+            return !!u && u.role==='creator' && u.email?.toLowerCase()==='rommsayan@gmail.com';
         }
 
         function openCreatorLogin(){ document.getElementById('authModal').style.display='flex'; }
         function closeCreatorLogin(){ document.getElementById('authModal').style.display='none'; }
 
         function sanitizeAndValidateUser(user) {
-            if (user.name?.toLowerCase() === 'sayan' || user.email?.toLowerCase() === 'rommsayan@gmail.com') {
+            if (user.email?.toLowerCase() === 'rommsayan@gmail.com') {
                 user.role = 'creator';
             }
             if (typeof user.elo !== 'number' || isNaN(user.elo) || user.elo < 0) user.elo = 0;
@@ -989,10 +1009,10 @@
                 if(guestName) guestName.textContent=currentUser.name||'';
                 if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge';}
                 const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display=currentUser.role==='creator'?'none':'inline-block';
-                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none';
+                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none'; const createClanCard=document.getElementById('createClanCard'); if(createClanCard) createClanCard.style.display='none';
                 if(currentUser.role==='creator') renderAdminPanel();
             }
-            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderShop(); renderInventory(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
+            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderClanLeaderboard(); renderShop(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
         }
 
         function renderLeaderboard() {
@@ -1037,7 +1057,51 @@
             });
         }
 
+        function getCurrentSeasonNumber(){ return Math.max(1, parseInt(db?.currentSeason,10)||1); }
+
+        function renderSeasonUI(){
+            const season=getCurrentSeasonNumber();
+            const title=document.getElementById('seasonPageTitle');
+            if(title) title.innerHTML=`<i class="fas fa-trophy"></i> СЕЗОН ${season}: БИТВА ЗА ЛЕГЕНДУ`;
+            const adminNum=document.getElementById('adminSeasonNumber'); if(adminNum) adminNum.textContent=season;
+            const clanNum=document.getElementById('clanSeasonNumber'); if(clanNum) clanNum.textContent=season;
+            const days=document.getElementById('seasonDaysLeft');
+            if(days){
+                const started=new Date(db?.seasonStartedAt||new Date());
+                const end=new Date(started.getTime()+30*86400000);
+                const left=Math.max(0,Math.ceil((end-Date.now())/86400000));
+                days.textContent=`${left} дн.`;
+            }
+            const control=document.getElementById('seasonControlCard');
+            if(control) control.style.display=isCreator()?'block':'none';
+        }
+
+        async function startNewSeason(){
+            if(!isCreator()){ alert('Только создатель может начать новый сезон.'); return; }
+            const current=getCurrentSeasonNumber();
+            if(!confirm(`Начать сезон ${current+1}? ELO, победы, поражения и матчи всех игроков будут сброшены в 0. Старая история матчей сохранится.`)) return;
+            (db.players||[]).forEach(p=>{
+                p.elo=0; p.matches=0; p.wins=0; p.level=1;
+            });
+            db.currentSeason=current+1;
+            db.seasonStartedAt=new Date().toISOString();
+            if(!db.clanSeasonStats) db.clanSeasonStats={};
+            db.clanSeasonStats={};
+            await saveDataToCloud();
+            renderSeasonUI();
+            renderSeasonLeaderboard();
+            renderClanLeaderboard();
+            renderTop100(); renderLeaderboard(); renderHistoryCells(); renderFeed();
+            alert(`✅ Начат сезон ${db.currentSeason}. Все сезонные показатели игроков сброшены.`);
+        }
+
+        function seasonMatches(){
+            const s=getCurrentSeasonNumber();
+            return getMatchHistory().filter(m => Number(m.season||1)===s);
+        }
+
         function renderSeasonLeaderboard() {
+            renderSeasonUI();
             const tbody = document.getElementById('seasonLeaderboardBody');
             if (!tbody) return;
             tbody.innerHTML = '';
@@ -1254,6 +1318,9 @@
                 created.push(player2.name);
             }
 
+            // Кланы из оверлея тоже автоматически добавляются в базу, если их ещё нет.
+            if (clan1 !== 'Нет клана') ensureClanExistsByName(clan1);
+            if (clan2 !== 'Нет клана') ensureClanExistsByName(clan2);
             // Для новых игроков клан берём из оверлея. Уже существующим игрокам клан/ELO не меняем.
             if (created.includes(player1.name) && clan1) player1.clan = clan1;
             if (created.includes(player2.name) && clan2) player2.clan = clan2;
@@ -1279,7 +1346,7 @@
             renderStreamers();
             renderLeaderboard();
             renderTop100();
-            renderClans();
+            renderClans(); renderClanLeaderboard();
 
             const creatorMsg = isCreator() ? ' Данные ELO применены к указанным игрокам.' : '';
             alert(created.length ? `Оверлей сохранён. Добавлены новые игроки: ${created.join(', ')}.${creatorMsg}` : `Оверлей сохранён. Оба игрока уже были на сайте — их существующие данные не изменены.${creatorMsg}`);
@@ -1319,6 +1386,7 @@
             db.matchHistory.unshift({
                 id: Date.now(),
                 date: new Date().toISOString(),
+                season: getCurrentSeasonNumber(),
                 streamer: streamerName,
                 player1Id: player1.id, player1: player1.name, clan1: player1.clan || 'Без клана',
                 player2Id: player2.id, player2: player2.name, clan2: player2.clan || 'Без клана',
@@ -1332,6 +1400,7 @@
             await saveData();
             renderHistoryCells();
             renderFeed();
+            renderClans(); renderClanLeaderboard();
             alert(`Матч завершен: ${winner.name} победил. История матча сохранена.`);
         }
 
@@ -1412,7 +1481,7 @@
 
         function isCreatorUser() {
             const u = getCurrentUser();
-            return !!(u && (u.role === 'creator' || u.name?.toLowerCase() === 'sayan' || u.email?.toLowerCase() === 'rommsayan@gmail.com'));
+            return !!(u && u.role === 'creator' && u.email?.toLowerCase() === 'rommsayan@gmail.com');
         }
 
         function escapeNewsText(v) {
@@ -1564,26 +1633,65 @@
             if (modal) modal.style.display='none';
         }
 
+        function clanStatsForSeason(){
+            const season=getCurrentSeasonNumber();
+            const stats=new Map();
+            (db?.clans||[]).forEach(c=>stats.set(String(c.name).toLowerCase(),{name:c.name,tag:c.tag||'',elo:0,games:0,wins:0,losses:0,opponents:new Map(),lastDate:null}));
+            seasonMatches().forEach(m=>{
+                const c1=String(m.clan1||'Без клана').trim();
+                const c2=String(m.clan2||'Без клана').trim();
+                [c1,c2].forEach(c=>{
+                    const k=c.toLowerCase(); if(!stats.has(k)) stats.set(k,{name:c,tag:'',elo:0,games:0,wins:0,losses:0,opponents:new Map(),lastDate:null});
+                });
+                const s1=stats.get(c1.toLowerCase()), s2=stats.get(c2.toLowerCase());
+                s1.games++; s2.games++; s1.opponents.set(c2,(s1.opponents.get(c2)||0)+1); s2.opponents.set(c1,(s2.opponents.get(c1)||0)+1);
+                const winnerClan = m.winnerId==m.player1Id ? c1 : m.winnerId==m.player2Id ? c2 : '';
+                if(winnerClan){
+                    const win=stats.get(winnerClan.toLowerCase()); const lose=winnerClan.toLowerCase()===c1.toLowerCase()?s2:s1;
+                    win.wins++; lose.losses++; win.elo+=26; lose.elo=Math.max(0,lose.elo-32);
+                }
+                const dt=new Date(m.date); if(!s1.lastDate||dt>s1.lastDate)s1.lastDate=dt; if(!s2.lastDate||dt>s2.lastDate)s2.lastDate=dt;
+            });
+            return [...stats.values()].sort((a,b)=>(b.wins-a.wins)||(b.elo-a.elo)||(b.games-a.games));
+        }
+
+        function renderClanLeaderboard(){
+            const body=document.getElementById('clanTop100Body'); if(!body)return;
+            const stats=clanStatsForSeason().slice(0,100);
+            body.innerHTML=stats.length?stats.map((s,i)=>{
+                const ops=[...s.opponents.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,c])=>`${escapeHistoryText(n)} (${c})`).join(', ')||'—';
+                return `<tr><td><b>#${i+1}</b></td><td class="clickable-clan" onclick="showClanHistory(${JSON.stringify(s.name)})"><b>[${escapeHistoryText(s.tag||'')}] ${escapeHistoryText(s.name)}</b></td><td style="color:var(--accent);font-weight:1000">${s.elo}</td><td>${s.games}</td><td class="result-win">${s.wins}</td><td class="result-loss">${s.losses}</td><td class="clan-opponents">${ops}</td><td>${s.lastDate?formatMatchDate(s.lastDate.toISOString()):'—'}</td></tr>`;
+            }).join(''):'<tr><td colspan="8"><div class="history-empty">Пока нет игр кланов в текущем сезоне.</div></td></tr>';
+        }
+
+        function ensureClanExistsByName(name){
+            const clean=String(name||'').trim();
+            if(!clean || clean==='Нет клана') return null;
+            if(!db.clans) db.clans=[];
+            let existing=db.clans.find(c=>String(c.name||'').toLowerCase()===clean.toLowerCase());
+            if(existing) return existing;
+            let baseTag=clean.replace(/[^a-zA-ZА-Яа-я0-9]/g,'').slice(0,4).toUpperCase()||'CLAN';
+            let tag=baseTag, i=2;
+            while(db.clans.some(c=>String(c.tag||'').toLowerCase()===tag.toLowerCase())) tag=(baseTag.slice(0,3)+i++).slice(0,4);
+            existing={name:clean,tag,owner:''}; db.clans.push(existing); return existing;
+        }
+
         function renderClans() {
             const container = document.getElementById('clanList');
             if (!container) return;
+            renderClanLeaderboard();
             container.innerHTML = '';
             if (!db?.clans || db.clans.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-muted);">Пока нет созданных кланов.</p>';
                 return;
             }
             db.clans.forEach(c => {
-                let memberCount = (db?.players || []).filter(p => p.clan === c.name).length;
-                container.innerHTML += `
-                    <div class="clan-card clickable-clan" onclick="showClanHistory(${JSON.stringify(c.name || '')})" style="background: linear-gradient(135deg, rgba(255,85,0,0.06), #26262b); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <h3 style="color: #fff; font-size: 20px;"><span style="color: var(--accent);">[${c.tag || ''}]</span> ${c.name || ''}</h3>
-                            <span class="level-badge" style="background: var(--accent); color: #fff;">Клан</span>
-                        </div>
-                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Участников в клане: <b style="color: #fff;">${memberCount}</b></p>
-                        <button class="btn btn-secondary" style="width: 100%;" onclick="event.stopPropagation(); joinClan(${JSON.stringify(c.name || '')})">Вступить в клан</button>
-                    </div>
-                `;
+                const matches=seasonMatches().filter(m=>m.clan1===c.name||m.clan2===c.name).slice(0,3);
+                const recent=matches.length?matches.map(m=>{
+                    const other=m.clan1===c.name?m.clan2:m.clan1; const winner=m.winnerId===m.player1Id?m.clan1:m.winnerId===m.player2Id?m.clan2:'';
+                    return `<div style="font-size:11px;padding:7px 0;border-top:1px solid var(--border-color)"><span class="clan-history-link" onclick="showClanHistory(${JSON.stringify(c.name)})">${escapeHistoryText(c.name)}</span> <b style="color:var(--text-muted)">VS</b> ${escapeHistoryText(other)} · <span class="${winner===c.name?'result-win':'result-loss'}">${winner===c.name?'ПОБЕДА':winner?'ПОРАЖЕНИЕ':'ИГРА'}</span> · ${formatMatchDate(m.date)}</div>`;
+                }).join(''):'<div style="font-size:11px;color:var(--text-muted);padding-top:8px">Игры этого сезона пока не записаны.</div>';
+                container.innerHTML += `<div class="clan-card clickable-clan" onclick="showClanHistory(${JSON.stringify(c.name||'')})" style="background:linear-gradient(135deg,rgba(255,85,0,0.06),#26262b);border:1px solid var(--border-color);border-radius:10px;padding:20px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><h3 style="color:#fff;font-size:20px"><span style="color:var(--accent)">[${escapeHistoryText(c.tag||'')}]</span> ${escapeHistoryText(c.name||'')}</h3><span class="level-badge" style="background:var(--accent);color:#fff">Клан</span></div><p style="color:var(--text-muted);font-size:12px;margin-bottom:8px">Нажмите, чтобы открыть всю историю игр</p>${recent}</div>`;
             });
         }
 
@@ -1605,6 +1713,7 @@
         }
 
         async function joinClan(clanName) {
+            alert('Вступление в клан отключено. Кланы определяются по участию в матчах.'); return;
             const name=prompt(`Введите свой ник, чтобы вступить в клан «${clanName}»:`);
             if(!name) return;
             const player=await getOrCreateGuestPlayer(name);
@@ -1613,6 +1722,10 @@
             await saveDataToCloud(); renderClans(); renderLeaderboard();
             alert(`✓ ${player.name} теперь в клане ${clanName}.`);
         }
+
+        let shopTargetPlayerId = null;
+
+        function shopTargetPlayer(){ return shopTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==shopTargetPlayerId) : null; }
 
         function renderShop() {
             document.querySelectorAll('.shop-tabs .tab-btn').forEach(btn => {
@@ -1625,50 +1738,51 @@
         function filterShop(type, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
-
-            const grid = document.getElementById('shopGrid');
-            if (!grid) return;
-
-            const currentUser = getCurrentUser();
-            const owned = new Set((currentUser?.inventory || []).map(i => i.id));
-            const items = (db?.shopItems || []).filter(i => i.type !== 'character');
-            const filtered = type === 'all' ? items : items.filter(i => i.type === type);
-
-            grid.innerHTML = filtered.map(item => {
-                const isCharacter = item.type === 'character';
-                const img = isCharacter ? (animeCharacterImg(item.characterKey)) : (item.img || '');
-                const already = owned.has(item.id);
-                return `
-                    <div class="shop-item" style="${isCharacter ? 'min-height:300px;' : ''}">
-                        <img class="${isCharacter ? 'shop-character-preview' : ''}" src="${img}" alt="${item.name || ''}" onerror="this.src=animeFallbackImage('${item.characterKey || 'item'}')">
-                        <h4>${item.name || ''}</h4>
-                        ${isCharacter ? `<span class="anime-item-badge">⚡ ${EPIC_MOMENTS[item.characterKey] || 'EPIC MOMENT'}</span>` : ''}
-                        <p style="color: var(--accent); font-weight:bold;">${item.price || 0} ELO</p>
-                        <button class="btn ${already ? 'btn-secondary' : 'btn-primary'}" onclick="buyItem(${item.id})" ${already ? 'disabled' : ''}>
-                            ${already ? '✓ Забрано' : 'Забрать за ' + (item.price || 0) + ' ELO'}
-                        </button>
-                    </div>
-                `;
+            const grid = document.getElementById('shopGrid'); if (!grid) return;
+            const target=shopTargetPlayer();
+            const items=(db?.shopItems||[]).filter(i=>i.type!=='character');
+            const filtered=type==='all'?items:items.filter(i=>i.type===type);
+            grid.innerHTML=filtered.map(item=>{
+                const owned=!!target?.inventory?.some(i=>i.id===item.id);
+                const equipped=!!target && ((item.type==='avatar'&&target.activeAvatarId===item.id)||(item.type==='frame'&&target.activeFrameId===item.id));
+                let action='';
+                if(item.type==='avatar'||item.type==='frame') action=owned?`<button class="btn ${equipped?'btn-secondary':'btn-success'}" onclick="equipShopItem(${item.id})">${equipped?'✓ Надето':'Надеть'}</button>`:`<button class="btn btn-primary" onclick="buyItem(${item.id})">Забрать за ${item.price||0} ELO</button>`;
+                else action=owned?'<button class="btn btn-secondary" disabled>✓ Забрано</button>':`<button class="btn btn-primary" onclick="buyItem(${item.id})">Забрать за ${item.price||0} ELO</button>`;
+                const targetNote=target?`<div class="shop-equip-note">Игрок: <b>${escapeHistoryText(target.name)}</b></div>`:`<div class="shop-equip-note">Нажмите кнопку — сайт попросит ник игрока.</div>`;
+                return `<div class="shop-item"><img src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.3"><h4>${escapeHistoryText(item.name||'')}</h4><p style="color:var(--accent);font-weight:bold">${item.price||0} ELO</p>${targetNote}${action}</div>`;
             }).join('');
+        }
+
+        async function getShopTarget(){
+            if(shopTargetPlayer()) return shopTargetPlayer();
+            const name=prompt('Введите ник игрока:'); if(!name) return null;
+            const p=await getOrCreateGuestPlayer(name); if(!p) return null;
+            shopTargetPlayerId=p.id; return p;
         }
 
         async function buyItem(id){
             const item=(db?.shopItems||[]).find(i=>i.id===id); if(!item)return;
-            const name=prompt(`Введите ваш ник, чтобы забрать «${item.name}» за ${item.price||0} ELO:`); if(!name)return;
-            const p=await getOrCreateGuestPlayer(name); if(!p)return;
+            const p=await getShopTarget(); if(!p)return;
             p.inventory=p.inventory||[];
             const owned=p.inventory.find(i=>i.id===id);
             if(owned){
-                if(item.type==='avatar'||item.type==='frame'){await equipItemForPlayer(id,p.id);return;}
-                alert('Этот предмет уже есть у игрока.');return;
+                if(item.type==='avatar'||item.type==='frame'){await equipItemForPlayer(id,p.id); return;}
+                alert('Этот предмет уже куплен.'); return;
             }
             if((p.elo||0)<(item.price||0)){alert(`Недостаточно ELO. У игрока ${p.elo||0}, нужно ${item.price||0}.`);return;}
             p.elo-=item.price||0;
             p.inventory.push({...item,claimedBy:p.name,claimedAt:new Date().toISOString()});
             if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;}
             if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
-            await saveDataToCloud(); inventoryTargetPlayerId=p.id; renderShop(); renderInventory(); renderLeaderboard();
-            alert(`✓ ${item.name} забрано игроком ${p.name}${item.type==='avatar'||item.type==='frame'?' и сразу надето.':'.'}`);
+            await saveDataToCloud();
+            renderShop(); renderLeaderboard(); renderTop100();
+            alert(`✓ ${item.name} куплено игроком ${p.name}${item.type==='avatar'||item.type==='frame'?' и сразу надето.':'.'}`);
+        }
+
+        async function equipShopItem(id){
+            const p=await getShopTarget(); if(!p)return;
+            await equipItemForPlayer(id,p.id);
+            renderShop();
         }
 
         let inventoryTargetPlayerId = null;
@@ -1768,7 +1882,7 @@
                             </td>
                             <td>${actionBtn}${deletePlayerBtn}</td>
                             <td>
-                                ${p.role === 'creator' || p.name?.toLowerCase() === 'sayan' ? 
+                                ${p.role === 'creator' || p.email?.toLowerCase() === 'rommsayan@gmail.com' ? 
                                     '<span style="color:var(--text-muted);font-size:11px;">Создателя удалить нельзя</span>' :
                                     `<button class="btn btn-danger" style="padding:6px 12px;font-size:11px;" onclick="deletePlayer(${p.id})">🗑️ Удалить</button>`}
                             </td>
@@ -1799,7 +1913,7 @@
         async function deletePlayer(playerId) {
             const player = (db?.players || []).find(p => p.id == playerId);
             if (!player) return;
-            if (player.role === 'creator' || player.name?.toLowerCase() === 'sayan' || player.email?.toLowerCase() === 'rommsayan@gmail.com') {
+            if (player.role === 'creator' || player.email?.toLowerCase() === 'rommsayan@gmail.com') {
                 alert('Создателя удалить нельзя.');
                 return;
             }
@@ -1888,7 +2002,7 @@
         async function deletePlayerById(playerId) {
             const target=(db?.players||[]).find(p=>p.id===playerId);
             if(!target) return;
-            if(target.role==='creator' || target.name?.toLowerCase()==='sayan') { alert('Создателя удалить нельзя.'); return; }
+            if(target.role==='creator' || target.email?.toLowerCase()==='rommsayan@gmail.com') { alert('Создателя удалить нельзя.'); return; }
             if(!confirm(`Удалить игрока "${target.name}"? Это действие нельзя отменить.`)) return;
             db.players=db.players.filter(p=>p.id!==playerId);
             db.streamers=(db.streamers||[]).filter(s=>s.name?.toLowerCase()!==target.name?.toLowerCase());
