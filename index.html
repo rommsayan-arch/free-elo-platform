@@ -319,7 +319,7 @@
             box-shadow: 0 0 18px rgba(0,0,0,.22), inset 0 0 24px rgba(255,255,255,.025) !important;
         }
         .obs-avatar {
-            filter: blur(1.25px) saturate(.88) brightness(.88) !important;
+            filter: blur(2.2px) saturate(.92) brightness(.86) !important;
             transform: scale(1.018);
         }
         .obs-avatar-wrap::after {
@@ -331,19 +331,19 @@
             mix-blend-mode: screen;
         }
         .obs-char.left .obs-avatar-wrap::after {
-            background: linear-gradient(135deg, rgba(255,101,0,.24), rgba(255,55,0,.10) 55%, transparent 100%);
+            background: linear-gradient(135deg, rgba(255,101,0,.32), rgba(255,55,0,.13) 55%, transparent 100%);
         }
         .obs-char.right .obs-avatar-wrap::after {
-            background: linear-gradient(225deg, rgba(0,191,255,.24), rgba(0,110,255,.10) 55%, transparent 100%);
+            background: linear-gradient(225deg, rgba(0,191,255,.32), rgba(0,110,255,.13) 55%, transparent 100%);
         }
         .obs-name {
-            font-family: 'Gogono Cocoa Mochi', 'Gogono HUD', 'Oswald', sans-serif !important;
+            font-family: 'Gogono Cocoa Mochi Cyrillic', 'Gogono Cocoa Mochi', 'Oswald', sans-serif !important;
             font-weight: 400 !important;
             letter-spacing: .8px !important;
             text-shadow: 0 3px 10px rgba(0,0,0,.95), 0 0 12px rgba(0,0,0,.9) !important;
         }
         .obs-clan-label {
-            font-family: 'Gogono Cocoa Mochi', 'Gogono HUD', 'Rajdhani', sans-serif !important;
+            font-family: 'Gogono Cocoa Mochi Cyrillic', 'Gogono Cocoa Mochi', 'Rajdhani', sans-serif !important;
             font-weight: 400 !important;
             letter-spacing: .9px !important;
         }
@@ -1639,6 +1639,61 @@
   box-shadow:0 0 10px rgba(255,101,0,.28) !important;
 }
 
+</style>
+
+<style id="gogono-cyrillic-font">
+@import url("https://db.onlinewebfonts.com/c/0bee9a1756343a4f25a4cd392450fa49?family=Gogono+Cocoa+Mochi+Cyrillic");
+</style>
+
+<style id="final-player-hud-style">
+.obs-name,.obs-clan-label{
+  font-family:'Gogono Cocoa Mochi Cyrillic','Gogono Cocoa Mochi','Oswald',sans-serif !important;
+  white-space:nowrap !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+}
+.obs-avatar{filter:blur(2.2px) saturate(.92) brightness(.86) !important;}
+.obs-char.left .obs-avatar-wrap::after{background:linear-gradient(135deg,rgba(255,101,0,.32),rgba(255,55,0,.13) 55%,transparent 100%) !important;}
+.obs-char.right .obs-avatar-wrap::after{background:linear-gradient(225deg,rgba(0,191,255,.32),rgba(0,110,255,.13) 55%,transparent 100%) !important;}
+</style>
+
+<style id="hud-visible-blur-color">
+/* Strong visible team-tinted HUD: image stays recognizable, background is blurred, name stays crisp */
+.obs-player-card {
+  position: absolute !important;
+  isolation: isolate;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+}
+.obs-player-card .obs-avatar-wrap {
+  position:absolute !important; inset:-8px !important; width:auto !important; height:auto !important;
+  overflow:hidden !important; z-index:0 !important;
+  filter: blur(4px) saturate(1.45) brightness(.82) !important;
+  transform: scale(1.04);
+}
+.obs-player-card .obs-avatar {
+  opacity:.72 !important;
+}
+.obs-player-card::before {
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,101,0,.58), rgba(255,101,0,.20) 55%, rgba(0,0,0,.18));
+  mix-blend-mode:screen;
+}
+.obs-char.right .obs-player-card::before {
+  background:linear-gradient(135deg, rgba(0,191,255,.58), rgba(0,191,255,.20) 55%, rgba(0,0,0,.18));
+}
+.obs-player-card::after {
+  content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+  background:rgba(255,101,0,.16);
+  backdrop-filter: blur(2px) saturate(1.35);
+  -webkit-backdrop-filter: blur(2px) saturate(1.35);
+}
+.obs-char.right .obs-player-card::after { background:rgba(0,191,255,.16); }
+.obs-player-card .obs-name, .obs-player-card .obs-clan-label { z-index:4 !important; }
+.obs-player-card .obs-name { text-shadow:0 2px 4px #000, 0 0 14px rgba(255,255,255,.45) !important; }
+.obs-char.left .obs-player-card { border:2px solid rgba(255,101,0,.95) !important; box-shadow:0 0 18px rgba(255,101,0,.48), inset 0 0 20px rgba(255,101,0,.22) !important; }
+.obs-char.right .obs-player-card { border:2px solid rgba(0,191,255,.95) !important; box-shadow:0 0 18px rgba(0,191,255,.48), inset 0 0 20px rgba(0,191,255,.22) !important; }
 </style>
 </head>
 <body>
