@@ -1762,6 +1762,29 @@
         body.obs-overlay .obs-name{z-index:4 !important;}
         body.obs-overlay .obs-clan-label{z-index:4 !important;}
 
+
+        /* FINAL OBS AVATAR FIX */
+        body.obs-overlay .obs-avatar-wrap{
+            background:transparent !important;
+            background-image:none !important;
+        }
+        body.obs-overlay .obs-avatar{
+            opacity:.62 !important;
+            filter:none !important;
+            mix-blend-mode:normal !important;
+            object-fit:cover !important;
+            background:transparent !important;
+        }
+        body.obs-overlay .obs-avatar-wrap::before{
+            display:block;
+            content:"";
+            position:absolute;
+            inset:0;
+            background:rgba(0,0,0,.08);
+            pointer-events:none;
+            z-index:1;
+        }
+
 </style>
 
 <style id="gogono-cyrillic-font">
@@ -3679,11 +3702,21 @@
                 alert(`Недостаточно ELO. У игрока ${p.elo||0}, нужно ${item.price||0}.`); return;
             }
             p.elo-=item.price||0;
-            p.inventory.push({...item,claimedBy:p.name,claimedAt:new Date().toISOString()});
-            // Покупка только добавляет вещь в инвентарь. Надевание делается кнопкой «Надеть».
+            const purchased = {...item, claimedBy:p.name, claimedAt:new Date().toISOString()};
+            p.inventory.push(purchased);
+
+            // Для аватарки/рамки покупка сразу надевает купленный предмет.
+            if(item.type==='avatar'){
+                p.avatar=item.img;
+                p.activeAvatarId=item.id;
+            } else if(item.type==='frame'){
+                p.frame=item.img;
+                p.activeFrameId=item.id;
+            }
+
             await saveDataToCloud();
             renderShop(); renderInventory(); renderLeaderboard(); renderTop100();
-            alert(`✓ ${item.name} куплено игроком ${p.name}. Теперь его можно надеть в инвентаре.`);
+            alert(`✓ ${item.name} куплено и сразу надето на ${p.name}.`);
         }
 
         async function equipShopItem(id){
@@ -4085,13 +4118,22 @@
                                 if (!player) return '';
                                 const inv = Array.isArray(player.inventory) ? player.inventory : [];
 
-                                // Prefer the equipped shop avatar by activeAvatarId.
-                                const activeItem = player.activeAvatarId != null
+                                // 1) Explicitly equipped avatar.
+                                let activeItem = player.activeAvatarId != null
                                     ? inv.find(i => String(i.id) === String(player.activeAvatarId) && i.type === 'avatar')
                                     : null;
 
-                                // Then use the stored avatar URL.
+                                // 2) Compatibility with older saved data that marks the item itself as equipped.
+                                if (!activeItem) {
+                                    activeItem = inv.find(i =>
+                                        i.type === 'avatar' &&
+                                        (i.equipped === true || i.isEquipped === true || i.worn === true)
+                                    );
+                                }
+
+                                // 3) Stored player avatar.
                                 const raw = activeItem?.img || player.avatar || '';
+
                                 return typeof raw === 'string' && raw.trim() ? raw.trim() : '';
                             };
 
