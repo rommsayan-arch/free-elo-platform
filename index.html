@@ -1722,6 +1722,22 @@
             .clan-history-opponent,.clan-history-players,.clan-history-result{font-size:10px;}
         }
 
+
+        /* OBS avatar visibility fix */
+        body.obs-overlay .obs-avatar{
+            opacity: .78 !important;
+            filter: saturate(1.05) brightness(.92) !important;
+            transform: scale(1.02) !important;
+        }
+        body.obs-overlay .obs-avatar-wrap{
+            opacity:1 !important;
+            visibility:visible !important;
+            display:block !important;
+        }
+        body.obs-overlay .obs-player-card{
+            overflow:hidden !important;
+        }
+
 </style>
 
 <style id="gogono-cyrillic-font">
@@ -4041,17 +4057,36 @@
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
-                            const hasAvatar1 = !!(p1Obj?.activeAvatarId && p1Obj?.avatar);
-                            const hasAvatar2 = !!(p2Obj?.activeAvatarId && p2Obj?.avatar);
+                            const resolveObsAvatar = (player) => {
+                                if (!player) return '';
+                                const inv = Array.isArray(player.inventory) ? player.inventory : [];
+                                const activeItem = player.activeAvatarId != null
+                                    ? inv.find(i => String(i.id) === String(player.activeAvatarId) && i.type === 'avatar')
+                                    : null;
+                                const fromInventory = activeItem?.img || '';
+                                const raw = fromInventory || player.avatar || '';
+                                const fallback = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(player.name || 'player')}`;
+                                return raw && raw.trim() ? raw : fallback;
+                            };
+
+                            const avatarUrl1 = resolveObsAvatar(p1Obj);
+                            const avatarUrl2 = resolveObsAvatar(p2Obj);
+                            const hasAvatar1 = !!avatarUrl1;
+                            const hasAvatar2 = !!avatarUrl2;
+
                             const safeName1 = escapeHistoryText(sd.player1 || 'PLAYER 1').replace(/^./, c => c.toUpperCase());
                             const safeName2 = escapeHistoryText(sd.player2 || 'PLAYER 2').replace(/^./, c => c.toUpperCase());
                             const safeClan1 = escapeHistoryText(sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА');
                             const safeClan2 = escapeHistoryText(sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА');
+
+                            const frame1 = p1Obj?.activeFrameId != null && p1Obj?.frame ? p1Obj.frame : '';
+                            const frame2 = p2Obj?.activeFrameId != null && p2Obj?.frame ? p2Obj.frame : '';
+
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p1Obj.avatar}" alt="">${p1Obj?.activeFrameId && p1Obj?.frame ? `<img class="obs-avatar-frame" src="${p1Obj.frame}" alt="">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(p1Obj?.name || sd.player1 || 'player1')}';">${frame1 ? `<img class="obs-avatar-frame" src="${frame1}" alt="" onerror="this.style.display='none'">` : ''}</div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p2Obj.avatar}" alt="">${p2Obj?.activeFrameId && p2Obj?.frame ? `<img class="obs-avatar-frame" src="${p2Obj.frame}" alt="">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(p2Obj?.name || sd.player2 || 'player2')}';">${frame2 ? `<img class="obs-avatar-frame" src="${frame2}" alt="" onerror="this.style.display='none'">` : ''}</div>`
                                 : '';
 
                             obsContainer.innerHTML = `
