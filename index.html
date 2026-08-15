@@ -2821,6 +2821,326 @@ body.obs-overlay .obs-avatar-wrap.frame-effect:hover::before {
 body.obs-overlay .obs-avatar-wrap.frame-effect:hover::after { opacity:1 !important; }
 </style>
 
+
+<style id="FREE-ELO-FINAL-FRAME-FIX-2026">
+/* =========================================================
+   FREE ELO FINAL FRAME SYSTEM
+   - The frame is a real rectangular border around the avatar.
+   - No spinning/rotating square.
+   - Animation = light, glow, flicker and energy only.
+   - Same effect works on the website and in OBS.
+   ========================================================= */
+
+.avatar-wrapper.frame-effect,
+body.obs-overlay .obs-avatar-wrap.frame-effect{
+  position:relative !important;
+  isolation:isolate !important;
+  --fx1:#ffffff;
+  --fx2:#8b5cf6;
+  --fxGlow:rgba(139,92,246,.85);
+}
+
+/* Do not use downloaded frame pictures as the visual frame. */
+.avatar-wrapper.frame-effect > .avatar-frame,
+body.obs-overlay .obs-avatar-frame{
+  display:none !important;
+}
+
+/* The actual frame: fixed rectangle, clean corners. */
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after{
+  content:"" !important;
+  position:absolute !important;
+  pointer-events:none !important;
+  transform:none !important;
+  rotate:none !important;
+  border-radius:10px !important;
+  z-index:20 !important;
+}
+
+/* Outer energy border */
+.avatar-wrapper.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before{
+  inset:-4px !important;
+  border:3px solid var(--fx1) !important;
+  background:transparent !important;
+  box-shadow:
+    0 0 5px var(--fx1),
+    0 0 14px var(--fxGlow),
+    0 0 30px var(--fxGlow),
+    inset 0 0 10px var(--fxGlow) !important;
+  animation:feFinalGlow 1.2s ease-in-out infinite !important;
+}
+
+/* Inner highlight */
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after{
+  inset:2px !important;
+  border:1px solid var(--fx2) !important;
+  background:transparent !important;
+  box-shadow:
+    inset 0 0 8px var(--fxGlow),
+    0 0 7px var(--fx2) !important;
+  animation:feFinalInner 1.5s ease-in-out infinite !important;
+}
+
+@keyframes feFinalGlow{
+  0%,100%{opacity:.72;filter:brightness(.95)}
+  50%{opacity:1;filter:brightness(1.32)}
+}
+@keyframes feFinalInner{
+  0%,100%{opacity:.35}
+  50%{opacity:1}
+}
+
+/* ================= FIRE ================= */
+.avatar-wrapper.frame-fire,
+body.obs-overlay .obs-avatar-wrap.frame-fire{
+  --fx1:#fff2a3;
+  --fx2:#ff5a00;
+  --fxGlow:rgba(255,65,0,.96);
+}
+.avatar-wrapper.frame-fire::before,
+body.obs-overlay .obs-avatar-wrap.frame-fire::before{
+  inset:-5px !important;
+  border-width:3px !important;
+  border-color:#ff8a00 !important;
+  box-shadow:
+    0 0 5px #fff0a0,
+    0 0 13px #ffb000,
+    0 0 28px #ff4b00,
+    0 0 48px rgba(255,20,0,.75),
+    inset 0 0 10px rgba(255,150,30,.85) !important;
+  animation:feFinalFire .62s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after,
+body.obs-overlay .obs-avatar-wrap.frame-fire::after{
+  inset:-2px !important;
+  border-color:#ffd166 !important;
+  box-shadow:
+    0 0 10px #ff6500,
+    0 0 24px rgba(255,45,0,.85),
+    0 -5px 16px rgba(255,205,80,.7) !important;
+  animation:feFinalFire2 .48s ease-in-out infinite !important;
+}
+@keyframes feFinalFire{
+  0%,100%{opacity:.70;filter:brightness(1)}
+  25%{opacity:.92;filter:brightness(1.2)}
+  52%{opacity:1;filter:brightness(1.55)}
+  78%{opacity:.82;filter:brightness(1.1)}
+}
+@keyframes feFinalFire2{
+  0%,100%{opacity:.42}
+  45%{opacity:.85}
+  70%{opacity:1}
+}
+
+/* ================= LIGHTNING ================= */
+.avatar-wrapper.frame-lightning,
+body.obs-overlay .obs-avatar-wrap.frame-lightning{
+  --fx1:#f4ffff;
+  --fx2:#218cff;
+  --fxGlow:rgba(45,170,255,.95);
+}
+.avatar-wrapper.frame-lightning::before,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::before{
+  border-color:#9ffcff !important;
+  box-shadow:
+    0 0 5px #fff,
+    0 0 14px #28b9ff,
+    0 0 32px rgba(0,130,255,.9) !important;
+  animation:feFinalLightning .48s steps(2,end) infinite !important;
+}
+.avatar-wrapper.frame-lightning::after,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::after{
+  border-color:#278dff !important;
+  box-shadow:inset 0 0 10px rgba(50,170,255,.85),0 0 10px #218cff !important;
+  animation:feFinalLightning2 1.1s ease-in-out infinite !important;
+}
+@keyframes feFinalLightning{
+  0%,84%,100%{opacity:.68;filter:brightness(1)}
+  86%{opacity:1;filter:brightness(1.9)}
+  89%{opacity:.35}
+  92%{opacity:1;filter:brightness(1.7)}
+}
+@keyframes feFinalLightning2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* ================= THUNDER ================= */
+.avatar-wrapper.frame-thunder,
+body.obs-overlay .obs-avatar-wrap.frame-thunder{
+  --fx1:#ead8ff;
+  --fx2:#7b45ff;
+  --fxGlow:rgba(123,69,255,.95);
+}
+.avatar-wrapper.frame-thunder::before,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::before{
+  border-color:#c9a7ff !important;
+  box-shadow:0 0 7px #e8d7ff,0 0 20px #7b45ff,0 0 36px rgba(123,69,255,.8) !important;
+  animation:feFinalThunder .8s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-thunder::after,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::after{
+  border-color:#8d62ff !important;
+  box-shadow:inset 0 0 10px rgba(123,69,255,.75),0 0 12px #7b45ff !important;
+  animation:feFinalThunder2 1.1s ease-in-out infinite !important;
+}
+@keyframes feFinalThunder{
+  0%,100%{opacity:.58;filter:brightness(.95)}
+  50%{opacity:1;filter:brightness(1.5)}
+}
+@keyframes feFinalThunder2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* ================= ICE ================= */
+.avatar-wrapper.frame-ice,
+body.obs-overlay .obs-avatar-wrap.frame-ice{
+  --fx1:#efffff;
+  --fx2:#43d8ff;
+  --fxGlow:rgba(67,216,255,.9);
+}
+.avatar-wrapper.frame-ice::before,
+body.obs-overlay .obs-avatar-wrap.frame-ice::before{
+  border-color:#dfffff !important;
+  box-shadow:0 0 6px #fff,0 0 18px #43d8ff,0 0 34px rgba(67,216,255,.72) !important;
+  animation:feFinalIce 1.5s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-ice::after,
+body.obs-overlay .obs-avatar-wrap.frame-ice::after{
+  border-color:#7eeaff !important;
+  box-shadow:inset 0 0 10px rgba(67,216,255,.65) !important;
+  animation:feFinalIce2 1.9s ease-in-out infinite !important;
+}
+@keyframes feFinalIce{
+  0%,100%{opacity:.58;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.38)}
+}
+@keyframes feFinalIce2{
+  0%,100%{opacity:.25}
+  50%{opacity:.9}
+}
+
+/* ================= NEON ================= */
+.avatar-wrapper.frame-neon,
+body.obs-overlay .obs-avatar-wrap.frame-neon{
+  --fx1:#ff8be8;
+  --fx2:#7a5cff;
+  --fxGlow:rgba(255,90,220,.9);
+}
+.avatar-wrapper.frame-neon::before,
+body.obs-overlay .obs-avatar-wrap.frame-neon::before{
+  border-color:#ff78dc !important;
+  box-shadow:0 0 6px #ffb3ed,0 0 18px #ff3ea5,0 0 34px rgba(122,92,255,.75) !important;
+  animation:feFinalNeon 1s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-neon::after,
+body.obs-overlay .obs-avatar-wrap.frame-neon::after{
+  border-color:#7a5cff !important;
+  box-shadow:inset 0 0 10px rgba(255,90,220,.55) !important;
+  animation:feFinalNeon2 1.2s ease-in-out infinite !important;
+}
+@keyframes feFinalNeon{
+  0%,100%{opacity:.55;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.5)}
+}
+@keyframes feFinalNeon2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* ================= POISON ================= */
+.avatar-wrapper.frame-poison,
+body.obs-overlay .obs-avatar-wrap.frame-poison{
+  --fx1:#efff8a;
+  --fx2:#20dc75;
+  --fxGlow:rgba(32,220,117,.9);
+}
+.avatar-wrapper.frame-poison::before,
+body.obs-overlay .obs-avatar-wrap.frame-poison::before{
+  border-color:#b7ff3c !important;
+  box-shadow:0 0 6px #efff8a,0 0 18px #20dc75,0 0 34px rgba(32,220,117,.72) !important;
+  animation:feFinalPoison 1.05s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-poison::after,
+body.obs-overlay .obs-avatar-wrap.frame-poison::after{
+  border-color:#20dc75 !important;
+  box-shadow:inset 0 0 10px rgba(32,220,117,.55) !important;
+  animation:feFinalPoison2 .82s ease-in-out infinite !important;
+}
+@keyframes feFinalPoison{
+  0%,100%{opacity:.58;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.45)}
+}
+@keyframes feFinalPoison2{
+  0%,100%{opacity:.25}
+  50%{opacity:1}
+}
+
+/* ================= PHOENIX ================= */
+.avatar-wrapper.frame-phoenix,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix{
+  --fx1:#fff4ae;
+  --fx2:#ff8a00;
+  --fxGlow:rgba(255,138,0,.95);
+}
+.avatar-wrapper.frame-phoenix::before,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::before{
+  border-color:#ffd76a !important;
+  box-shadow:0 0 7px #fff4ae,0 0 18px #ff8a00,0 0 38px rgba(255,70,0,.72) !important;
+  animation:feFinalPhoenix .78s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-phoenix::after,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::after{
+  border-color:#ffb300 !important;
+  box-shadow:inset 0 0 10px rgba(255,138,0,.65) !important;
+  animation:feFinalPhoenix2 1s ease-in-out infinite !important;
+}
+@keyframes feFinalPhoenix{
+  0%,100%{opacity:.62;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.55)}
+}
+@keyframes feFinalPhoenix2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* Website hover: make the selected frame react strongly. */
+.avatar-wrapper.frame-effect:hover::before{
+  filter:brightness(1.6) !important;
+  box-shadow:0 0 8px var(--fx1),0 0 22px var(--fxGlow),0 0 42px var(--fxGlow),inset 0 0 12px var(--fxGlow) !important;
+}
+.avatar-wrapper.frame-effect:hover::after{
+  opacity:1 !important;
+}
+
+/* OBS: keep avatar visible and keep the nickname centered over it. */
+body.obs-overlay .obs-avatar{
+  display:block !important;
+  visibility:visible !important;
+}
+body.obs-overlay .obs-avatar-wrap{
+  overflow:visible !important;
+}
+body.obs-overlay .obs-name{
+  z-index:30 !important;
+  left:50% !important;
+  top:50% !important;
+  bottom:auto !important;
+  transform:translate(-50%,-50%) !important;
+  font-size:32px !important;
+  text-shadow:0 3px 10px #000,0 0 16px #000 !important;
+}
+body.obs-overlay .obs-clan-label{
+  z-index:31 !important;
+}
+</style>
+
 </head>
 <body>
 
@@ -5287,7 +5607,14 @@ body.obs-overlay .obs-avatar-wrap.frame-effect:hover::after { opacity:1 !importa
                     if (obsContainer) {
                         if (obsMode === 'anime') {
                             const resolveObsAvatar = (player) => {
-                                return resolveEquippedAvatar(player);
+                                if (!player) return '';
+                                const equipped = resolveEquippedAvatar(player);
+                                if (equipped) return String(equipped);
+                                const raw = String(player.avatar || '').trim();
+                                if (!raw) return '';
+                                const low = raw.toLowerCase();
+                                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return '';
+                                return raw;
                             };
 
                             const resolveObsFrame = (player) => {
