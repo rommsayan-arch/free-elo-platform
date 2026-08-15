@@ -1738,6 +1738,30 @@
             overflow:hidden !important;
         }
 
+
+        /* OBS: equipped player avatar, no robot fallback */
+        body.obs-overlay .obs-avatar{
+            opacity:.68 !important;
+            filter:saturate(1.04) brightness(.95) !important;
+            transform:scale(1.02) !important;
+        }
+        body.obs-overlay .obs-avatar-wrap{
+            background:transparent !important;
+            opacity:1 !important;
+            visibility:visible !important;
+        }
+        body.obs-overlay .obs-avatar-wrap::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.16));
+            z-index:1;
+            pointer-events:none;
+        }
+        body.obs-overlay .obs-avatar-frame{z-index:2 !important;}
+        body.obs-overlay .obs-name{z-index:4 !important;}
+        body.obs-overlay .obs-clan-label{z-index:4 !important;}
+
 </style>
 
 <style id="gogono-cyrillic-font">
@@ -4060,13 +4084,15 @@
                             const resolveObsAvatar = (player) => {
                                 if (!player) return '';
                                 const inv = Array.isArray(player.inventory) ? player.inventory : [];
+
+                                // Prefer the equipped shop avatar by activeAvatarId.
                                 const activeItem = player.activeAvatarId != null
                                     ? inv.find(i => String(i.id) === String(player.activeAvatarId) && i.type === 'avatar')
                                     : null;
-                                const fromInventory = activeItem?.img || '';
-                                const raw = fromInventory || player.avatar || '';
-                                const fallback = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(player.name || 'player')}`;
-                                return raw && raw.trim() ? raw : fallback;
+
+                                // Then use the stored avatar URL.
+                                const raw = activeItem?.img || player.avatar || '';
+                                return typeof raw === 'string' && raw.trim() ? raw.trim() : '';
                             };
 
                             const avatarUrl1 = resolveObsAvatar(p1Obj);
@@ -4083,10 +4109,10 @@
                             const frame2 = p2Obj?.activeFrameId != null && p2Obj?.frame ? p2Obj.frame : '';
 
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(p1Obj?.name || sd.player1 || 'player1')}';">${frame1 ? `<img class="obs-avatar-frame" src="${frame1}" alt="" onerror="this.style.display='none'">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.closest('.obs-avatar-wrap')?.remove();">${frame1 ? `<img class="obs-avatar-frame" src="${frame1}" alt="" onerror="this.style.display='none'">` : ''}</div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(p2Obj?.name || sd.player2 || 'player2')}';">${frame2 ? `<img class="obs-avatar-frame" src="${frame2}" alt="" onerror="this.style.display='none'">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.closest('.obs-avatar-wrap')?.remove();">${frame2 ? `<img class="obs-avatar-frame" src="${frame2}" alt="" onerror="this.style.display='none'">` : ''}</div>`
                                 : '';
 
                             obsContainer.innerHTML = `
