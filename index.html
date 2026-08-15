@@ -5737,3 +5737,361 @@ body.obs-overlay .obs-clan-label{
 .clickable-clan{user-select:none;}
 @media(max-width:600px){.clan-history-name{font-size:14px}.clan-history-versus{gap:7px}.clan-history-result{font-size:11px}.clan-history-elo{font-size:13px;margin-left:5px}}
 </style>
+
+<style id="free-elo-realistic-frame-effects">
+/* =========================================================
+   FREE ELO — REALISTIC FRAME FX
+   Fire = flame tongues actually licking around the border.
+   Lightning = fixed electric bolts that flash on the border.
+   No rotating frames.
+   ========================================================= */
+
+.avatar-wrapper.frame-effect,
+.obs-avatar-wrap.frame-effect{
+    overflow:visible !important;
+    isolation:isolate !important;
+}
+
+/* Keep the real avatar visible behind the frame. */
+.avatar-wrapper.frame-effect > .avatar,
+.obs-avatar-wrap.frame-effect > .obs-avatar{
+    position:relative !important;
+    z-index:3 !important;
+}
+
+/* Base frame: a REAL fixed border, not a spinning ring. */
+.avatar-wrapper.frame-effect::before,
+.obs-avatar-wrap.frame-effect::before{
+    content:"" !important;
+    position:absolute !important;
+    inset:-4px !important;
+    border:3px solid var(--fe-c1,#ff7a00) !important;
+    border-radius:inherit !important;
+    background:transparent !important;
+    box-shadow:
+        0 0 4px var(--fe-c1,#ff7a00),
+        0 0 12px var(--fe-glow,rgba(255,90,0,.7)),
+        inset 0 0 7px var(--fe-glow,rgba(255,90,0,.45)) !important;
+    transform:none !important;
+    animation:none !important;
+    z-index:6 !important;
+    pointer-events:none !important;
+}
+
+.avatar-wrapper.frame-effect::after,
+.obs-avatar-wrap.frame-effect::after{
+    content:"" !important;
+    position:absolute !important;
+    inset:-7px !important;
+    border:1px solid var(--fe-c2,#ff3200) !important;
+    border-radius:inherit !important;
+    background:transparent !important;
+    box-shadow:0 0 14px var(--fe-glow,rgba(255,90,0,.65)) !important;
+    transform:none !important;
+    animation:none !important;
+    z-index:5 !important;
+    pointer-events:none !important;
+}
+
+/* FX particles created by JS */
+.fe-fx-layer{
+    position:absolute !important;
+    inset:-15px !important;
+    z-index:8 !important;
+    pointer-events:none !important;
+    overflow:visible !important;
+}
+.fe-fx-layer span{
+    position:absolute !important;
+    display:block !important;
+    pointer-events:none !important;
+}
+
+/* ========================= FIRE =========================
+   The border stays still; separate flame tongues move upward,
+   flicker, brighten and shrink like real flames.
+*/
+.frame-fire{
+    --fe-c1:#fff2b0;
+    --fe-c2:#ff5a00;
+    --fe-glow:rgba(255,70,0,.95);
+}
+.frame-fire .fe-fx-layer .flame{
+    width:13px;
+    height:25px;
+    bottom:-5px;
+    border-radius:65% 35% 58% 42%;
+    background:
+      radial-gradient(circle at 50% 76%,#fff7bf 0 12%,#ffd34f 13% 30%,#ff7a00 31% 62%,#ff2400 63% 100%);
+    filter:drop-shadow(0 0 5px #ff7a00) drop-shadow(0 0 10px rgba(255,50,0,.75));
+    clip-path:polygon(50% 0%,64% 25%,91% 45%,72% 48%,100% 72%,74% 68%,80% 100%,48% 86%,25% 100%,30% 69%,0% 78%,24% 48%,12% 39%,39% 26%);
+    transform-origin:50% 100%;
+    animation:feRealFlame .62s ease-in-out infinite alternate;
+}
+.frame-fire .fe-fx-layer .flame:nth-child(2n){
+    height:19px;width:10px; animation-duration:.48s;
+}
+.frame-fire .fe-fx-layer .flame:nth-child(3n){
+    height:29px;width:12px; animation-duration:.76s;
+}
+.frame-fire .fe-fx-layer .flame.side{
+    bottom:auto;
+    top:12%;
+}
+@keyframes feRealFlame{
+    0%{transform:translateY(3px) scale(.78,.88);opacity:.72;filter:brightness(.9) drop-shadow(0 0 4px #ff6500)}
+    45%{transform:translateY(-3px) scale(1.08,1.15);opacity:1;filter:brightness(1.15) drop-shadow(0 0 8px #ff8a00)}
+    100%{transform:translateY(-8px) scale(.82,1.28);opacity:.88;filter:brightness(1.3) drop-shadow(0 0 11px #ff2d00)}
+}
+.frame-fire .fe-fx-layer .ember{
+    width:4px;height:4px;border-radius:50%;
+    background:#fff0a0;
+    box-shadow:0 0 5px #ff7a00,0 0 10px #ff2d00;
+    animation:feEmber 1.05s ease-out infinite;
+}
+@keyframes feEmber{
+    0%{opacity:0;transform:translate(0,5px) scale(.5)}
+    20%{opacity:1}
+    100%{opacity:0;transform:translate(var(--dx,4px),-30px) scale(.15)}
+}
+.frame-fire::before,
+.obs-avatar-wrap.frame-fire::before{
+    animation:feFireBorder .42s ease-in-out infinite alternate !important;
+}
+@keyframes feFireBorder{
+    from{box-shadow:0 0 4px #fff0a0,0 0 11px #ff6500,0 0 20px rgba(255,45,0,.65),inset 0 0 6px rgba(255,160,40,.55)}
+    to{box-shadow:0 0 7px #fff8cf,0 0 18px #ff7a00,0 0 32px rgba(255,30,0,.9),inset 0 0 10px rgba(255,170,30,.8)}
+}
+
+/* ======================= LIGHTNING =======================
+   The border remains fixed. Several jagged bolts sit ON the
+   frame and flash independently, like electrical arcs.
+*/
+.frame-lightning{
+    --fe-c1:#efffff;
+    --fe-c2:#2f8dff;
+    --fe-glow:rgba(55,165,255,.98);
+}
+.frame-lightning .fe-fx-layer .bolt{
+    width:23px;height:8px;
+    background:linear-gradient(90deg,transparent 0 5%,#ffffff 18%,#bffcff 48%,#2f8dff 72%,transparent 100%);
+    filter:drop-shadow(0 0 4px #eaffff) drop-shadow(0 0 9px #168cff);
+    clip-path:polygon(0 40%,34% 0,28% 34%,58% 22%,48% 54%,100% 42%,62% 72%,69% 100%,36% 67%,40% 42%);
+    opacity:0;
+    animation:feRealBolt .9s steps(1,end) infinite;
+}
+.frame-lightning .fe-fx-layer .bolt.v{
+    width:8px;height:24px;
+}
+@keyframes feRealBolt{
+    0%,67%,100%{opacity:0}
+    68%{opacity:.95}
+    70%{opacity:.15}
+    71%{opacity:1}
+    73%{opacity:0}
+    88%{opacity:.72}
+    89%{opacity:0}
+}
+.frame-lightning::before,
+.obs-avatar-wrap.frame-lightning::before{
+    animation:feLightningBorder .78s steps(1,end) infinite !important;
+}
+@keyframes feLightningBorder{
+    0%,67%,100%{filter:brightness(1);box-shadow:0 0 4px #cfffff,0 0 11px #238cff,0 0 20px rgba(30,130,255,.55)}
+    68%{filter:brightness(1.8);box-shadow:0 0 8px #fff,0 0 20px #4fdcff,0 0 38px rgba(30,130,255,1)}
+    70%{filter:brightness(.8)}
+    71%{filter:brightness(2);box-shadow:0 0 10px #fff,0 0 25px #2ea8ff,0 0 42px rgba(30,130,255,1)}
+    73%{filter:brightness(1)}
+}
+
+/* ======================= THUNDER ========================== */
+.frame-thunder{
+    --fe-c1:#eadbff;--fe-c2:#744cff;--fe-glow:rgba(115,70,255,.95);
+}
+.frame-thunder .fe-fx-layer .arc{
+    inset:0;
+    border:2px dashed #bca8ff;
+    border-radius:inherit;
+    box-shadow:0 0 9px #744cff;
+    opacity:.2;
+    animation:feThunder .7s steps(2,end) infinite;
+}
+@keyframes feThunder{
+    0%,70%,100%{opacity:.15}
+    71%{opacity:1;filter:brightness(1.8)}
+    73%{opacity:.25}
+    74%{opacity:.9}
+}
+
+/* ========================= ICE ============================ */
+.frame-ice{
+    --fe-c1:#f2ffff;--fe-c2:#43d8ff;--fe-glow:rgba(65,210,255,.9);
+}
+.frame-ice .fe-fx-layer .crystal{
+    width:10px;height:10px;
+    background:linear-gradient(135deg,#fff,transparent 55%),linear-gradient(45deg,#7beaff,transparent 60%);
+    clip-path:polygon(50% 0,62% 34%,100% 50%,62% 66%,50% 100%,38% 66%,0 50%,38% 34%);
+    animation:feIce 1.7s ease-in-out infinite;
+}
+@keyframes feIce{
+    0%,100%{opacity:.35;transform:scale(.7)}
+    50%{opacity:1;transform:scale(1.2);filter:drop-shadow(0 0 7px #4ddcff)}
+}
+
+/* ========================= NEON =========================== */
+.frame-neon{
+    --fe-c1:#ff8ee8;--fe-c2:#8058ff;--fe-glow:rgba(255,85,220,.9);
+}
+.frame-neon .fe-fx-layer .scan{
+    left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,#fff,transparent);
+    box-shadow:0 0 10px #ff55dc,0 0 18px #7d55ff;
+    animation:feNeon 1.4s ease-in-out infinite;
+}
+@keyframes feNeon{
+    0%{top:4%;opacity:0}
+    20%{opacity:1}
+    80%{opacity:1}
+    100%{top:96%;opacity:0}
+}
+
+/* ========================= POISON ========================= */
+.frame-poison{
+    --fe-c1:#dcff68;--fe-c2:#28d56f;--fe-glow:rgba(40,213,111,.9);
+}
+.frame-poison .fe-fx-layer .bubble{
+    width:6px;height:6px;border:1px solid #cfff67;border-radius:50%;
+    box-shadow:0 0 7px #28d56f;
+    animation:feBubble 1.8s ease-in infinite;
+}
+@keyframes feBubble{
+    0%{opacity:0;transform:translateY(10px) scale(.4)}
+    20%{opacity:1}
+    100%{opacity:0;transform:translateY(-30px) translateX(8px) scale(1)}
+}
+
+/* ========================= PHOENIX ======================== */
+.frame-phoenix{
+    --fe-c1:#fff0a0;--fe-c2:#ff8a00;--fe-glow:rgba(255,115,0,.95);
+}
+.frame-phoenix .fe-fx-layer .feather{
+    width:7px;height:19px;
+    background:linear-gradient(180deg,#fff5a0,#ff9a00 55%,transparent);
+    clip-path:polygon(50% 0,100% 42%,65% 48%,100% 68%,50% 100%,28% 65%,0 52%,35% 44%);
+    animation:fePhoenix 1s ease-in-out infinite alternate;
+}
+@keyframes fePhoenix{
+    from{transform:translateY(3px) scale(.8);opacity:.55}
+    to{transform:translateY(-6px) scale(1.12);opacity:1;filter:drop-shadow(0 0 8px #ff8a00)}
+}
+
+/* Hover = stronger, but still the same physical-looking effect. */
+.avatar-wrapper.frame-effect:hover::before{
+    filter:brightness(1.25) !important;
+}
+.avatar-wrapper.frame-effect:hover .fe-fx-layer{
+    filter:brightness(1.15);
+}
+</style>
+
+<script>
+(function(){
+    const TYPES = [
+        'frame-fire','frame-lightning','frame-thunder',
+        'frame-ice','frame-neon','frame-poison','frame-phoenix'
+    ];
+
+    function makeLayer(el){
+        if(!el || !TYPES.some(t => el.classList.contains(t))) return;
+        if(el.querySelector(':scope > .fe-fx-layer')) return;
+
+        const layer=document.createElement('span');
+        layer.className='fe-fx-layer';
+
+        if(el.classList.contains('frame-fire')){
+            for(let i=0;i<8;i++){
+                const f=document.createElement('span');
+                f.className='flame';
+                f.style.left=(5+i*12+Math.random()*5)+'%';
+                f.style.animationDelay=(-Math.random()*.8)+'s';
+                layer.appendChild(f);
+            }
+            for(let i=0;i<5;i++){
+                const e=document.createElement('span');
+                e.className='ember';
+                e.style.left=(10+i*18+Math.random()*10)+'%';
+                e.style.bottom=(8+Math.random()*20)+'%';
+                e.style.setProperty('--dx',(-8+Math.random()*16)+'px');
+                e.style.animationDelay=(-Math.random()*1.2)+'s';
+                layer.appendChild(e);
+            }
+        }
+
+        if(el.classList.contains('frame-lightning')){
+            for(let i=0;i<8;i++){
+                const b=document.createElement('span');
+                b.className='bolt '+(i%2?'v':'');
+                const pos=[
+                    ['12%','-2px'],['42%','-2px'],['72%','-2px'],
+                    ['12%','calc(100% - 6px)'],['55%','calc(100% - 6px)'],['82%','calc(100% - 6px)'],
+                    ['-4px','30%'],['calc(100% - 4px)','64%']
+                ][i];
+                if(i<6){
+                    b.style.left=pos[0]; b.style.top=pos[1];
+                }else{
+                    b.style.left=pos[0]; b.style.top=pos[1];
+                }
+                b.style.animationDelay=(-Math.random()*.9)+'s';
+                layer.appendChild(b);
+            }
+        }
+
+        if(el.classList.contains('frame-thunder')){
+            const a=document.createElement('span'); a.className='arc'; layer.appendChild(a);
+        }
+
+        if(el.classList.contains('frame-ice')){
+            for(let i=0;i<6;i++){
+                const c=document.createElement('span'); c.className='crystal';
+                c.style.left=(5+i*17)+'%'; c.style.top=(i%2? '82%':'3%');
+                c.style.animationDelay=(-Math.random()*1.7)+'s';
+                layer.appendChild(c);
+            }
+        }
+
+        if(el.classList.contains('frame-neon')){
+            const s=document.createElement('span'); s.className='scan'; layer.appendChild(s);
+        }
+
+        if(el.classList.contains('frame-poison')){
+            for(let i=0;i<7;i++){
+                const b=document.createElement('span'); b.className='bubble';
+                b.style.left=(8+Math.random()*84)+'%';
+                b.style.bottom=(Math.random()*8)+'%';
+                b.style.animationDelay=(-Math.random()*2)+'s';
+                layer.appendChild(b);
+            }
+        }
+
+        if(el.classList.contains('frame-phoenix')){
+            for(let i=0;i<7;i++){
+                const f=document.createElement('span'); f.className='feather';
+                f.style.left=(6+i*14)+'%'; f.style.top=(i%2?'78%':'2%');
+                f.style.animationDelay=(-Math.random()*1.1)+'s';
+                layer.appendChild(f);
+            }
+        }
+
+        el.appendChild(layer);
+    }
+
+    function scan(){
+        document.querySelectorAll('.avatar-wrapper.frame-effect, .obs-avatar-wrap.frame-effect')
+            .forEach(makeLayer);
+    }
+
+    scan();
+    new MutationObserver(scan).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+})();
+</script>
+
