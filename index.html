@@ -2584,6 +2584,243 @@ body.obs-overlay .obs-avatar-wrap.frame-phoenix::after { border-style:dashed !im
 .avatar-wrapper.frame-effect:hover::before { filter:brightness(1.45) !important; }
 .avatar-wrapper.frame-effect:hover::after { opacity:1 !important; }
 </style>
+
+<style id="free-elo-beautiful-animated-frames">
+/* =========================================================
+   FREE ELO — BEAUTIFUL ANIMATED FRAMES
+   Rectangular frame stays still. Animation is glow/light/energy,
+   never a rotating square. Works in the website and OBS overlay.
+   ========================================================= */
+
+.avatar-wrapper.frame-effect,
+body.obs-overlay .obs-avatar-wrap.frame-effect { 
+  --a1:#fff; --a2:#fff; --glow:rgba(255,255,255,.8);
+  isolation:isolate !important;
+}
+
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  transform:none !important;
+  will-change:opacity,filter,box-shadow,background-position !important;
+}
+
+/* Base: premium double border with a moving light sweep, not rotation. */
+.avatar-wrapper.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+  border:2px solid transparent !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,var(--a1),var(--a2),var(--a1),var(--a2),var(--a1)) border-box !important;
+  background-size:100% 100%, 240% 100% !important;
+  background-position:0 0, 0% 50% !important;
+  box-shadow:0 0 7px var(--a1),0 0 18px var(--glow),0 0 34px var(--glow),inset 0 0 8px var(--glow) !important;
+  animation:fePremiumSweep 2.4s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  border:1px solid rgba(255,255,255,.55) !important;
+  box-shadow:0 0 6px var(--a2),inset 0 0 6px var(--glow) !important;
+  animation:fePremiumPulse 1.65s ease-in-out infinite !important;
+}
+@keyframes fePremiumSweep {
+  0%,100% { background-position:0 0,0% 50%; filter:brightness(.96); opacity:.86; }
+  50% { background-position:0 0,100% 50%; filter:brightness(1.35); opacity:1; }
+}
+@keyframes fePremiumPulse {
+  0%,100% { opacity:.42; filter:brightness(.95); }
+  50% { opacity:.95; filter:brightness(1.3); }
+}
+
+/* FIRE — hot flame-like breathing light, with brighter upper edge. */
+.avatar-wrapper.frame-fire,
+body.obs-overlay .obs-avatar-wrap.frame-fire {
+  --a1:#fff5b0; --a2:#ff5a00; --glow:rgba(255,70,0,.92);
+}
+.avatar-wrapper.frame-fire::before,
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+  border-width:3px !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#ff3b00,#ffd166,#ff7a00,#fff0a0,#ff3b00) border-box !important;
+  background-size:100% 100%, 300% 100% !important;
+  box-shadow:0 0 5px #fff0a0,0 0 13px #ffb000,0 0 27px #ff4d00,0 0 48px rgba(255,25,0,.72),inset 0 0 10px rgba(255,160,30,.8) !important;
+  animation:feFireBeautiful .82s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after,
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+  inset:-5px !important;
+  border:2px solid rgba(255,153,38,.78) !important;
+  box-shadow:0 -8px 18px rgba(255,205,80,.75),0 0 20px #ff6500,0 0 40px rgba(255,35,0,.7) !important;
+  animation:feFireHalo .62s ease-in-out infinite !important;
+}
+@keyframes feFireBeautiful {
+  0%,100% { background-position:0 0,0% 50%; filter:brightness(1); }
+  24% { background-position:0 0,35% 50%; filter:brightness(1.18); }
+  52% { background-position:0 0,78% 50%; filter:brightness(1.48); }
+  76% { background-position:0 0,55% 50%; filter:brightness(1.12); }
+}
+@keyframes feFireHalo {
+  0%,100% { opacity:.38; filter:brightness(1); }
+  35% { opacity:.78; filter:brightness(1.25); }
+  60% { opacity:1; filter:brightness(1.5); }
+}
+
+/* LIGHTNING — fast electric flashes and a crisp blue-white edge. */
+.avatar-wrapper.frame-lightning,
+body.obs-overlay .obs-avatar-wrap.frame-lightning {
+  --a1:#efffff; --a2:#168cff; --glow:rgba(45,170,255,.94);
+}
+.avatar-wrapper.frame-lightning::before,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::before {
+  border-width:3px !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#5cecff,#ffffff,#167dff,#dfffff,#5cecff) border-box !important;
+  background-size:100% 100%, 260% 100% !important;
+  box-shadow:0 0 5px #fff,0 0 13px #2db9ff,0 0 30px rgba(35,126,255,.95),inset 0 0 10px rgba(130,225,255,.8) !important;
+  animation:feLightningBeautiful .72s steps(1,end) infinite !important;
+}
+.avatar-wrapper.frame-lightning::after,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::after {
+  inset:-4px !important;
+  border:2px dashed rgba(102,218,255,.92) !important;
+  box-shadow:0 0 10px #00bfff,0 0 25px rgba(0,136,255,.8) !important;
+  animation:feLightningHalo 1.15s ease-in-out infinite !important;
+}
+@keyframes feLightningBeautiful {
+  0%,80%,100% { opacity:.72; filter:brightness(1); background-position:0 0,0% 50%; }
+  82% { opacity:1; filter:brightness(2); background-position:0 0,60% 50%; }
+  84% { opacity:.38; filter:brightness(.8); }
+  86% { opacity:1; filter:brightness(2.25); background-position:0 0,100% 50%; }
+}
+@keyframes feLightningHalo {
+  0%,100% { opacity:.28; }
+  50% { opacity:.95; }
+}
+
+/* THUNDER — purple energy pulse, like a charged storm shield. */
+.avatar-wrapper.frame-thunder,
+body.obs-overlay .obs-avatar-wrap.frame-thunder {
+  --a1:#f0ddff; --a2:#713cff; --glow:rgba(125,65,255,.92);
+}
+.avatar-wrapper.frame-thunder::before,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#703cff,#e8d7ff,#9c62ff,#5420d9,#703cff) border-box !important;
+  background-size:100% 100%,280% 100% !important;
+  box-shadow:0 0 6px #dcc4ff,0 0 18px #7b45ff,0 0 36px rgba(112,45,255,.8),inset 0 0 10px rgba(154,100,255,.7) !important;
+  animation:feThunderBeautiful 1.05s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-thunder::after,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::after {
+  inset:-4px !important;
+  border:2px dotted rgba(194,157,255,.9) !important;
+  animation:feThunderHalo 1.3s ease-in-out infinite !important;
+}
+@keyframes feThunderBeautiful {
+  0%,100% { background-position:0 0,0% 50%; filter:brightness(.95); }
+  50% { background-position:0 0,100% 50%; filter:brightness(1.5); }
+}
+@keyframes feThunderHalo { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+/* ICE — crystalline cyan shimmer. */
+.avatar-wrapper.frame-ice,
+body.obs-overlay .obs-avatar-wrap.frame-ice {
+  --a1:#ffffff; --a2:#39d7ff; --glow:rgba(50,210,255,.9);
+}
+.avatar-wrapper.frame-ice::before,
+body.obs-overlay .obs-avatar-wrap.frame-ice::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#eaffff,#35cfff,#ffffff,#72e9ff,#eaffff) border-box !important;
+  background-size:100% 100%,300% 100% !important;
+  box-shadow:0 0 5px #fff,0 0 15px #4edcff,0 0 32px rgba(0,190,255,.72),inset 0 0 9px rgba(120,235,255,.7) !important;
+  animation:feIceBeautiful 2s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-ice::after,
+body.obs-overlay .obs-avatar-wrap.frame-ice::after {
+  inset:-4px !important;
+  border:1px solid rgba(190,250,255,.85) !important;
+  animation:feIceHalo 2.4s ease-in-out infinite !important;
+}
+@keyframes feIceBeautiful { 0%,100%{background-position:0 0,0% 50%;filter:brightness(1)} 50%{background-position:0 0,100% 50%;filter:brightness(1.4)} }
+@keyframes feIceHalo { 0%,100%{opacity:.2} 50%{opacity:.9} }
+
+/* NEON — colorful cyber glow, smoothly changing hues. */
+.avatar-wrapper.frame-neon,
+body.obs-overlay .obs-avatar-wrap.frame-neon {
+  --a1:#ff75df; --a2:#5d6cff; --glow:rgba(255,70,220,.85);
+}
+.avatar-wrapper.frame-neon::before,
+body.obs-overlay .obs-avatar-wrap.frame-neon::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#ff39cf,#7d4dff,#22d9ff,#ff39cf) border-box !important;
+  background-size:100% 100%,350% 100% !important;
+  box-shadow:0 0 6px #ff78df,0 0 17px #9c5cff,0 0 34px rgba(255,40,220,.72),inset 0 0 9px rgba(255,80,230,.7) !important;
+  animation:feNeonBeautiful 1.45s linear infinite !important;
+}
+.avatar-wrapper.frame-neon::after,
+body.obs-overlay .obs-avatar-wrap.frame-neon::after {
+  inset:-5px !important;
+  border:2px dashed rgba(116,220,255,.82) !important;
+  animation:feNeonHalo .9s ease-in-out infinite !important;
+}
+@keyframes feNeonBeautiful { 0%{background-position:0 0,0% 50%;filter:hue-rotate(0deg) brightness(1)} 50%{background-position:0 0,100% 50%;filter:hue-rotate(25deg) brightness(1.45)} 100%{background-position:0 0,0% 50%;filter:hue-rotate(0deg) brightness(1)} }
+@keyframes feNeonHalo { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+/* POISON — acid green pulse with toxic glow. */
+.avatar-wrapper.frame-poison,
+body.obs-overlay .obs-avatar-wrap.frame-poison {
+  --a1:#efff70; --a2:#16e879; --glow:rgba(24,230,120,.88);
+}
+.avatar-wrapper.frame-poison::before,
+body.obs-overlay .obs-avatar-wrap.frame-poison::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#8dff20,#eaff7a,#18e77b,#b8ff28,#8dff20) border-box !important;
+  background-size:100% 100%,300% 100% !important;
+  box-shadow:0 0 5px #dfff6a,0 0 16px #2be978,0 0 35px rgba(30,230,110,.72),inset 0 0 10px rgba(140,255,70,.65) !important;
+  animation:fePoisonBeautiful 1.15s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-poison::after,
+body.obs-overlay .obs-avatar-wrap.frame-poison::after { inset:-4px !important; border:2px dotted rgba(173,255,80,.88) !important; animation:fePoisonHalo .85s ease-in-out infinite !important; }
+@keyframes fePoisonBeautiful { 0%,100%{background-position:0 0,0% 50%;filter:brightness(1)} 50%{background-position:0 0,100% 50%;filter:brightness(1.5)} }
+@keyframes fePoisonHalo { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+/* PHOENIX — gold/red premium flame pulse. */
+.avatar-wrapper.frame-phoenix,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix {
+  --a1:#fff1a0; --a2:#ff7300; --glow:rgba(255,125,0,.92);
+}
+.avatar-wrapper.frame-phoenix::before,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::before {
+  border-width:3px !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#ff4500,#ffd166,#fff3b0,#ff8a00,#ff4500) border-box !important;
+  background-size:100% 100%,320% 100% !important;
+  box-shadow:0 0 6px #fff0a0,0 0 16px #ffad22,0 0 34px rgba(255,72,0,.82),inset 0 0 10px rgba(255,170,40,.75) !important;
+  animation:fePhoenixBeautiful .9s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-phoenix::after,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::after { inset:-5px !important; border:2px solid rgba(255,175,60,.78) !important; animation:fePhoenixHalo .7s ease-in-out infinite !important; }
+@keyframes fePhoenixBeautiful { 0%,100%{background-position:0 0,0% 50%;filter:brightness(1)} 35%{background-position:0 0,65% 50%;filter:brightness(1.28)} 65%{background-position:0 0,100% 50%;filter:brightness(1.55)} }
+@keyframes fePhoenixHalo { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+/* Hover: every frame gets a short, obvious power-up. */
+.avatar-wrapper.frame-effect:hover::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect:hover::before {
+  filter:brightness(1.6) saturate(1.25) !important;
+  box-shadow:0 0 10px var(--a1),0 0 24px var(--glow),0 0 48px var(--glow),inset 0 0 12px var(--glow) !important;
+}
+.avatar-wrapper.frame-effect:hover::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect:hover::after { opacity:1 !important; }
+</style>
+
 </head>
 <body>
 
