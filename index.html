@@ -2067,7 +2067,7 @@ body.obs-overlay .obs-clan-label {
   background:linear-gradient(#101522,#101522) padding-box,
              conic-gradient(from 0deg,var(--frame-color-1),var(--frame-color-2),var(--frame-color-1),var(--frame-color-2),var(--frame-color-1)) border-box !important;
   box-shadow:0 0 7px var(--frame-color-1),0 0 18px var(--frame-shadow) !important;
-  animation:freeEloHeaderFrameSpin 2.8s linear infinite !important;
+  animation:freeEloHeaderFramePulse 1.15s ease-in-out infinite !important;
 }
 .avatar-wrapper.frame-effect::after {
   inset:-9px !important;
@@ -2076,7 +2076,6 @@ body.obs-overlay .obs-clan-label {
   box-shadow:0 0 8px var(--frame-shadow),0 0 20px var(--frame-shadow),inset 0 0 8px var(--frame-shadow) !important;
   animation:freeEloHeaderFramePulse 1.15s ease-in-out infinite !important;
 }
-@keyframes freeEloHeaderFrameSpin { to { transform:rotate(360deg); } }
 @keyframes freeEloHeaderFramePulse {
   0%,100%{opacity:.55;transform:scale(.99)}
   50%{opacity:1;transform:scale(1.06)}
@@ -2085,13 +2084,13 @@ body.obs-overlay .obs-clan-label {
   background:linear-gradient(#130b06,#130b06) padding-box,
     conic-gradient(from 0deg,#fff1a8,#ffb300,#ff6500,#ff2200,#ff6500,#ffd166,#fff1a8) border-box !important;
   box-shadow:0 0 5px #ffd166,0 0 14px #ff6500,0 0 28px rgba(255,45,0,.85),inset 0 0 9px rgba(255,160,40,.75) !important;
-  animation:freeEloFireRing .85s linear infinite !important;
+  animation:freeEloFireGlow .9s ease-in-out infinite !important;
 }
 .avatar-wrapper.frame-fire::after {
   box-shadow:0 -3px 10px #ffd166,0 0 18px #ff5a00,0 0 30px rgba(255,45,0,.75) !important;
   animation:freeEloFirePulse .7s ease-in-out infinite !important;
 }
-@keyframes freeEloFireRing { to { transform:rotate(360deg); } }
+@keyframes freeEloFireGlow { 0%,100%{filter:brightness(1);box-shadow:0 0 5px #ffd166,0 0 14px #ff6500,0 0 28px rgba(255,45,0,.75),inset 0 0 9px rgba(255,160,40,.65)} 50%{filter:brightness(1.35);box-shadow:0 0 8px #fff0a0,0 0 20px #ff6500,0 0 36px rgba(255,45,0,.95),inset 0 0 12px rgba(255,180,50,.85)} }
 @keyframes freeEloFirePulse {
   0%,100%{opacity:.65;transform:scale(.99)}
   50%{opacity:1;transform:scale(1.08)}
@@ -2160,7 +2159,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect::before {
   background:linear-gradient(transparent,transparent) padding-box,
     conic-gradient(from 0deg,var(--frame-color-1),var(--frame-color-2),var(--frame-color-1),var(--frame-color-2),var(--frame-color-1)) border-box !important;
   box-shadow:0 0 7px var(--frame-color-1),0 0 18px var(--frame-shadow),inset 0 0 8px var(--frame-shadow) !important;
-  animation:freeEloObsFrameSpin 2.8s linear infinite !important;
+  animation:freeEloHeaderFramePulse 1.15s ease-in-out infinite !important;
 }
 body.obs-overlay .obs-avatar-wrap.frame-effect::after {
   inset:-10px !important;
@@ -2228,29 +2227,13 @@ body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none 
 
 
 <style id="free-elo-clean-static-frames">
-/* CLEAN HUD: рамки не вращаются. Огонь только слегка мерцает и "горит" на месте. */
+/* CLEAN HUD: no spinning, no rotating borders, real frame-like border */
 .avatar-wrapper.frame-effect::before,
 .avatar-wrapper.frame-effect::after,
 body.obs-overlay .obs-avatar-wrap.frame-effect::before,
 body.obs-overlay .obs-avatar-wrap.frame-effect::after {
     animation:none !important;
     transform:none !important;
-}
-.avatar-wrapper.frame-fire::before,
-body.obs-overlay .obs-avatar-wrap.frame-fire::before {
-    animation:freeEloFireGlow 1.15s ease-in-out infinite !important;
-}
-.avatar-wrapper.frame-fire::after,
-body.obs-overlay .obs-avatar-wrap.frame-fire::after {
-    animation:freeEloFireGlow2 1.55s ease-in-out infinite !important;
-}
-@keyframes freeEloFireGlow {
-    0%,100% { filter:brightness(1); box-shadow:0 0 5px #ffd166,0 0 13px #ff6500,0 0 25px rgba(255,45,0,.78),inset 0 0 8px rgba(255,160,40,.65); }
-    50% { filter:brightness(1.3); box-shadow:0 0 7px #fff0a0,0 0 19px #ff7a00,0 0 34px rgba(255,45,0,.95),inset 0 0 12px rgba(255,180,60,.9); }
-}
-@keyframes freeEloFireGlow2 {
-    0%,100% { opacity:.78; filter:brightness(1); }
-    50% { opacity:1; filter:brightness(1.25); }
 }
 
 /* Website header: frame is a fixed ring around the avatar */
@@ -2293,7 +2276,7 @@ body.obs-overlay .obs-avatar {
     width:100% !important;
     height:100% !important;
     object-fit:cover !important;
-    opacity:.86 !important;
+    opacity:.72 !important;
     filter:none !important;
     transform:none !important;
     mix-blend-mode:normal !important;
@@ -2352,13 +2335,56 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
 #userAvatar[src*="dicebear.com"][src*="initials"] { display:none !important; }
 </style>
 
-
-<style id="free-elo-naruto-avatar-pack">
-.shop-item img, .inventory-item img { object-fit:cover; }
-.anime-avatar-item { position:relative; overflow:hidden; }
-.anime-avatar-item::after { content:"NARUTO"; position:absolute; right:8px; top:8px; font:800 9px/1 Arial,sans-serif; letter-spacing:1px; color:#fff; background:rgba(0,0,0,.5); padding:5px 7px; border-radius:7px; }
+<style id="free-elo-final-frame-no-rotation">
+/* FINAL: рамки не вращаются. Огонь только мерцает вокруг края. */
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  transform:none !important;
+}
+.avatar-wrapper.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+  animation:freeEloStaticFrameGlow 1.15s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  animation:freeEloStaticFrameGlow2 1.0s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::before,
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+  border:3px solid #ff7a00 !important;
+  background:transparent !important;
+  box-shadow:0 0 4px #fff0a0,0 0 10px #ffb000,0 0 22px #ff5a00,0 0 36px rgba(255,30,0,.65),inset 0 0 8px rgba(255,150,30,.7) !important;
+  animation:freeEloFireStatic 0.72s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after,
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+  inset:-9px !important;
+  border:2px solid rgba(255,120,0,.95) !important;
+  background:transparent !important;
+  box-shadow:0 -5px 10px #ffd166,0 0 16px #ff6500,0 0 30px rgba(255,40,0,.7) !important;
+  animation:freeEloFireStatic2 0.58s ease-in-out infinite !important;
+}
+@keyframes freeEloStaticFrameGlow {
+  0%,100%{{opacity:.72;filter:brightness(.95)}}
+  50%{{opacity:1;filter:brightness(1.25)}}
+}
+@keyframes freeEloStaticFrameGlow2 {
+  0%,100%{{opacity:.45;transform:scale(1)}}
+  50%{{opacity:.95;transform:scale(1.025)}}
+}
+@keyframes freeEloFireStatic {
+  0%,100%{{filter:brightness(1);box-shadow:0 0 4px #fff0a0,0 0 10px #ffb000,0 0 22px #ff5a00,0 0 36px rgba(255,30,0,.55),inset 0 0 8px rgba(255,150,30,.65)}}
+  50%{{filter:brightness(1.45);box-shadow:0 0 7px #fff4b0,0 0 15px #ffb000,0 0 28px #ff4a00,0 0 44px rgba(255,20,0,.85),inset 0 0 11px rgba(255,180,40,.9)}}
+}
+@keyframes freeEloFireStatic2 {
+  0%,100%{{opacity:.55;transform:scale(1)}}
+  50%{{opacity:1;transform:scale(1.045)}}
+}
+/* В OBS аватарка всегда остаётся видимой под ником. */
+body.obs-overlay .obs-avatar{{display:block !important;visibility:visible !important;}}
 </style>
-
 </head>
 <body>
 
@@ -2628,7 +2654,7 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                 <h2 style="color: #00be63;"><i class="fas fa-shopping-cart"></i> Управление магазином</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-top: 15px; align-items: flex-end;">
                     <div class="form-group" style="margin-bottom:0;"><label>Название товара</label><input type="text" id="adminShopName" placeholder="Крутая аватарка"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Тип</label><select id="adminShopType"><option value="avatar">Аватарка</option><option value="frame">Рамка</option><option value="decor">Украшение</option><option value="character">Аниме-персонаж</option></select></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Тип</label><select id="adminShopType"><option value="avatar">Аватарка</option><option value="frame">Рамка</option><option value="decor">Украшение</option></select></div>
                     <div class="form-group" style="margin-bottom:0;"><label>Цена (ELO)</label><input type="number" id="adminShopPrice" value="500"></div>
                 </div>
 
@@ -2801,8 +2827,7 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
             sukuna:  { name:"Ryomen Sukuna", anime:"Jujutsu Kaisen", search:"Ryomen Sukuna", image:null },
             zoro:    { name:"Roronoa Zoro", anime:"One Piece", search:"Roronoa Zoro", image:null },
             itachi:  { name:"Itachi Uchiha", anime:"Naruto", search:"Itachi Uchiha", image:null },
-            sasuke:  { name:"Sasuke Uchiha", anime:"Naruto", search:"Sasuke Uchiha", image:null },
-            kakashi: { name:"Kakashi Hatake", anime:"Naruto", search:"Kakashi Hatake", image:null }
+            sasuke:  { name:"Sasuke Uchiha", anime:"Naruto", search:"Sasuke Uchiha", image:null }
         };
 
         const EPIC_MOMENTS = {
@@ -2828,20 +2853,7 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                 }catch(_){ }
             });
             await Promise.allSettled(jobs);
-
-            // После загрузки картинок обновляем аватарки из Naruto в магазине.
-            // Это важно для OBS: предмет получает реальный URL картинки, а не DiceBear-заглушку.
-            if (Array.isArray(db?.shopItems)) {
-                db.shopItems.forEach(item => {
-                    if (item?.animeAvatarKey && ANIME_CHARACTERS[item.animeAvatarKey]) {
-                        const url = animeCharacterImg(item.animeAvatarKey);
-                        if (url) item.img = url;
-                    }
-                });
-            }
-
             renderAnimeArena(); renderShop();
-            updateHeaderProfile(getCurrentUser());
         }
 
         function animeCharacterImg(key) {
@@ -2850,9 +2862,42 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
             return c.image || animeFallbackImage(safeKey);
         }
 
+        function removeAnimeCharactersEverywhere() {
+            if (!db) return false;
+            let changed = false;
+            if (Array.isArray(db.shopItems)) {
+                const before = db.shopItems.length;
+                db.shopItems = db.shopItems.filter(i => i && i.type !== 'character' && !i.characterKey);
+                changed = changed || db.shopItems.length !== before;
+            }
+            (db.players || []).forEach(p => {
+                if (!Array.isArray(p.inventory)) return;
+                const before = p.inventory.length;
+                p.inventory = p.inventory.filter(i => i && i.type !== 'character' && !i.characterKey);
+                if (p.inventory.length !== before) changed = true;
+                if (p.equippedCharacter) { p.equippedCharacter = ''; changed = true; }
+            });
+            return changed;
+        }
+
         function ensureAnimeShopItems() {
-            
-            if (!db.shopItems) db.shopItems = [];
+            if (!db) return false;
+            if (!Array.isArray(db.shopItems)) db.shopItems = [];
+            let changed = false;
+
+            // Полностью удаляем старые аниме-персонажи из магазина и инвентарей.
+            const oldShopCount = db.shopItems.length;
+            db.shopItems = db.shopItems.filter(i => i && i.type !== 'character' && !i.characterKey);
+            if (db.shopItems.length !== oldShopCount) changed = true;
+
+            (db.players || []).forEach(p => {
+                if (!Array.isArray(p.inventory)) p.inventory = [];
+                const oldCount = p.inventory.length;
+                p.inventory = p.inventory.filter(i => i && i.type !== 'character' && !i.characterKey);
+                if (p.inventory.length !== oldCount) changed = true;
+                if (p.equippedCharacter) { p.equippedCharacter = ''; changed = true; }
+            });
+
             const premiumFrames230 = [
 {id:9100,name:'Горящий Алмаз',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ff6a00%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff2d00%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2032%20C20%2018%2031%2013%2042%2012%20C31%2022%2031%2031%2040%2039%20C27%2037%2017%2037%2010%2048%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M90%2068%20C80%2082%2069%2087%2058%2088%20C69%2078%2069%2069%2060%2061%20C73%2063%2083%2063%2090%2052%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M16%2084%20C24%2075%2031%2069%2039%2068%20M84%2016%20C76%2025%2069%2031%2061%2032%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Горящий Алмаз»'},
 {id:9101,name:'Молния',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%238cf6ff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232f7dff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M12%2026%20L33%2010%20L27%2028%20L39%2027%20L16%2046%20L21%2029%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M88%2074%20L67%2090%20L73%2072%20L61%2073%20L84%2054%20L79%2071%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Молния»'},
@@ -2863,72 +2908,26 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
 {id:9106,name:'Золотой Феникс',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ffe07a%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff8a00%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M9%2035%20Q20%2012%2044%2011%20Q30%2021%2035%2034%20Q21%2031%209%2043%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M91%2065%20Q80%2088%2056%2089%20Q70%2079%2065%2066%20Q79%2069%2091%2057%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M12%2080%20L22%2070%20M88%2020%20L78%2030%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Золотой Феникс»'}
 ];
             premiumFrames230.forEach(frame => {
-                if (!db.shopItems.some(item => Number(item.id) === Number(frame.id))) {
-                    db.shopItems.push(frame);
+                let item = db.shopItems.find(i => Number(i.id) === Number(frame.id));
+                if (!item) {
+                    db.shopItems.push({...frame});
+                    item = db.shopItems[db.shopItems.length - 1];
+                    changed = true;
                 }
-            });
-            // Отдельные аватарки Naruto — именно как AVATAR, чтобы их можно было
-            // купить/надеть и использовать одновременно на сайте и в OBS.
-            const animeAvatarItems = [
-                { id: 8201, name: 'Наруто Узумаки', type: 'avatar', price: 1200, animeAvatarKey: 'naruto' },
-                { id: 8202, name: 'Саске Учиха', type: 'avatar', price: 1200, animeAvatarKey: 'sasuke' },
-                { id: 8203, name: 'Какаши Хатаке', type: 'avatar', price: 1200, animeAvatarKey: 'kakashi' },
-                { id: 8204, name: 'Итачи Учиха', type: 'avatar', price: 1200, animeAvatarKey: 'itachi' }
-            ];
-            animeAvatarItems.forEach(item => {
-                const old = db.shopItems.find(x => Number(x.id) === item.id);
-                if (old) {
-                    old.type = 'avatar';
-                    old.name = item.name;
-                    old.price = item.price;
-                    old.animeAvatarKey = item.animeAvatarKey;
-                    old.img = animeCharacterImg(item.animeAvatarKey) || old.img || '';
-                } else {
-                    db.shopItems.push({ ...item, img: animeCharacterImg(item.animeAvatarKey) || '' });
-                }
-            });
-
-            const existingKeys = new Set(
-                db.shopItems.filter(i => i.type === 'character').map(i => i.characterKey)
-            );
-            let changed = false;
-            let id = 7000;
-
-            Object.entries(ANIME_CHARACTERS).forEach(([key, c]) => {
-                if (!existingKeys.has(key)) {
-                    db.shopItems.push({
-                        id: id++,
-                        name: c.name,
-                        type: 'character',
-                        price: 1200,
-                        characterKey: key,
-                        img: c.image || animeFallbackImage(key) || ''
-                    });
-
-            premiumFrames230.forEach(frame => {
-                const shopItem = (db.shopItems || []).find(i => Number(i.id) === Number(frame.id));
-                if (shopItem) {
-                    shopItem.img = frame.img;
-                    shopItem.price = 230;
+                if (item.img !== frame.img || Number(item.price) !== 230 || item.type !== 'frame') {
+                    item.img = frame.img; item.price = 230; item.type = 'frame'; changed = true;
                 }
                 (db.players || []).forEach(player => {
                     (player.inventory || []).forEach(inv => {
                         if (Number(inv.id) === Number(frame.id) && inv.type === 'frame') {
-                            inv.img = frame.img;
-                            inv.price = 230;
+                            inv.img = frame.img; inv.price = 230;
                         }
                     });
                     if (player.activeFrameId != null) {
-                        const activeFrame = (player.inventory || []).find(i =>
-                            Number(i.id) === Number(player.activeFrameId) && i.type === 'frame'
-                        );
+                        const activeFrame = (player.inventory || []).find(i => Number(i.id) === Number(player.activeFrameId) && i.type === 'frame');
                         if (activeFrame) player.frame = activeFrame.img;
                     }
                 });
-            });
-
-                    changed = true;
-                }
             });
             return changed;
         }
@@ -3067,7 +3066,7 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
             let existing=getGuestPlayerByName(n);
             if(existing) return existing;
             if(!db.players) db.players=[];
-            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
+            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:'',frame:'',inventory:[],equippedCharacter:''});
             db.players.push(player);
             await saveDataToCloud();
             return player;
@@ -3239,51 +3238,30 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                 const u = String(url || '').trim();
                 if (!u) return false;
                 const low = u.toLowerCase();
+                // Не считаем автоматические DiceBear-заглушки настоящей аватаркой.
                 if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return false;
                 return true;
             };
 
-            // Основной вариант: выбранная AVATAR.
             if (player.activeAvatarId != null) {
-                const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId));
-                if (item) {
-                    if (isRealAvatar(item.img)) return String(item.img);
-                    if (item.animeAvatarKey && ANIME_CHARACTERS[item.animeAvatarKey]) {
-                        const url = animeCharacterImg(item.animeAvatarKey);
-                        if (url) return String(url);
-                    }
-                    const catalogItem = (db?.shopItems || []).find(i => Number(i.id) === Number(player.activeAvatarId));
-                    if (catalogItem?.img && isRealAvatar(catalogItem.img)) return String(catalogItem.img);
-                    if (catalogItem?.animeAvatarKey && ANIME_CHARACTERS[catalogItem.animeAvatarKey]) {
-                        const url = animeCharacterImg(catalogItem.animeAvatarKey);
-                        if (url) return String(url);
-                    }
-                }
+                const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar');
+                if (item?.img && isRealAvatar(item.img)) return String(item.img);
+                const catalogItem = (db?.shopItems || []).find(i =>
+                    Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar'
+                );
+                if (catalogItem?.img && isRealAvatar(catalogItem.img)) return String(catalogItem.img);
             }
 
-            // Поддержка старого equippedCharacter: раньше Naruto-персонажи были type=character,
-            // поэтому сайт видел их в инвентаре, но OBS не считал их аватарками.
-            if (player.equippedCharacter) {
-                const key = String(player.equippedCharacter);
-                const characterItem = inv.find(i => i.type === 'character' && String(i.characterKey || '') === key);
-                if (characterItem?.img && isRealAvatar(characterItem.img)) return String(characterItem.img);
-                const catalogCharacter = (db?.shopItems || []).find(i => i.type === 'character' && String(i.characterKey || '') === key);
-                if (catalogCharacter?.img && isRealAvatar(catalogCharacter.img)) return String(catalogCharacter.img);
-                if (ANIME_CHARACTERS[key]) {
-                    const url = animeCharacterImg(key);
-                    if (url) return String(url);
-                }
-            }
+            // В облачной базе activeAvatarId иногда остаётся старым.
+            // Если сама аватарка уже сохранена в player.avatar — используем её напрямую.
+            if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
 
             const marked = inv.find(i =>
-                (i.type === 'avatar' || i.type === 'character') &&
-                (i.equipped === true || i.isEquipped === true || i.worn === true)
+                i.type === 'avatar' &&
+                (i.equipped === true || i.isEquipped === true || i.worn === true) &&
+                isRealAvatar(i.img)
             );
-            if (marked?.img && isRealAvatar(marked.img)) return String(marked.img);
-            if (marked?.animeAvatarKey && ANIME_CHARACTERS[marked.animeAvatarKey]) {
-                const url = animeCharacterImg(marked.animeAvatarKey);
-                if (url) return String(url);
-            }
+            if (marked?.img) return String(marked.img);
 
             if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
             return '';
@@ -4881,8 +4859,10 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                                 return frame ? getFrameEffectClass(frame) : '';
                             };
 
-                            const avatarUrl1 = resolveObsAvatar(p1Obj);
-                            const avatarUrl2 = resolveObsAvatar(p2Obj);
+                            if (p1Obj && !resolveEquippedAvatar(p1Obj) && p1Obj.avatar && !String(p1Obj.avatar).includes('dicebear.com')) p1Obj.avatar = String(p1Obj.avatar);
+                            if (p2Obj && !resolveEquippedAvatar(p2Obj) && p2Obj.avatar && !String(p2Obj.avatar).includes('dicebear.com')) p2Obj.avatar = String(p2Obj.avatar);
+                            const avatarUrl1 = resolveObsAvatar(p1Obj) || ((p1Obj?.avatar && !String(p1Obj.avatar).includes('dicebear.com')) ? String(p1Obj.avatar) : '');
+                            const avatarUrl2 = resolveObsAvatar(p2Obj) || ((p2Obj?.avatar && !String(p2Obj.avatar).includes('dicebear.com')) ? String(p2Obj.avatar) : '');
                             const hasAvatar1 = !!avatarUrl1;
                             const hasAvatar2 = !!avatarUrl2;
 
@@ -4895,10 +4875,10 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                             const frameClass2 = resolveObsFrame(p2Obj);
 
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.onerror=null;this.remove();"></div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl1)} alt="" onerror="this.style.display='none';"></div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.onerror=null;this.remove();"></div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl2)} alt="" onerror="this.style.display='none';"></div>`
                                 : '';
 
                             obsContainer.innerHTML = `
