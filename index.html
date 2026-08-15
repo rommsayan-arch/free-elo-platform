@@ -2037,6 +2037,195 @@ body.obs-overlay .obs-clan-label {
 }
 </style>
 
+
+<style id="free-elo-final-center-name-avatar-bg">
+/* ===== FINAL HUD: centered nickname + avatar in background + equipped frame ===== */
+
+/* WEBSITE HEADER */
+.avatar-wrapper {
+  position:relative !important;
+  isolation:isolate !important;
+  overflow:visible !important;
+}
+.avatar-wrapper .avatar {
+  position:relative !important;
+  z-index:2 !important;
+  object-fit:cover !important;
+  border-radius:50% !important;
+}
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after {
+  content:"" !important;
+  position:absolute !important;
+  pointer-events:none !important;
+  border-radius:50% !important;
+  z-index:5 !important;
+  inset:-5px !important;
+}
+.avatar-wrapper.frame-effect::before {
+  border:3px solid transparent !important;
+  background:linear-gradient(#101522,#101522) padding-box,
+             conic-gradient(from 0deg,var(--frame-color-1),var(--frame-color-2),var(--frame-color-1),var(--frame-color-2),var(--frame-color-1)) border-box !important;
+  box-shadow:0 0 7px var(--frame-color-1),0 0 18px var(--frame-shadow) !important;
+  animation:freeEloHeaderFrameSpin 2.8s linear infinite !important;
+}
+.avatar-wrapper.frame-effect::after {
+  inset:-9px !important;
+  border:2px solid transparent !important;
+  background:transparent !important;
+  box-shadow:0 0 8px var(--frame-shadow),0 0 20px var(--frame-shadow),inset 0 0 8px var(--frame-shadow) !important;
+  animation:freeEloHeaderFramePulse 1.15s ease-in-out infinite !important;
+}
+@keyframes freeEloHeaderFrameSpin { to { transform:rotate(360deg); } }
+@keyframes freeEloHeaderFramePulse {
+  0%,100%{opacity:.55;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+.avatar-wrapper.frame-fire::before {
+  background:linear-gradient(#130b06,#130b06) padding-box,
+    conic-gradient(from 0deg,#fff1a8,#ffb300,#ff6500,#ff2200,#ff6500,#ffd166,#fff1a8) border-box !important;
+  box-shadow:0 0 5px #ffd166,0 0 14px #ff6500,0 0 28px rgba(255,45,0,.85),inset 0 0 9px rgba(255,160,40,.75) !important;
+  animation:freeEloFireRing .85s linear infinite !important;
+}
+.avatar-wrapper.frame-fire::after {
+  box-shadow:0 -3px 10px #ffd166,0 0 18px #ff5a00,0 0 30px rgba(255,45,0,.75) !important;
+  animation:freeEloFirePulse .7s ease-in-out infinite !important;
+}
+@keyframes freeEloFireRing { to { transform:rotate(360deg); } }
+@keyframes freeEloFirePulse {
+  0%,100%{opacity:.65;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.08)}
+}
+
+/* OBS: player card is the frame. Avatar sits BEHIND the centered nickname. */
+body.obs-overlay .obs-player-card {
+  width:272px !important;
+  height:150px !important;
+  left:50% !important;
+  top:20px !important;
+  transform:translateX(-50%) !important;
+  overflow:visible !important;
+  border-radius:12px !important;
+  background:rgba(7,10,18,.72) !important;
+  border:2px solid rgba(255,255,255,.25) !important;
+  box-shadow:0 0 18px rgba(0,0,0,.45) !important;
+}
+body.obs-overlay .obs-player-card.obs-name-only {
+  background:rgba(7,10,18,.72) !important;
+}
+body.obs-overlay .obs-avatar-wrap {
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  transform:none !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  z-index:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+body.obs-overlay .obs-avatar {
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  border-radius:10px !important;
+  opacity:.34 !important;
+  filter:saturate(1.05) brightness(.68) !important;
+  transform:none !important;
+  z-index:0 !important;
+}
+body.obs-overlay .obs-avatar-wrap::after {
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:1 !important;
+  pointer-events:none !important;
+  background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.52)) !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  content:"" !important;
+  position:absolute !important;
+  pointer-events:none !important;
+  border-radius:12px !important;
+  z-index:8 !important;
+  inset:-6px !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+  border:3px solid transparent !important;
+  background:linear-gradient(transparent,transparent) padding-box,
+    conic-gradient(from 0deg,var(--frame-color-1),var(--frame-color-2),var(--frame-color-1),var(--frame-color-2),var(--frame-color-1)) border-box !important;
+  box-shadow:0 0 7px var(--frame-color-1),0 0 18px var(--frame-shadow),inset 0 0 8px var(--frame-shadow) !important;
+  animation:freeEloObsFrameSpin 2.8s linear infinite !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  inset:-10px !important;
+  border:2px solid transparent !important;
+  background:transparent !important;
+  box-shadow:0 0 10px var(--frame-shadow),0 0 22px var(--frame-shadow) !important;
+  animation:freeEloObsFramePulse 1.1s ease-in-out infinite !important;
+}
+@keyframes freeEloObsFrameSpin { to { transform:rotate(360deg); } }
+@keyframes freeEloObsFramePulse {
+  0%,100%{opacity:.5;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.035)}
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+  background:linear-gradient(transparent,transparent) padding-box,
+    conic-gradient(from 0deg,#fff1a8,#ffb300,#ff6500,#ff2200,#ff6500,#ffd166,#fff1a8) border-box !important;
+  box-shadow:0 0 5px #ffd166,0 0 14px #ff6500,0 0 28px rgba(255,45,0,.9),inset 0 0 9px rgba(255,160,40,.7) !important;
+  animation:freeEloObsFireRing .82s linear infinite !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+  box-shadow:0 0 10px #ff6500,0 0 24px rgba(255,45,0,.85),0 -3px 12px #ffd166 !important;
+  animation:freeEloObsFirePulse .68s ease-in-out infinite !important;
+}
+@keyframes freeEloObsFireRing { to { transform:rotate(360deg); } }
+@keyframes freeEloObsFirePulse {
+  0%,100%{opacity:.55;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+
+/* Other frames: each gets its own color family */
+body.obs-overlay .frame-lightning::before { --frame-color-1:#9ffcff;--frame-color-2:#277dff;--frame-shadow:rgba(39,125,255,.9); }
+body.obs-overlay .frame-thunder::before { --frame-color-1:#d2b2ff;--frame-color-2:#703dff;--frame-shadow:rgba(112,61,255,.9); }
+body.obs-overlay .frame-ice::before { --frame-color-1:#e8ffff;--frame-color-2:#45cfff;--frame-shadow:rgba(69,207,255,.9); }
+body.obs-overlay .frame-neon::before { --frame-color-1:#ff78dc;--frame-color-2:#794dff;--frame-shadow:rgba(255,120,220,.9); }
+body.obs-overlay .frame-poison::before { --frame-color-1:#ddff64;--frame-color-2:#22d36e;--frame-shadow:rgba(34,211,110,.9); }
+body.obs-overlay .frame-phoenix::before { --frame-color-1:#fff0a0;--frame-color-2:#ff8a00;--frame-shadow:rgba(255,138,0,.95); }
+
+/* Center nickname over the background avatar */
+body.obs-overlay .obs-name {
+  left:50% !important;
+  top:50% !important;
+  bottom:auto !important;
+  transform:translate(-50%,-50%) !important;
+  width:calc(100% - 28px) !important;
+  font-size:34px !important;
+  line-height:1 !important;
+  z-index:6 !important;
+  color:#fff !important;
+  text-align:center !important;
+  text-shadow:0 3px 12px #000,0 0 18px rgba(0,0,0,.95) !important;
+}
+body.obs-overlay .obs-clan-label { display:none !important; }
+
+/* If there is no avatar, keep a clean name-only card */
+body.obs-overlay .obs-player-card.obs-name-only .obs-name {
+  font-size:36px !important;
+}
+body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none !important; }
+
+@media(max-width:900px){
+  body.obs-overlay .obs-player-card{width:min(272px,40vw) !important;height:150px !important;}
+  body.obs-overlay .obs-name{font-size:30px !important;}
+}
+</style>
+
 </head>
 <body>
 
