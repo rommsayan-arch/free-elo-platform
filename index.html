@@ -2504,6 +2504,36 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
             if (user) rememberDeviceSession(user);
         }
 
+        // === ACCOUNT / PLAYERS RECOVERY FIX ===
+        function repairCoreData() {
+            if (!db || typeof db !== 'object') db = {};
+            if (!Array.isArray(db.players)) db.players = [];
+            if (!Array.isArray(db.streamers)) db.streamers = [];
+            if (!db.streamDataMap || typeof db.streamDataMap !== 'object') db.streamDataMap = {};
+            if (!Array.isArray(db.shopItems)) db.shopItems = [];
+            let creator = db.players.find(p => String(p?.email || '').toLowerCase() === 'rommsayan@gmail.com' || String(p?.name || '').toLowerCase() === 'sayan');
+            if (!creator) {
+                creator = {id:1,name:'sayan',email:'rommsayan@gmail.com',password:'Suzuki/77',elo:0,matches:0,wins:0,level:1,role:'creator',clan:'NUN',avatar:'https://api.dicebear.com/7.x/bottts/svg?seed=sayan',frame:'',inventory:[],equippedCharacter:''};
+                db.players.unshift(creator);
+            } else {
+                creator.role='creator'; creator.email=creator.email || 'rommsayan@gmail.com'; creator.name=creator.name || 'sayan';
+                creator.inventory=Array.isArray(creator.inventory)?creator.inventory:[]; creator.avatar=creator.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=sayan';
+            }
+            const referenced=new Set(); Object.values(db.streamDataMap).forEach(sd=>[sd?.player1,sd?.player2].forEach(name=>{const n=String(name||'').trim();if(n)referenced.add(n);}));
+            referenced.forEach(name=>{ if(!db.players.some(p=>String(p?.name||'').toLowerCase()===name.toLowerCase())) db.players.push({id:Date.now()+Math.floor(Math.random()*100000),name,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'Нет клана',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,frame:'',inventory:[],equippedCharacter:''}); });
+            if(!db.streamers.some(s=>String(s?.name||'').toLowerCase()==='sayan')) db.streamers.push({id:creator.id||1,name:'sayan',url:'https://twitch.tv/',priority:10});
+            if(!db.streamDataMap.sayan) db.streamDataMap.sayan={player1:'sayan',clan1:'NUN',score1:0,player2:'PLAYER2',clan2:'WAKANDA',score2:0};
+            if(!Array.isArray(db.matchHistory)) db.matchHistory=[]; if(!Array.isArray(db.clanMatchHistory)) db.clanMatchHistory=[]; if(!Array.isArray(db.news)) db.news=[];
+            if(!Number.isFinite(Number(db.currentSeason))||Number(db.currentSeason)<1) db.currentSeason=1; if(!db.seasonStartedAt) db.seasonStartedAt=new Date().toISOString();
+        }
+        function restoreSavedAccount() {
+            if(!Array.isArray(db?.players)) return null;
+            let user=currentUserId ? db.players.find(p=>String(p?.id)===String(currentUserId)) : null;
+            if(!user && cachedSession) user=db.players.find(p=>(cachedSession.email&&String(p?.email||'').toLowerCase()===String(cachedSession.email).toLowerCase())||(cachedSession.name&&String(p?.name||'').toLowerCase()===String(cachedSession.name).toLowerCase()));
+            if(!user) user=db.players.find(p=>String(p?.email||'').toLowerCase()==='rommsayan@gmail.com'||String(p?.name||'').toLowerCase()==='sayan');
+            if(user) rememberDeviceSession(user); return user||null;
+        }
+
         async function loadDataFromCloud() {
             if (activeController) activeController.abort();
             activeController = new AbortController();
@@ -2537,6 +2567,7 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
             } catch (e) {
                 if (e.name !== 'AbortError') console.error("Ошибка загрузки:", e);
             }
+            repairCoreData();
             ensureCreatorRights();
 
             // Миграция: все обычные игроки принудительно остаются без клана.
@@ -2712,25 +2743,18 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
                 return;
             }
 
-            // Только эти две роли могут входить через верхний замок.
-            if (!['creator', 'streamer'].includes(foundUser.role)) {
-                alert('Вход через замок доступен только стримерам и создателю.');
-                return;
-            }
-
-            // Главный аккаунт создателя всегда остаётся создателем.
+            // Главный аккаунт создателя распознаём ДО проверки роли.
             if (
                 String(foundUser.name || '').toLowerCase() === 'sayan' ||
                 String(foundUser.email || '').toLowerCase() === 'rommsayan@gmail.com'
-            ) {
-                foundUser.role = 'creator';
+            ) { foundUser.role = 'creator'; }
+
+            if (!['creator', 'streamer'].includes(foundUser.role)) {
+                alert('Вход через замок доступен только стримерам и создателю.'); return;
             }
-
-            currentUserId = foundUser.id;
-            localStorage.setItem('fe_current_user_id', String(currentUserId));
-
-            closeCreatorLogin();
-            initApp();
+            rememberDeviceSession(foundUser);
+            shopTargetPlayerId = foundUser.id; inventoryTargetPlayerId = foundUser.id;
+            closeCreatorLogin(); initApp();
         }
 
         async function registerUser(){ alert('Обычным игрокам регистрация не нужна. Просто укажи ник в стримерской или магазине.'); }
@@ -2812,7 +2836,7 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
         function initApp() {
             ensureCreatorRights(); ensureAnimeShopItems();
             loadAnimeImages().catch(()=>{});
-            let currentUser=getCurrentUser();
+            let currentUser=getCurrentUser() || restoreSavedAccount();
             const guestName=document.getElementById('userName'); const badge=document.getElementById('roleBadge');
             if(!currentUser){
                 if(guestName) guestName.textContent='Гость';
@@ -2846,6 +2870,7 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
             if (!tbody) return;
             tbody.innerHTML = '';
             let sorted = [...(db?.players || [])].sort((a, b) => (b.elo || 0) - (a.elo || 0)).slice(0, 5);
+            if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Игроки ещё загружаются…</td></tr>'; return; }
             sorted.forEach((p, index) => {
                 let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
                 tbody.innerHTML += `
@@ -4482,14 +4507,17 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
             }
 
             await loadDataFromCloud();
-            // Автоматически восстанавливаем последний аккаунт на этом устройстве.
-            if (!currentUserId && cachedSession?.id) currentUserId = cachedSession.id;
-            if (currentUserId && getCurrentUser()) { initApp(); } else { currentUserId=null; initApp(); }
+            const restoredUser = restoreSavedAccount();
+            if (restoredUser) { shopTargetPlayerId = restoredUser.id; inventoryTargetPlayerId = restoredUser.id; }
+            else { currentUserId = null; }
+            initApp();
 
             setInterval(async () => {
                 let prevDataStr = JSON.stringify(db);
                 await loadDataFromCloud();
-                if (JSON.stringify(db) !== prevDataStr) initApp();
+                const restored = restoreSavedAccount();
+                if (restored) { shopTargetPlayerId = restored.id; inventoryTargetPlayerId = restored.id; }
+                if (JSON.stringify(db) !== prevDataStr || restored) initApp();
             }, 4000);
         };
     </script>
