@@ -33,7 +33,7 @@
         
         .avatar-wrapper { position: relative; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; }
         .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background-color: #222; position: relative; z-index: 1; }
-        .avatar-frame { position: absolute; top: 0; left: 0; width: 44px; height: 44px; pointer-events: none; object-fit: contain; z-index: 10; display: none; }
+        .avatar-frame { position: absolute; top: -2px; left: -2px; width: 48px; height: 48px; pointer-events: none; object-fit: contain; z-index: 10; display: none; }
 
         .page-content { display: none; padding: 30px; }
         .page-content.active { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
@@ -2621,7 +2621,7 @@
             await loadDataFromCloud();
 
             const foundUser = (db?.players || []).find(p =>
-                String(p.email || '').trim().toLowerCase() === gmail &&
+                String(p.email || '').toLowerCase() === gmail &&
                 String(p.password || '') === password
             );
 
@@ -2630,28 +2630,22 @@
                 return;
             }
 
-            // Сначала определяем главный аккаунт, и только потом проверяем роль.
-            // Раньше SAYAN проверялся как player и вход блокировался до этой строки.
-            const isMainCreator =
-                String(foundUser.name || '').trim().toLowerCase() === 'sayan' ||
-                String(foundUser.email || '').trim().toLowerCase() === 'rommsayan@gmail.com';
-
-            if (isMainCreator) {
-                foundUser.role = 'creator';
-                foundUser.email = 'rommsayan@gmail.com';
-            }
-
+            // Только эти две роли могут входить через верхний замок.
             if (!['creator', 'streamer'].includes(foundUser.role)) {
                 alert('Вход через замок доступен только стримерам и создателю.');
                 return;
             }
 
+            // Главный аккаунт создателя всегда остаётся создателем.
+            if (
+                String(foundUser.name || '').toLowerCase() === 'sayan' ||
+                String(foundUser.email || '').toLowerCase() === 'rommsayan@gmail.com'
+            ) {
+                foundUser.role = 'creator';
+            }
+
             currentUserId = foundUser.id;
             localStorage.setItem('fe_current_user_id', String(currentUserId));
-
-            if (isMainCreator) {
-                await saveDataToCloud();
-            }
 
             closeCreatorLogin();
             initApp();
@@ -2690,59 +2684,80 @@
             if (pageTitleEl) pageTitleEl.textContent = titles[pageId] || 'FREE ELO';
         }
 
-        function initApp() {
-            ensureCreatorRights();
-            ensureAnimeShopItems();
-            loadAnimeImages().catch(()=>{});
 
-            // Гость имеет тот же публичный доступ, что и обычный игрок.
-            // Скрываем только админскую страницу. Магазин, рейтинги, матчи, кланы,
-            // стримеры и лента остаются доступны без авторизации.
-            const currentUser = getCurrentUser();
-            const guestName = document.getElementById('userName');
-            const badge = document.getElementById('roleBadge');
-            const adminNav = document.getElementById('nav-admin');
-            const clansNav = document.getElementById('nav-clans');
-            const creatorBtn = document.getElementById('creatorLoginBtn');
-            const lockBtn = document.getElementById('secureLoginBtn');
+        function updateHeaderProfile(userOverride = null) {
+            const user = userOverride || getCurrentUser();
+            const avatarEl = document.getElementById('userAvatar');
+            const frameEl = document.getElementById('userFrame');
+            if (!avatarEl || !frameEl) return;
 
-            if (!currentUser) {
-                if (guestName) guestName.textContent = 'Гость';
-                if (badge) {
-                    badge.textContent = 'ГОСТЬ';
-                    badge.className = 'role-badge';
-                }
-                if (adminNav) adminNav.style.display = 'none';
-                if (clansNav) clansNav.style.display = 'block';
-                if (creatorBtn) creatorBtn.style.display = 'inline-block';
-                if (lockBtn) lockBtn.innerHTML = '<i class="fas fa-lock"></i>';
-            } else {
-                if (guestName) guestName.textContent = currentUser.name || '';
-                if (badge) {
-                    badge.textContent = (currentUser.role || 'player').toUpperCase();
-                    badge.className = currentUser.role === 'creator' ? 'role-badge creator' : 'role-badge';
-                }
-                if (lockBtn) lockBtn.innerHTML = '<i class="fas fa-lock-open"></i>';
-                if (adminNav) adminNav.style.display = isCreator() ? 'block' : 'none';
-                if (clansNav) clansNav.style.display = 'block';
-                if (creatorBtn) creatorBtn.style.display = 'none';
-                const createClanCard = document.getElementById('createClanCard');
-                if (createClanCard) createClanCard.style.display = 'none';
-                if (currentUser.role === 'creator') renderAdminPanel();
+            // Гость получает обычную аватарку, а авторизованный игрок —
+            // именно выбранную/надетую аватарку из его инвентаря.
+            if (!user) {
+                avatarEl.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=guest';
+                frameEl.removeAttribute('src');
+                frameEl.style.display = 'none';
+                return;
             }
 
-            renderLeaderboard();
-            renderTop100();
-            renderSeasonLeaderboard();
-            renderStreamers();
-            renderClans();
-            renderClanLeaderboard();
-            if (typeof setClansTab === 'function') setClansTab('clans');
-            renderShop();
-            renderHistoryCells?.();
-            renderFeed();
-            renderNews();
-            if (typeof setFeedTab === 'function') setFeedTab('overview');
+            let avatar = user.avatar || '';
+            let frame = user.frame || '';
+
+            if (user.activeAvatarId != null && Array.isArray(user.inventory)) {
+                const equippedAvatar = user.inventory.find(i =>
+                    Number(i.id) === Number(user.activeAvatarId) && i.type === 'avatar'
+                );
+                if (equippedAvatar?.img) avatar = equippedAvatar.img;
+            }
+
+            if (user.activeFrameId != null && Array.isArray(user.inventory)) {
+                const equippedFrame = user.inventory.find(i =>
+                    Number(i.id) === Number(user.activeFrameId) && i.type === 'frame'
+                );
+                if (equippedFrame?.img) frame = equippedFrame.img;
+            }
+
+            if (!avatar) {
+                avatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name || 'player')}`;
+            }
+
+            avatarEl.src = avatar;
+            avatarEl.onerror = function () {
+                this.onerror = null;
+                this.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'player')}`;
+            };
+
+            if (frame) {
+                frameEl.src = frame;
+                frameEl.style.display = 'block';
+            } else {
+                frameEl.removeAttribute('src');
+                frameEl.style.display = 'none';
+            }
+        }
+
+        function initApp() {
+            ensureCreatorRights(); ensureAnimeShopItems();
+            loadAnimeImages().catch(()=>{});
+            let currentUser=getCurrentUser();
+            updateHeaderProfile(currentUser);
+            const guestName=document.getElementById('userName'); const badge=document.getElementById('roleBadge');
+            if(!currentUser){
+                if(guestName) guestName.textContent='Гость';
+                if(badge){badge.textContent='ГОСТЬ'; badge.className='role-badge';}
+                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display='none';
+                const clansNav=document.getElementById('nav-clans'); if(clansNav) clansNav.style.display='block';
+                const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display='inline-block';
+            } else {
+                if(guestName) guestName.textContent=currentUser.name||'';
+                if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge';}
+                const lockBtn=document.getElementById('secureLoginBtn'); if(lockBtn) lockBtn.innerHTML=currentUser?.role ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
+                const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none';
+                const clansNav=document.getElementById('nav-clans'); if(clansNav) clansNav.style.display='block';
+                const createClanCard=document.getElementById('createClanCard'); if(createClanCard) createClanCard.style.display='none';
+                if(currentUser.role==='creator') renderAdminPanel();
+            }
+            renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderClanLeaderboard(); if(typeof setClansTab==='function') setClansTab('clans'); renderShop(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
         }
 
         function renderLeaderboard() {
@@ -3826,6 +3841,7 @@
             }
 
             await saveDataToCloud();
+            updateHeaderProfile(getCurrentUser());
             renderShop(); renderInventory(); renderLeaderboard(); renderTop100();
             alert(`✓ ${item.name} куплено и сразу надето на ${p.name}.`);
         }
@@ -3875,6 +3891,7 @@
             else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
             else return;
             await saveDataToCloud();
+            if (currentUserId == p.id) updateHeaderProfile(p);
             inventoryTargetPlayerId=p.id;
             shopTargetPlayerId=p.id;
             renderInventory(); renderShop(); renderLeaderboard();
@@ -4369,24 +4386,6 @@
 .clan-history-result{text-align:center;font-size:10px;font-weight:800;color:#8896ad}
 @media(max-width:650px){.clan-history-name{font-size:11px}.clan-history-vs{font-size:10px}.clan-history-players{font-size:8px}}
 </style></body>
-
-<script>
-// FREE ELO: восстановление главного аккаунта SAYAN при загрузке.
-(function(){
-    try {
-        if (typeof db !== 'undefined' && Array.isArray(db?.players)) {
-            const main = db.players.find(p =>
-                String(p?.email || '').trim().toLowerCase() === 'rommsayan@gmail.com' ||
-                String(p?.name || '').trim().toLowerCase() === 'sayan'
-            );
-            if (main) {
-                main.role = 'creator';
-                main.email = 'rommsayan@gmail.com';
-            }
-        }
-    } catch(e) { console.warn('SAYAN restore:', e); }
-})();
-</script>
 </html>
 
 <style>.stats-card{display:none!important}.profile-widget{display:none!important}.page-matches>.card[style*='МОЙ ИНВЕНТАРЬ']{display:none!important}#registerFormBlock,#tabRegisterBtn{display:none!important}</style>
