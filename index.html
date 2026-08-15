@@ -2226,6 +2226,116 @@ body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none 
 }
 </style>
 
+
+<style id="free-elo-clean-static-frames">
+/* CLEAN HUD: no spinning, no rotating borders, real frame-like border */
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+    animation:none !important;
+    transform:none !important;
+}
+
+/* Website header: frame is a fixed ring around the avatar */
+.avatar-wrapper.frame-effect::before {
+    inset:-4px !important;
+    border:3px solid var(--frame-color-1) !important;
+    background:none !important;
+    box-shadow:0 0 5px var(--frame-color-1),0 0 14px var(--frame-shadow),inset 0 0 5px var(--frame-shadow) !important;
+}
+.avatar-wrapper.frame-effect::after {
+    inset:-8px !important;
+    border:2px solid var(--frame-color-2) !important;
+    background:none !important;
+    box-shadow:0 0 10px var(--frame-shadow),0 0 18px var(--frame-shadow) !important;
+    opacity:.9 !important;
+}
+.avatar-wrapper.frame-fire::before {
+    border-color:#ff7a00 !important;
+    box-shadow:0 0 5px #ffd166,0 0 12px #ff6500,0 0 24px rgba(255,45,0,.8),inset 0 0 7px rgba(255,160,40,.7) !important;
+}
+.avatar-wrapper.frame-fire::after {
+    border-color:#ffd166 !important;
+    box-shadow:0 0 8px #ff6500,0 0 18px rgba(255,45,0,.75) !important;
+}
+
+/* OBS: avatar fills the card background, nickname stays centered */
+body.obs-overlay .obs-player-card {
+    overflow:hidden !important;
+    background:rgba(7,10,18,.78) !important;
+}
+body.obs-overlay .obs-avatar-wrap {
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    border-radius:10px !important;
+    overflow:hidden !important;
+}
+body.obs-overlay .obs-avatar {
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+    opacity:.72 !important;
+    filter:none !important;
+    transform:none !important;
+    mix-blend-mode:normal !important;
+    z-index:0 !important;
+}
+body.obs-overlay .obs-avatar-wrap::after {
+    background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.38)) !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+    inset:0 !important;
+    border:3px solid var(--frame-color-1) !important;
+    background:none !important;
+    box-shadow:0 0 5px var(--frame-color-1),0 0 14px var(--frame-shadow),inset 0 0 7px var(--frame-shadow) !important;
+    animation:none !important;
+    transform:none !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+    inset:4px !important;
+    border:2px solid var(--frame-color-2) !important;
+    background:none !important;
+    box-shadow:0 0 10px var(--frame-shadow) !important;
+    animation:none !important;
+    transform:none !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+    border-color:#ff7a00 !important;
+    box-shadow:0 0 5px #ffd166,0 0 12px #ff6500,0 0 24px rgba(255,45,0,.82),inset 0 0 7px rgba(255,160,40,.7) !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+    border-color:#ffd166 !important;
+    box-shadow:0 0 8px #ff6500,0 0 18px rgba(255,45,0,.78) !important;
+}
+body.obs-overlay .obs-name {
+    top:50% !important;
+    bottom:auto !important;
+    transform:translate(-50%,-50%) !important;
+    z-index:6 !important;
+}
+
+/* No avatar = clean card with nickname only, never a robot */
+body.obs-overlay .obs-player-card.obs-name-only {
+    background:rgba(7,10,18,.88) !important;
+}
+body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none !important; }
+
+/* Each frame has its own static color */
+body.obs-overlay .frame-lightning::before,.frame-lightning::before { --frame-color-1:#9ffcff;--frame-color-2:#277dff;--frame-shadow:rgba(39,125,255,.9); }
+body.obs-overlay .frame-thunder::before,.frame-thunder::before { --frame-color-1:#d2b2ff;--frame-color-2:#703dff;--frame-shadow:rgba(112,61,255,.9); }
+body.obs-overlay .frame-ice::before,.frame-ice::before { --frame-color-1:#e8ffff;--frame-color-2:#45cfff;--frame-shadow:rgba(69,207,255,.9); }
+body.obs-overlay .frame-neon::before,.frame-neon::before { --frame-color-1:#ff78dc;--frame-color-2:#794dff;--frame-shadow:rgba(255,120,220,.9); }
+body.obs-overlay .frame-poison::before,.frame-poison::before { --frame-color-1:#ddff64;--frame-color-2:#22d36e;--frame-shadow:rgba(34,211,110,.9); }
+body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1:#fff0a0;--frame-color-2:#ff8a00;--frame-shadow:rgba(255,138,0,.95); }
+
+/* Remove all robot images from header */
+#userAvatar[src*="dicebear.com"][src*="bottts"],
+#userAvatar[src*="dicebear.com"][src*="initials"] { display:none !important; }
+</style>
+
 </head>
 <body>
 
@@ -3067,24 +3177,33 @@ body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none 
         function resolveEquippedAvatar(player) {
             if (!player) return '';
             const inv = Array.isArray(player.inventory) ? player.inventory : [];
+            const isRealAvatar = (url) => {
+                const u = String(url || '').trim();
+                if (!u) return false;
+                const low = u.toLowerCase();
+                // Не считаем автоматические DiceBear-заглушки настоящей аватаркой.
+                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return false;
+                return true;
+            };
 
             if (player.activeAvatarId != null) {
                 const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar');
-                if (item?.img) return String(item.img);
+                if (item?.img && isRealAvatar(item.img)) return String(item.img);
                 const catalogItem = (db?.shopItems || []).find(i =>
                     Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar'
                 );
-                if (catalogItem?.img) return String(catalogItem.img);
+                if (catalogItem?.img && isRealAvatar(catalogItem.img)) return String(catalogItem.img);
             }
 
             const marked = inv.find(i =>
                 i.type === 'avatar' &&
                 (i.equipped === true || i.isEquipped === true || i.worn === true) &&
-                i.img
+                isRealAvatar(i.img)
             );
             if (marked?.img) return String(marked.img);
 
-            return String(player.avatar || '').trim();
+            if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
+            return '';
         }
 
         function resolveEquippedFrame(player) {
@@ -3120,26 +3239,26 @@ body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none 
             );
 
             if (!user) {
-                avatarEl.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=guest';
-                avatarEl.onerror = function() {
-                    this.onerror = null;
-                    this.src = 'https://api.dicebear.com/7.x/initials/svg?seed=guest';
-                };
+                avatarEl.removeAttribute('src');
+                avatarEl.style.display = 'none';
                 frameEl.removeAttribute('src');
                 frameEl.style.display = 'none';
                 return;
             }
 
-            let avatar = resolveEquippedAvatar(user);
-            if (!avatar) {
-                avatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'player')}`;
+            const avatar = resolveEquippedAvatar(user);
+            if (avatar) {
+                avatarEl.src = avatar;
+                avatarEl.style.display = 'block';
+                avatarEl.onerror = function() {
+                    this.onerror = null;
+                    this.removeAttribute('src');
+                    this.style.display = 'none';
+                };
+            } else {
+                avatarEl.removeAttribute('src');
+                avatarEl.style.display = 'none';
             }
-
-            avatarEl.src = avatar;
-            avatarEl.onerror = function() {
-                this.onerror = null;
-                this.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'player')}`;
-            };
 
             const frame = resolveEquippedFrame(user);
             const effectClass = getFrameEffectClass(frame);
@@ -4693,10 +4812,10 @@ body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none 
                             const frameClass2 = resolveObsFrame(p2Obj);
 
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(sd.player1 || 'player1')}';"></div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.onerror=null;this.remove();"></div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(sd.player2 || 'player2')}';"></div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.onerror=null;this.remove();"></div>`
                                 : '';
 
                             obsContainer.innerHTML = `
