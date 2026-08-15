@@ -2228,13 +2228,29 @@ body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none 
 
 
 <style id="free-elo-clean-static-frames">
-/* CLEAN HUD: no spinning, no rotating borders, real frame-like border */
+/* CLEAN HUD: рамки не вращаются. Огонь только слегка мерцает и "горит" на месте. */
 .avatar-wrapper.frame-effect::before,
 .avatar-wrapper.frame-effect::after,
 body.obs-overlay .obs-avatar-wrap.frame-effect::before,
 body.obs-overlay .obs-avatar-wrap.frame-effect::after {
     animation:none !important;
     transform:none !important;
+}
+.avatar-wrapper.frame-fire::before,
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+    animation:freeEloFireGlow 1.15s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after,
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+    animation:freeEloFireGlow2 1.55s ease-in-out infinite !important;
+}
+@keyframes freeEloFireGlow {
+    0%,100% { filter:brightness(1); box-shadow:0 0 5px #ffd166,0 0 13px #ff6500,0 0 25px rgba(255,45,0,.78),inset 0 0 8px rgba(255,160,40,.65); }
+    50% { filter:brightness(1.3); box-shadow:0 0 7px #fff0a0,0 0 19px #ff7a00,0 0 34px rgba(255,45,0,.95),inset 0 0 12px rgba(255,180,60,.9); }
+}
+@keyframes freeEloFireGlow2 {
+    0%,100% { opacity:.78; filter:brightness(1); }
+    50% { opacity:1; filter:brightness(1.25); }
 }
 
 /* Website header: frame is a fixed ring around the avatar */
@@ -2277,7 +2293,7 @@ body.obs-overlay .obs-avatar {
     width:100% !important;
     height:100% !important;
     object-fit:cover !important;
-    opacity:.72 !important;
+    opacity:.86 !important;
     filter:none !important;
     transform:none !important;
     mix-blend-mode:normal !important;
@@ -2334,6 +2350,13 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
 /* Remove all robot images from header */
 #userAvatar[src*="dicebear.com"][src*="bottts"],
 #userAvatar[src*="dicebear.com"][src*="initials"] { display:none !important; }
+</style>
+
+
+<style id="free-elo-naruto-avatar-pack">
+.shop-item img, .inventory-item img { object-fit:cover; }
+.anime-avatar-item { position:relative; overflow:hidden; }
+.anime-avatar-item::after { content:"NARUTO"; position:absolute; right:8px; top:8px; font:800 9px/1 Arial,sans-serif; letter-spacing:1px; color:#fff; background:rgba(0,0,0,.5); padding:5px 7px; border-radius:7px; }
 </style>
 
 </head>
@@ -2778,7 +2801,8 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
             sukuna:  { name:"Ryomen Sukuna", anime:"Jujutsu Kaisen", search:"Ryomen Sukuna", image:null },
             zoro:    { name:"Roronoa Zoro", anime:"One Piece", search:"Roronoa Zoro", image:null },
             itachi:  { name:"Itachi Uchiha", anime:"Naruto", search:"Itachi Uchiha", image:null },
-            sasuke:  { name:"Sasuke Uchiha", anime:"Naruto", search:"Sasuke Uchiha", image:null }
+            sasuke:  { name:"Sasuke Uchiha", anime:"Naruto", search:"Sasuke Uchiha", image:null },
+            kakashi: { name:"Kakashi Hatake", anime:"Naruto", search:"Kakashi Hatake", image:null }
         };
 
         const EPIC_MOMENTS = {
@@ -2804,7 +2828,20 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                 }catch(_){ }
             });
             await Promise.allSettled(jobs);
+
+            // После загрузки картинок обновляем аватарки из Naruto в магазине.
+            // Это важно для OBS: предмет получает реальный URL картинки, а не DiceBear-заглушку.
+            if (Array.isArray(db?.shopItems)) {
+                db.shopItems.forEach(item => {
+                    if (item?.animeAvatarKey && ANIME_CHARACTERS[item.animeAvatarKey]) {
+                        const url = animeCharacterImg(item.animeAvatarKey);
+                        if (url) item.img = url;
+                    }
+                });
+            }
+
             renderAnimeArena(); renderShop();
+            updateHeaderProfile(getCurrentUser());
         }
 
         function animeCharacterImg(key) {
@@ -2830,6 +2867,27 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                     db.shopItems.push(frame);
                 }
             });
+            // Отдельные аватарки Naruto — именно как AVATAR, чтобы их можно было
+            // купить/надеть и использовать одновременно на сайте и в OBS.
+            const animeAvatarItems = [
+                { id: 8201, name: 'Наруто Узумаки', type: 'avatar', price: 1200, animeAvatarKey: 'naruto' },
+                { id: 8202, name: 'Саске Учиха', type: 'avatar', price: 1200, animeAvatarKey: 'sasuke' },
+                { id: 8203, name: 'Какаши Хатаке', type: 'avatar', price: 1200, animeAvatarKey: 'kakashi' },
+                { id: 8204, name: 'Итачи Учиха', type: 'avatar', price: 1200, animeAvatarKey: 'itachi' }
+            ];
+            animeAvatarItems.forEach(item => {
+                const old = db.shopItems.find(x => Number(x.id) === item.id);
+                if (old) {
+                    old.type = 'avatar';
+                    old.name = item.name;
+                    old.price = item.price;
+                    old.animeAvatarKey = item.animeAvatarKey;
+                    old.img = animeCharacterImg(item.animeAvatarKey) || old.img || '';
+                } else {
+                    db.shopItems.push({ ...item, img: animeCharacterImg(item.animeAvatarKey) || '' });
+                }
+            });
+
             const existingKeys = new Set(
                 db.shopItems.filter(i => i.type === 'character').map(i => i.characterKey)
             );
@@ -3181,26 +3239,51 @@ body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1
                 const u = String(url || '').trim();
                 if (!u) return false;
                 const low = u.toLowerCase();
-                // Не считаем автоматические DiceBear-заглушки настоящей аватаркой.
                 if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return false;
                 return true;
             };
 
+            // Основной вариант: выбранная AVATAR.
             if (player.activeAvatarId != null) {
-                const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar');
-                if (item?.img && isRealAvatar(item.img)) return String(item.img);
-                const catalogItem = (db?.shopItems || []).find(i =>
-                    Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar'
-                );
-                if (catalogItem?.img && isRealAvatar(catalogItem.img)) return String(catalogItem.img);
+                const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId));
+                if (item) {
+                    if (isRealAvatar(item.img)) return String(item.img);
+                    if (item.animeAvatarKey && ANIME_CHARACTERS[item.animeAvatarKey]) {
+                        const url = animeCharacterImg(item.animeAvatarKey);
+                        if (url) return String(url);
+                    }
+                    const catalogItem = (db?.shopItems || []).find(i => Number(i.id) === Number(player.activeAvatarId));
+                    if (catalogItem?.img && isRealAvatar(catalogItem.img)) return String(catalogItem.img);
+                    if (catalogItem?.animeAvatarKey && ANIME_CHARACTERS[catalogItem.animeAvatarKey]) {
+                        const url = animeCharacterImg(catalogItem.animeAvatarKey);
+                        if (url) return String(url);
+                    }
+                }
+            }
+
+            // Поддержка старого equippedCharacter: раньше Naruto-персонажи были type=character,
+            // поэтому сайт видел их в инвентаре, но OBS не считал их аватарками.
+            if (player.equippedCharacter) {
+                const key = String(player.equippedCharacter);
+                const characterItem = inv.find(i => i.type === 'character' && String(i.characterKey || '') === key);
+                if (characterItem?.img && isRealAvatar(characterItem.img)) return String(characterItem.img);
+                const catalogCharacter = (db?.shopItems || []).find(i => i.type === 'character' && String(i.characterKey || '') === key);
+                if (catalogCharacter?.img && isRealAvatar(catalogCharacter.img)) return String(catalogCharacter.img);
+                if (ANIME_CHARACTERS[key]) {
+                    const url = animeCharacterImg(key);
+                    if (url) return String(url);
+                }
             }
 
             const marked = inv.find(i =>
-                i.type === 'avatar' &&
-                (i.equipped === true || i.isEquipped === true || i.worn === true) &&
-                isRealAvatar(i.img)
+                (i.type === 'avatar' || i.type === 'character') &&
+                (i.equipped === true || i.isEquipped === true || i.worn === true)
             );
-            if (marked?.img) return String(marked.img);
+            if (marked?.img && isRealAvatar(marked.img)) return String(marked.img);
+            if (marked?.animeAvatarKey && ANIME_CHARACTERS[marked.animeAvatarKey]) {
+                const url = animeCharacterImg(marked.animeAvatarKey);
+                if (url) return String(url);
+            }
 
             if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
             return '';
