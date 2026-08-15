@@ -1860,6 +1860,183 @@
 }
 </style>
 
+
+<style id="free-elo-animated-frame-fix">
+/* === FREE ELO ANIMATED AVATAR FRAMES === */
+.avatar-wrapper.frame-effect,
+.obs-avatar-wrap.frame-effect {
+    --frame-color-1:#ff6a00;
+    --frame-color-2:#ff2d00;
+    --frame-shadow:rgba(255,85,0,.8);
+}
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+.obs-avatar-wrap.frame-effect::before,
+.obs-avatar-wrap.frame-effect::after {
+    content:"";
+    position:absolute;
+    pointer-events:none;
+    z-index:20;
+    border-radius:inherit;
+}
+.avatar-wrapper.frame-effect::before,
+.obs-avatar-wrap.frame-effect::before {
+    inset:-5px;
+    border:3px solid var(--frame-color-1);
+    box-shadow:
+      0 0 5px var(--frame-color-1),
+      0 0 13px var(--frame-shadow),
+      inset 0 0 7px var(--frame-shadow);
+    animation: freeEloFramePulse 1s ease-in-out infinite;
+}
+.avatar-wrapper.frame-effect::after,
+.obs-avatar-wrap.frame-effect::after {
+    inset:-9px;
+    border:2px dashed var(--frame-color-2);
+    opacity:.9;
+    box-shadow:0 0 15px var(--frame-shadow);
+    animation: freeEloFrameSpin 3s linear infinite;
+}
+@keyframes freeEloFramePulse {
+    0%,100% { transform:scale(.98); opacity:.78; filter:brightness(.95); }
+    50% { transform:scale(1.035); opacity:1; filter:brightness(1.35); }
+}
+@keyframes freeEloFrameSpin {
+    to { transform:rotate(360deg); }
+}
+
+/* Огненная рамка — языки огня вокруг аватарки */
+.frame-fire::before,
+.frame-fire::after {
+    border-radius:48% 52% 44% 56% / 52% 46% 54% 48% !important;
+}
+.frame-fire::before {
+    box-shadow:
+      0 -5px 8px #ffd166,
+      0 -10px 18px #ff6a00,
+      0 0 22px rgba(255,45,0,.95),
+      inset 0 0 10px rgba(255,106,0,.8);
+    animation: freeEloFire 1.05s ease-in-out infinite;
+}
+.frame-fire::after {
+    border-style:dotted !important;
+    border-width:2px !important;
+    box-shadow:0 0 16px rgba(255,80,0,.9);
+    animation: freeEloFireOrbit 1.8s linear infinite;
+}
+@keyframes freeEloFire {
+    0%,100% { transform:scale(.98) rotate(-1deg); filter:brightness(1); }
+    25% { transform:scale(1.03) rotate(1deg); filter:brightness(1.3); }
+    50% { transform:scale(1.06) rotate(-1deg); filter:brightness(1.55); }
+    75% { transform:scale(1.025) rotate(1deg); filter:brightness(1.25); }
+}
+@keyframes freeEloFireOrbit {
+    to { transform:rotate(360deg); }
+}
+
+/* Остальные премиальные эффекты */
+.frame-lightning { --frame-color-1:#8cf6ff !important; --frame-color-2:#2f7dff !important; --frame-shadow:rgba(47,125,255,.9) !important; }
+.frame-thunder { --frame-color-1:#c4a0ff !important; --frame-color-2:#6b3dff !important; --frame-shadow:rgba(108,61,255,.9) !important; }
+.frame-ice { --frame-color-1:#dffcff !important; --frame-color-2:#49c6ff !important; --frame-shadow:rgba(73,198,255,.85) !important; }
+.frame-neon { --frame-color-1:#ff61d2 !important; --frame-color-2:#7c4dff !important; --frame-shadow:rgba(255,97,210,.9) !important; }
+.frame-poison { --frame-color-1:#d6ff54 !important; --frame-color-2:#26d06f !important; --frame-shadow:rgba(38,208,111,.9) !important; }
+.frame-phoenix { --frame-color-1:#ffe07a !important; --frame-color-2:#ff8a00 !important; --frame-shadow:rgba(255,138,0,.95) !important; }
+
+/* Header: настоящая аватарка сверху, старая SVG-рамка больше не закрывает её */
+.avatar-wrapper .avatar-frame {
+    display:none !important;
+}
+.avatar-wrapper {
+    isolation:isolate;
+    overflow:visible !important;
+}
+.avatar-wrapper .avatar {
+    z-index:2 !important;
+}
+
+/* OBS: не растягиваем рамку на всю карточку и не закрываем аватар */
+body.obs-overlay .obs-avatar-wrap {
+    overflow:visible !important;
+    border-radius:18px !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+body.obs-overlay .obs-avatar {
+    position:absolute !important;
+    inset:8px !important;
+    width:calc(100% - 16px) !important;
+    height:calc(100% - 16px) !important;
+    object-fit:contain !important;
+    object-position:center !important;
+    border-radius:16px !important;
+    opacity:1 !important;
+    filter:none !important;
+    transform:none !important;
+    z-index:1 !important;
+    background:rgba(5,8,15,.18) !important;
+}
+body.obs-overlay .obs-avatar-wrap::before,
+body.obs-overlay .obs-avatar-wrap::after {
+    display:block !important;
+}
+body.obs-overlay .obs-avatar-frame {
+    display:none !important;
+}
+
+/* OBS cards with avatar: make room for the real picture */
+body.obs-overlay .obs-player-card:not(.obs-name-only) {
+    overflow:visible !important;
+}
+body.obs-overlay .obs-player-card:not(.obs-name-only) .obs-name,
+body.obs-overlay .obs-player-card:not(.obs-name-only) .obs-clan-label {
+    text-shadow:0 2px 8px #000, 0 0 12px #000;
+}
+
+/* Store preview gets animated glow too, while preserving the actual frame art */
+.shop-frame-preview {
+    animation: freeEloStoreFramePulse 1.25s ease-in-out infinite;
+}
+@keyframes freeEloStoreFramePulse {
+    0%,100% { transform:scale(1); filter:drop-shadow(0 0 5px rgba(255,106,0,.35)); }
+    50% { transform:scale(1.035); filter:drop-shadow(0 0 14px rgba(255,106,0,.8)); }
+}
+</style>
+
+
+<style id="free-elo-obs-avatar-layout-fix">
+/* OBS: аватар находится в отдельном квадрате, имя не закрывает картинку */
+body.obs-overlay .obs-avatar-wrap {
+    inset:8px auto auto 50% !important;
+    transform:translateX(-50%) !important;
+    width:132px !important;
+    height:132px !important;
+    border-radius:20px !important;
+}
+body.obs-overlay .obs-avatar {
+    inset:7px !important;
+    width:calc(100% - 14px) !important;
+    height:calc(100% - 14px) !important;
+    border-radius:16px !important;
+}
+body.obs-overlay .obs-name {
+    top:auto !important;
+    bottom:27px !important;
+    transform:translateX(-50%) !important;
+    width:calc(100% - 18px) !important;
+    font-size:25px !important;
+}
+body.obs-overlay .obs-clan-label {
+    bottom:8px !important;
+    font-size:12px !important;
+}
+@media(max-width:900px){
+    body.obs-overlay .obs-avatar-wrap {
+        width:120px !important;
+        height:120px !important;
+    }
+}
+</style>
+
 </head>
 <body>
 
@@ -2685,55 +2862,110 @@
         }
 
 
+        function getFrameEffectClass(frame) {
+            const name = String(frame?.name || '').toLowerCase();
+            const id = Number(frame?.id);
+            if (id === 9100 || name.includes('горящий алмаз') || name.includes('огонь')) return 'frame-effect frame-fire';
+            if (id === 9101 || name.includes('молния')) return 'frame-effect frame-lightning';
+            if (id === 9102 || name.includes('гроза')) return 'frame-effect frame-thunder';
+            if (id === 9103 || name.includes('ледяная аура')) return 'frame-effect frame-ice';
+            if (id === 9104 || name.includes('неоновый вихрь')) return 'frame-effect frame-neon';
+            if (id === 9105 || name.includes('ядовитая энергия')) return 'frame-effect frame-poison';
+            if (id === 9106 || name.includes('золотой феникс')) return 'frame-effect frame-phoenix';
+            return '';
+        }
+
+        function resolveEquippedAvatar(player) {
+            if (!player) return '';
+            const inv = Array.isArray(player.inventory) ? player.inventory : [];
+
+            if (player.activeAvatarId != null) {
+                const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar');
+                if (item?.img) return String(item.img);
+                const catalogItem = (db?.shopItems || []).find(i =>
+                    Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar'
+                );
+                if (catalogItem?.img) return String(catalogItem.img);
+            }
+
+            const marked = inv.find(i =>
+                i.type === 'avatar' &&
+                (i.equipped === true || i.isEquipped === true || i.worn === true) &&
+                i.img
+            );
+            if (marked?.img) return String(marked.img);
+
+            return String(player.avatar || '').trim();
+        }
+
+        function resolveEquippedFrame(player) {
+            if (!player) return null;
+            const inv = Array.isArray(player.inventory) ? player.inventory : [];
+
+            if (player.activeFrameId != null) {
+                const item = inv.find(i => Number(i.id) === Number(player.activeFrameId) && i.type === 'frame');
+                if (item) return item;
+                const catalogItem = (db?.shopItems || []).find(i =>
+                    Number(i.id) === Number(player.activeFrameId) && i.type === 'frame'
+                );
+                if (catalogItem) return catalogItem;
+            }
+
+            const marked = inv.find(i =>
+                i.type === 'frame' &&
+                (i.equipped === true || i.isEquipped === true || i.worn === true)
+            );
+            return marked || null;
+        }
+
         function updateHeaderProfile(userOverride = null) {
             const user = userOverride || getCurrentUser();
             const avatarEl = document.getElementById('userAvatar');
             const frameEl = document.getElementById('userFrame');
-            if (!avatarEl || !frameEl) return;
+            const wrapper = avatarEl?.closest('.avatar-wrapper');
+            if (!avatarEl || !frameEl || !wrapper) return;
 
-            // Гость получает обычную аватарку, а авторизованный игрок —
-            // именно выбранную/надетую аватарку из его инвентаря.
+            wrapper.classList.remove(
+                'frame-effect','frame-fire','frame-lightning','frame-thunder',
+                'frame-ice','frame-neon','frame-poison','frame-phoenix'
+            );
+
             if (!user) {
                 avatarEl.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=guest';
+                avatarEl.onerror = function() {
+                    this.onerror = null;
+                    this.src = 'https://api.dicebear.com/7.x/initials/svg?seed=guest';
+                };
                 frameEl.removeAttribute('src');
                 frameEl.style.display = 'none';
                 return;
             }
 
-            let avatar = user.avatar || '';
-            let frame = user.frame || '';
-
-            if (user.activeAvatarId != null && Array.isArray(user.inventory)) {
-                const equippedAvatar = user.inventory.find(i =>
-                    Number(i.id) === Number(user.activeAvatarId) && i.type === 'avatar'
-                );
-                if (equippedAvatar?.img) avatar = equippedAvatar.img;
-            }
-
-            if (user.activeFrameId != null && Array.isArray(user.inventory)) {
-                const equippedFrame = user.inventory.find(i =>
-                    Number(i.id) === Number(user.activeFrameId) && i.type === 'frame'
-                );
-                if (equippedFrame?.img) frame = equippedFrame.img;
-            }
-
+            let avatar = resolveEquippedAvatar(user);
             if (!avatar) {
-                avatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name || 'player')}`;
+                avatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'player')}`;
             }
 
             avatarEl.src = avatar;
-            avatarEl.onerror = function () {
+            avatarEl.onerror = function() {
                 this.onerror = null;
                 this.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || 'player')}`;
             };
 
-            if (frame) {
-                frameEl.src = frame;
-                frameEl.style.display = 'block';
-            } else {
-                frameEl.removeAttribute('src');
-                frameEl.style.display = 'none';
+            const frame = resolveEquippedFrame(user);
+            const effectClass = getFrameEffectClass(frame);
+            if (effectClass) {
+                wrapper.className = wrapper.className
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .filter(c => !/^frame-(effect|fire|lightning|thunder|ice|neon|poison|phoenix)$/.test(c))
+                    .join(' ');
+                effectClass.split(/\s+/).forEach(c => wrapper.classList.add(c));
             }
+
+            // Старая SVG-рамка больше не закрывает аватарку.
+            frameEl.removeAttribute('src');
+            frameEl.style.display = 'none';
         }
 
         function initApp() {
@@ -3799,7 +4031,7 @@
                 const targetNote=target
                     ? `<div class="shop-equip-note">Для игрока: <b>${escapeHistoryText(target.name)}</b></div>`
                     : '<div class="shop-equip-note">Сначала введи ник игрока.</div>';
-                return `<div class="shop-item"><img src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.3"><h4>${escapeHistoryText(item.name||'')}</h4><p style="color:var(--accent);font-weight:bold">${item.price||0} ELO</p>${targetNote}${action}</div>`;
+                return `<div class="shop-item"><img class="shop-frame-preview ${getFrameEffectClass(item).replace(/\s+/g, ' ')}" src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.3"><h4>${escapeHistoryText(item.name||'')}</h4><p style="color:var(--accent);font-weight:bold">${item.price||0} ELO</p>${targetNote}${action}</div>`;
             }).join('');
         }
 
@@ -3888,7 +4120,6 @@
             const p=(db?.players||[]).find(x=>x.id==playerId); if(!p)return;
             const item=(p.inventory||[]).find(x=>x.id==itemId); if(!item)return;
             if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;} else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
-            else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
             else return;
             await saveDataToCloud();
             if (currentUserId == p.id) updateHeaderProfile(p);
@@ -4234,6 +4465,14 @@
 
                 async function updateObsContent() {
                     await loadDataFromCloud();
+                    // Нормализуем активные аватарки/рамки после загрузки из облака.
+                    (db?.players || []).forEach(p => {
+                        p.inventory = Array.isArray(p.inventory) ? p.inventory : [];
+                        const a = resolveEquippedAvatar(p);
+                        if (a) p.avatar = a;
+                        const f = resolveEquippedFrame(p);
+                        if (f?.img) p.frame = f.img;
+                    });
                     let map = db?.streamDataMap || {};
                     let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
 
@@ -4243,56 +4482,12 @@
                     if (obsContainer) {
                         if (obsMode === 'anime') {
                             const resolveObsAvatar = (player) => {
-                                if (!player) return '';
+                                return resolveEquippedAvatar(player);
+                            };
 
-                                const inv = Array.isArray(player.inventory) ? player.inventory : [];
-                                const validImage = (v) => {
-                                    const s = String(v || '').trim();
-                                    if (!s) return false;
-                                    if (/dicebear\.com\/.*bottts|robot1/i.test(s)) return false;
-                                    return true;
-                                };
-
-                                // First: exact equipped avatar from shop catalog.
-                                let item = null;
-                                if (player.activeAvatarId != null) {
-                                    item = (db?.shopItems || []).find(i =>
-                                        i.type === 'avatar' &&
-                                        String(i.id) === String(player.activeAvatarId) &&
-                                        validImage(i.img)
-                                    ) || null;
-                                }
-
-                                // Second: exact equipped avatar stored in inventory.
-                                if (!item && player.activeAvatarId != null) {
-                                    item = inv.find(i =>
-                                        i.type === 'avatar' &&
-                                        String(i.id) === String(player.activeAvatarId) &&
-                                        validImage(i.img)
-                                    ) || null;
-                                }
-
-                                // Third: an explicitly marked equipped inventory avatar.
-                                if (!item) {
-                                    item = inv.find(i =>
-                                        i.type === 'avatar' &&
-                                        (i.equipped === true || i.isEquipped === true || i.worn === true) &&
-                                        validImage(i.img)
-                                    ) || null;
-                                }
-
-                                // Fourth: match the stored player.avatar against an existing catalog item.
-                                if (!item && validImage(player.avatar)) {
-                                    item = (db?.shopItems || []).find(i =>
-                                        i.type === 'avatar' && String(i.img) === String(player.avatar)
-                                    ) || null;
-                                }
-
-                                if (!item && validImage(player.avatar)) {
-                                    return String(player.avatar).trim();
-                                }
-
-                                return item?.img ? String(item.img).trim() : '';
+                            const resolveObsFrame = (player) => {
+                                const frame = resolveEquippedFrame(player);
+                                return frame ? getFrameEffectClass(frame) : '';
                             };
 
                             const avatarUrl1 = resolveObsAvatar(p1Obj);
@@ -4305,14 +4500,14 @@
                             const safeClan1 = escapeHistoryText(sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА');
                             const safeClan2 = escapeHistoryText(sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА');
 
-                            const frame1 = p1Obj?.activeFrameId != null && p1Obj?.frame ? p1Obj.frame : '';
-                            const frame2 = p2Obj?.activeFrameId != null && p2Obj?.frame ? p2Obj.frame : '';
+                            const frameClass1 = resolveObsFrame(p1Obj);
+                            const frameClass2 = resolveObsFrame(p2Obj);
 
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.closest('.obs-avatar-wrap')?.remove();">${frame1 ? `<img class="obs-avatar-frame" src="${frame1}" alt="" onerror="this.style.display='none'">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src="${avatarUrl1}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(sd.player1 || 'player1')}';"></div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.closest('.obs-avatar-wrap')?.remove();">${frame2 ? `<img class="obs-avatar-frame" src="${frame2}" alt="" onerror="this.style.display='none'">` : ''}</div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src="${avatarUrl2}" alt="" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(sd.player2 || 'player2')}';"></div>`
                                 : '';
 
                             obsContainer.innerHTML = `
