@@ -1682,6 +1682,22 @@
         .clan-vs-middle{text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}.clan-vs-middle strong{font-family:'Orbitron',sans-serif;color:#fff;font-size:15px}.clan-vs-middle small{color:#67f6a0;font-size:9px;font-weight:900;text-align:center}
         @media(max-width:650px){.clan-vs-history-row{grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);gap:7px;padding:11px}.clan-vs-side b{font-size:10px}.clan-vs-side span{font-size:8px}.clan-vs-middle strong{font-size:12px}.clan-vs-middle small{font-size:7px}}
 
+
+        .clan-history-opponent{
+            margin-top:5px;
+            text-align:center;
+            color:#aeb8cb;
+            font-size:11px;
+            letter-spacing:.3px;
+        }
+        .clan-history-opponent b{
+            color:#fff;
+            font-weight:900;
+        }
+        @media(max-width:768px){
+            .clan-history-opponent{font-size:10px}
+        }
+
 </style>
 
 <style id="gogono-cyrillic-font">
@@ -2237,7 +2253,7 @@
             const session = {
                 id: user.id, name: user.name || '', email: user.email || '',
                 avatar: user.avatar || '', frame: user.frame || '',
-                clan: user.clan || 'Нет клана', role: user.role || 'player',
+                clan: user.clan || '—', role: user.role || 'player',
                 savedAt: Date.now()
             };
             cachedSession = session;
@@ -2291,8 +2307,8 @@
             // Кланы, выбранные стримером для конкретного матча, не записываются в профили.
             let playersClanChanged = false;
             (db?.players || []).forEach(p => {
-                if ((p.role || 'player') === 'player' && p.clan !== 'Нет клана') {
-                    p.clan = 'Нет клана';
+                if ((p.role || 'player') === 'player' && p.clan) {
+                    p.clan = '';
                     playersClanChanged = true;
                 }
             });
@@ -2357,7 +2373,7 @@
             let existing=getGuestPlayerByName(n);
             if(existing) return existing;
             if(!db.players) db.players=[];
-            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'Нет клана',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
+            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
             db.players.push(player);
             await saveDataToCloud();
             return player;
@@ -2480,7 +2496,7 @@
         function normalizePlayerClans() {
             if (!db || !Array.isArray(db.players)) return false;
             let changed = false;
-            db.players.forEach(p => { if (p && p.role === 'player' && p.clan !== 'Нет клана') { p.clan = 'Нет клана'; changed = true; } });
+            db.players.forEach(p => { if (p && p.role === 'player' && p.clan) { p.clan = ''; changed = true; } });
             return changed;
         }
 
@@ -3258,6 +3274,9 @@
                         <span class="clan-history-name ${secondWon?'my':''}">${escapeHistoryText(clan2)}</span>
                     </div>
                     <div class="clan-history-players"><span>${escapeHistoryText(leftPlayer||'')}</span><b>VS</b><span>${escapeHistoryText(rightPlayer||'')}</span></div>
+                    <div class="clan-history-opponent">СОПЕРНИК: <b>${escapeHistoryText(
+                        clan1.toLowerCase() === target ? (clan2 || '—') : (clan1 || '—')
+                    )}</b></div>
                     <div class="clan-history-result">ПОБЕДИЛ: <b class="${firstWon||secondWon?'result-win':'result-neutral'}">${escapeHistoryText(winner)}</b> · ${formatMatchDate(m.date)}</div>
                 </div>`;
             }).join(''):'<div class="history-empty">У этого клана пока нет сыгранных матчей.</div>';
