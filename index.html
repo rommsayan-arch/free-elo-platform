@@ -33,7 +33,19 @@
         
         .avatar-wrapper { position: relative; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; }
         .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background-color: #222; position: relative; z-index: 1; }
-        .avatar-frame { position: absolute; top: 0; left: 0; width: 44px; height: 44px; pointer-events: none; object-fit: contain; z-index: 10; display: block; }
+        .avatar-frame { position: absolute; top: 0; left: 0; width: 44px; height: 44px; pointer-events: none; object-fit: contain; z-index: 10; display: none; }
+        .avatar-wrapper { overflow: visible; }
+        .avatar-wrapper::after { content:""; position:absolute; inset:-3px; border-radius:50%; pointer-events:none; z-index:9; opacity:0; transition:.2s ease; }
+        .avatar-wrapper.frame-fire::after { opacity:1; border:2px solid #ff5a00; box-shadow:0 0 7px #ff5a00,0 0 18px rgba(255,90,0,.75),inset 0 0 10px rgba(255,170,0,.25); animation:headerFire 1.05s ease-in-out infinite; }
+        .avatar-wrapper.frame-lightning::after { opacity:1; border:2px solid #61d8ff; box-shadow:0 0 8px #61d8ff,0 0 18px rgba(47,125,255,.75); animation:headerPulse .8s steps(2,end) infinite; }
+        .avatar-wrapper.frame-thunder::after { opacity:1; border:2px solid #a879ff; box-shadow:0 0 8px #a879ff,0 0 20px rgba(95,57,255,.7); animation:headerPulse 1.2s ease-in-out infinite; }
+        .avatar-wrapper.frame-ice::after { opacity:1; border:2px solid #c9fbff; box-shadow:0 0 8px #c9fbff,0 0 18px rgba(73,198,255,.65); animation:headerPulse 1.4s ease-in-out infinite; }
+        .avatar-wrapper.frame-neon::after { opacity:1; border:2px solid #ff61d2; box-shadow:0 0 8px #ff61d2,0 0 20px rgba(124,77,255,.72); animation:headerSpin 2.5s linear infinite; }
+        .avatar-wrapper.frame-toxic::after { opacity:1; border:2px solid #baff54; box-shadow:0 0 8px #baff54,0 0 18px rgba(38,208,111,.68); animation:headerPulse 1s ease-in-out infinite; }
+        .avatar-wrapper.frame-generic::after { opacity:1; border:2px solid #8b5cf6; box-shadow:0 0 8px #8b5cf6,0 0 18px rgba(34,211,238,.45); animation:headerPulse 1.6s ease-in-out infinite; }
+        @keyframes headerFire { 50% { transform:scale(1.07); filter:brightness(1.35); } }
+        @keyframes headerPulse { 50% { transform:scale(1.05); filter:brightness(1.4); } }
+        @keyframes headerSpin { to { transform:rotate(360deg); } }
 
         .page-content { display: none; padding: 30px; }
         .page-content.active { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
@@ -2402,7 +2414,8 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
 
         function ensureAnimeShopItems() {
             
-            if (!db.shopItems) db.shopItems = [];
+            if (!db || typeof db !== 'object') db = {};
+            if (!Array.isArray(db.shopItems)) db.shopItems = [];
             const premiumFrames230 = [
 {id:9100,name:'Горящий Алмаз',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ff6a00%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff2d00%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2032%20C20%2018%2031%2013%2042%2012%20C31%2022%2031%2031%2040%2039%20C27%2037%2017%2037%2010%2048%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M90%2068%20C80%2082%2069%2087%2058%2088%20C69%2078%2069%2069%2060%2061%20C73%2063%2083%2063%2090%2052%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M16%2084%20C24%2075%2031%2069%2039%2068%20M84%2016%20C76%2025%2069%2031%2061%2032%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Горящий Алмаз»'},
 {id:9101,name:'Молния',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%238cf6ff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232f7dff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M12%2026%20L33%2010%20L27%2028%20L39%2027%20L16%2046%20L21%2029%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M88%2074%20L67%2090%20L73%2072%20L61%2073%20L84%2054%20L79%2071%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Молния»'},
@@ -2538,6 +2551,12 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
             if (playersClanChanged) await saveDataToCloud();
 
             ensureAnimeShopItems();
+            const current=getCurrentUser();
+            if(current){
+                shopTargetPlayerId=current.id;
+                inventoryTargetPlayerId=current.id;
+                syncHeaderUserVisuals(current);
+            }
         }
 
         function ensureCreatorRights() {
@@ -2747,6 +2766,49 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
             if (pageTitleEl) pageTitleEl.textContent = titles[pageId] || 'FREE ELO';
         }
 
+        function syncHeaderUserVisuals(user){
+            const avatarEl=document.getElementById('userAvatar');
+            const frameEl=document.getElementById('userFrame');
+            const wrapper=avatarEl?.closest('.avatar-wrapper');
+            if(!avatarEl || !wrapper) return;
+
+            const player=user || getCurrentUser();
+            const fallback=makeAvatarFallback(player?.name || 'PLAYER');
+            let avatarUrl='';
+            const inv=Array.isArray(player?.inventory)?player.inventory:[];
+            const validAvatar=(v)=>{
+                const x=String(v||'').trim();
+                return !!x && !/dicebear\.com\/.*bottts|robot1/i.test(x);
+            };
+            if(player?.activeAvatarId!=null){
+                const item=(db?.shopItems||[]).find(i=>i.type==='avatar' && String(i.id)===String(player.activeAvatarId));
+                const owned=inv.find(i=>i.type==='avatar' && String(i.id)===String(player.activeAvatarId));
+                avatarUrl=item?.img || owned?.img || '';
+            }
+            if(!validAvatar(avatarUrl) && validAvatar(player?.avatar)) avatarUrl=String(player.avatar).trim();
+            avatarEl.onerror=()=>{ avatarEl.onerror=null; avatarEl.src=fallback; };
+            avatarEl.src=avatarUrl || fallback;
+
+            wrapper.classList.remove('frame-fire','frame-lightning','frame-thunder','frame-ice','frame-neon','frame-toxic','frame-generic');
+            const frameId=player?.activeFrameId!=null ? Number(player.activeFrameId) : null;
+            if(frameId!=null){
+                const cls=getFrameVisualClass(frameId);
+                wrapper.classList.add(cls);
+                const item=(db?.shopItems||[]).find(i=>i.type==='frame' && Number(i.id)===frameId) || inv.find(i=>i.type==='frame' && Number(i.id)===frameId);
+                if(item?.img){
+                    frameEl.onerror=()=>{frameEl.onerror=null;frameEl.style.display='none';};
+                    frameEl.src=item.img;
+                    frameEl.style.display='block';
+                } else {
+                    frameEl.removeAttribute('src');
+                    frameEl.style.display='none';
+                }
+            } else {
+                frameEl.removeAttribute('src');
+                frameEl.style.display='none';
+            }
+        }
+
         function initApp() {
             ensureCreatorRights(); ensureAnimeShopItems();
             loadAnimeImages().catch(()=>{});
@@ -2767,6 +2829,15 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
                 const createClanCard=document.getElementById('createClanCard'); if(createClanCard) createClanCard.style.display='none';
                 if(currentUser.role==='creator') renderAdminPanel();
             }
+            const visualUser=getCurrentUser();
+            if(visualUser){
+                shopTargetPlayerId=visualUser.id;
+                inventoryTargetPlayerId=visualUser.id;
+            } else if(shopTargetPlayerId==null && cachedSession?.name){
+                const cachedPlayer=getGuestPlayerByName(cachedSession.name);
+                if(cachedPlayer) { shopTargetPlayerId=cachedPlayer.id; inventoryTargetPlayerId=cachedPlayer.id; }
+            }
+            syncHeaderUserVisuals(visualUser);
             renderLeaderboard(); renderTop100(); renderSeasonLeaderboard(); renderStreamers(); renderClans(); renderClanLeaderboard(); if(typeof setClansTab==='function') setClansTab('clans'); renderShop(); renderHistoryCells?.(); renderFeed(); renderNews(); if(typeof setFeedTab==='function') setFeedTab('overview');
         }
 
@@ -3760,7 +3831,19 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
         let shopTargetPlayerId = null;
 
         function shopTargetPlayer(){
-            return shopTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==shopTargetPlayerId) : null;
+            let target = shopTargetPlayerId!=null ? (db?.players||[]).find(p=>p.id==shopTargetPlayerId) : null;
+            if (!target) {
+                const current = getCurrentUser();
+                if (current) { shopTargetPlayerId = current.id; target = current; }
+            }
+            if (!target) {
+                const cachedName = cachedSession?.name;
+                if (cachedName) {
+                    target = getGuestPlayerByName(cachedName);
+                    if (target) shopTargetPlayerId = target.id;
+                }
+            }
+            return target || null;
         }
 
         function loadShopPlayerByName(){
@@ -3775,6 +3858,8 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
         }
 
         function renderShop(){
+            ensureAnimeShopItems();
+            if(!Array.isArray(db?.shopItems)) db.shopItems=[];
             document.querySelectorAll('.shop-tabs .tab-btn').forEach(btn=>{
                 const label=(btn.textContent||'').toLowerCase();
                 if(label.includes('аниме')||label.includes('персонаж')) btn.remove();
@@ -3902,6 +3987,7 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
             await saveDataToCloud();
             inventoryTargetPlayerId=p.id;
             shopTargetPlayerId=p.id;
+            if(getCurrentUser()?.id==p.id) syncHeaderUserVisuals(p);
             renderInventory(); renderShop(); renderLeaderboard();
             alert(`✓ ${item.name} надето игроку ${p.name}.`);
         }
@@ -4242,7 +4328,7 @@ body.obs-overlay .obs-avatar{opacity:.9!important;filter:saturate(1.05) brightne
 
                 function getFrameVisualClass(frameId){
                     const id=Number(frameId);
-                    return ({9100:'frame-fire',9101:'frame-lightning',9102:'frame-thunder',9103:'frame-ice',9104:'frame-neon',9105:'frame-toxic'})[id] || 'frame-generic';
+                    return ({9100:'frame-fire',9101:'frame-lightning',9102:'frame-thunder',9103:'frame-ice',9104:'frame-neon',9105:'frame-toxic',9106:'frame-fire'})[id] || 'frame-generic';
                 }
                 function renderShopVisual(item){
                     if(item?.type==='frame'){
