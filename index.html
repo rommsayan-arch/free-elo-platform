@@ -1796,8 +1796,28 @@
         body.obs-overlay .obs-avatar-frame{opacity:.95!important;object-fit:fill!important;}
 
 
-        body.obs-overlay .obs-avatar[src*="dicebear.com"][src*="bottts"]{
-            display:none !important;
+        .shop-frame-preview{
+            width:150px!important;height:150px!important;
+            object-fit:contain!important;
+            border-radius:18px!important;
+            padding:6px!important;
+            background:radial-gradient(circle,rgba(15,18,28,.55),#0a0e16 72%)!important;
+            filter:drop-shadow(0 8px 18px rgba(139,92,246,.16));
+        }
+        .inventory-frame-preview{
+            width:110px!important;height:110px!important;
+            object-fit:contain!important;
+            background:transparent!important;
+        }
+        body.obs-overlay .obs-avatar{
+            opacity:.70!important;
+            filter:none!important;
+            mix-blend-mode:normal!important;
+            background:transparent!important;
+        }
+        body.obs-overlay .obs-avatar-frame{
+            opacity:.96!important;
+            mix-blend-mode:screen;
         }
 
 </style>
@@ -2228,7 +2248,7 @@
                     level: 1, 
                     role: 'creator', 
                     clan: 'NUN', 
-                    avatar: '', 
+                    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=sayan`, 
                     frame: '', 
                     inventory: [],
                     equippedCharacter: ''
@@ -2239,7 +2259,7 @@
                 { name: 'WAKANDA', tag: 'WAK', owner: 'PLAYER2' }
             ],
             shopItems: [
-                
+                { id: 101, name: 'Крутой Робот', type: 'avatar', price: 500, img: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot1' }
             ],
             streamers: [
                 { id: 1, name: 'sayan', url: 'https://twitch.tv/', priority: 10 }
@@ -2321,13 +2341,13 @@
             
             if (!db.shopItems) db.shopItems = [];
             const premiumFrames230 = [
-{id:9100,name:'Горящий Алмаз',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20stop-color=%22%23ff6a00%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff2d00%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x=%223%22%20y=%223%22%20width=%2294%22%20height=%2294%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M18%2082%20C40%2064%2028%2042%2050%2026%20C48%2049%2076%2039%2072%2063%20C69%2081%2047%2088%2018%2082Z%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%227%22/%3E%3C/svg%3E',description:'Премиальная рамка «Горящий Алмаз»'},
-{id:9101,name:'Молния',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20stop-color=%22%238cf6ff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232f7dff%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x=%223%22%20y=%223%22%20width=%2294%22%20height=%2294%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M58%2012%20L37%2050%20L55%2050%20L42%2088%20L76%2043%20L57%2043%20Z%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22%20stroke-linejoin=%22round%22/%3E%3C/svg%3E',description:'Премиальная рамка «Молния»'},
-{id:9102,name:'Гроза',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20stop-color=%22%23b78cff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%235f39ff%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x=%223%22%20y=%223%22%20width=%2294%22%20height=%2294%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M18%2048%20C28%2027%2048%2023%2061%2034%20C73%2044%2078%2063%2061%2072%20C46%2080%2022%2074%2018%2057Z%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M47%2024%20L39%2043%20L52%2043%20L44%2064%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%225%22/%3E%3C/svg%3E',description:'Премиальная рамка «Гроза»'},
-{id:9103,name:'Ледяная Аура',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20stop-color=%22%23dffcff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%2349c6ff%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x=%223%22%20y=%223%22%20width=%2294%22%20height=%2294%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M50%2015%20L50%2085%20M22%2032%20L78%2068%20M78%2032%20L22%2068%22%20stroke=%22url(%23g)%22%20stroke-width=%225%22%20stroke-linecap=%22round%22/%3E%3Ccircle%20cx=%2250%22%20cy=%2250%22%20r=%2215%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22/%3E%3C/svg%3E',description:'Премиальная рамка «Ледяная Аура»'},
-{id:9104,name:'Неоновый Вихрь',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20stop-color=%22%23ff61d2%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%237c4dff%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x=%223%22%20y=%223%22%20width=%2294%22%20height=%2294%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M15%2062%20C26%2020%2051%2018%2064%2034%20C78%2050%2075%2073%2055%2079%20C35%2086%2020%2078%2015%2062Z%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Ccircle%20cx=%2250%22%20cy=%2250%22%20r=%228%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22/%3E%3C/svg%3E',description:'Премиальная рамка «Неоновый Вихрь»'},
-{id:9105,name:'Ядовитая Энергия',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20stop-color=%22%23d6ff54%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%2326d06f%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x=%223%22%20y=%223%22%20width=%2294%22%20height=%2294%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M26%2028%20C40%2022%2061%2025%2072%2037%20C81%2048%2075%2070%2060%2076%20C43%2083%2022%2071%2020%2056%20C18%2043%2020%2034%2026%2028Z%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Ccircle%20cx=%2241%22%20cy=%2249%22%20r=%224%22%20fill=%22url(%23g)%22/%3E%3Ccircle%20cx=%2259%22%20cy=%2249%22%20r=%224%22%20fill=%22url(%23g)%22/%3E%3C/svg%3E',description:'Премиальная рамка «Ядовитая Энергия»'},
-{id:9106,name:'Золотой Феникс',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20stop-color=%22%23ffe07a%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff8a00%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x=%223%22%20y=%223%22%20width=%2294%22%20height=%2294%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3Cpath%20d=%22M20%2070%20C32%2053%2033%2038%2047%2028%20C58%2021%2074%2031%2077%2044%20C80%2058%2068%2070%2056%2078%20C42%2086%2028%2084%2020%2070Z%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%226%22/%3E%3C/svg%3E',description:'Премиальная рамка «Золотой Феникс»'}
+{id:9100,name:'Горящий Алмаз',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ff6a00%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff2d00%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2032%20C20%2018%2031%2013%2042%2012%20C31%2022%2031%2031%2040%2039%20C27%2037%2017%2037%2010%2048%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M90%2068%20C80%2082%2069%2087%2058%2088%20C69%2078%2069%2069%2060%2061%20C73%2063%2083%2063%2090%2052%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M16%2084%20C24%2075%2031%2069%2039%2068%20M84%2016%20C76%2025%2069%2031%2061%2032%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Горящий Алмаз»'},
+{id:9101,name:'Молния',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%238cf6ff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232f7dff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M12%2026%20L33%2010%20L27%2028%20L39%2027%20L16%2046%20L21%2029%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M88%2074%20L67%2090%20L73%2072%20L61%2073%20L84%2054%20L79%2071%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Молния»'},
+{id:9102,name:'Гроза',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23b78cff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%235f39ff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M8%2032%20Q18%2015%2038%2014%20Q27%2024%2031%2036%20Q18%2031%208%2042%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M92%2068%20Q82%2085%2062%2086%20Q73%2076%2069%2064%20Q82%2069%2092%2058%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M42%2012%20L36%2029%20L47%2029%20L41%2045%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M58%2088%20L64%2071%20L53%2071%20L59%2055%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Гроза»'},
+{id:9103,name:'Ледяная Аура',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23dffcff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%2349c6ff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2026%20L26%2010%20M10%2026%20L31%2028%20M10%2026%20L15%2047%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20M90%2074%20L74%2090%20M90%2074%20L69%2072%20M90%2074%20L85%2053%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M15%2084%20L28%2069%20M15%2084%20L34%2082%20M15%2084%20L20%2064%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20M85%2016%20L72%2031%20M85%2016%20L66%2018%20M85%2016%20L80%2036%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Ледяная Аура»'},
+{id:9104,name:'Неоновый Вихрь',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ff61d2%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%237c4dff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2032%20Q30%208%2050%2016%20Q70%208%2090%2032%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%225%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2068%20Q30%2092%2050%2084%20Q70%2092%2090%2068%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%225%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx=%2216%22%20cy=%2222%22%20r=%224%22%20fill=%22url(%23g)%22/%3E%3Ccircle%20cx=%2284%22%20cy=%2278%22%20r=%224%22%20fill=%22url(%23g)%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Неоновый Вихрь»'},
+{id:9105,name:'Ядовитая Энергия',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23d6ff54%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%2326d06f%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2030%20Q18%2013%2036%2014%20Q26%2022%2031%2034%20Q20%2029%2010%2040%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M90%2070%20Q82%2087%2064%2086%20Q74%2078%2069%2066%20Q80%2071%2090%2060%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22/%3E%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx=%2220%22%20cy=%2220%22%20r=%223.5%22%20fill=%22url(%23g)%22/%3E%3Ccircle%20cx=%2280%22%20cy=%2280%22%20r=%223.5%22%20fill=%22url(%23g)%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M48%2011%20Q45%2016%2048%2020%20Q51%2016%2054%2011%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M46%2089%20Q49%2084%2046%2080%20Q43%2084%2040%2089%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Ядовитая Энергия»'},
+{id:9106,name:'Золотой Феникс',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ffe07a%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff8a00%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M9%2035%20Q20%2012%2044%2011%20Q30%2021%2035%2034%20Q21%2031%209%2043%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M91%2065%20Q80%2088%2056%2089%20Q70%2079%2065%2066%20Q79%2069%2091%2057%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M12%2080%20L22%2070%20M88%2020%20L78%2030%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Золотой Феникс»'}
 ];
             premiumFrames230.forEach(frame => {
                 if (!db.shopItems.some(item => Number(item.id) === Number(frame.id))) {
@@ -2350,6 +2370,29 @@
                         characterKey: key,
                         img: c.image || animeFallbackImage(key) || ''
                     });
+
+            premiumFrames230.forEach(frame => {
+                const shopItem = (db.shopItems || []).find(i => Number(i.id) === Number(frame.id));
+                if (shopItem) {
+                    shopItem.img = frame.img;
+                    shopItem.price = 230;
+                }
+                (db.players || []).forEach(player => {
+                    (player.inventory || []).forEach(inv => {
+                        if (Number(inv.id) === Number(frame.id) && inv.type === 'frame') {
+                            inv.img = frame.img;
+                            inv.price = 230;
+                        }
+                    });
+                    if (player.activeFrameId != null) {
+                        const activeFrame = (player.inventory || []).find(i =>
+                            Number(i.id) === Number(player.activeFrameId) && i.type === 'frame'
+                        );
+                        if (activeFrame) player.frame = activeFrame.img;
+                    }
+                });
+            });
+
                     changed = true;
                 }
             });
@@ -2490,7 +2533,7 @@
             let existing=getGuestPlayerByName(n);
             if(existing) return existing;
             if(!db.players) db.players=[];
-            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:'',frame:'',inventory:[],equippedCharacter:''});
+            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
             db.players.push(player);
             await saveDataToCloud();
             return player;
@@ -2984,7 +3027,7 @@
                 id: Date.now() + Math.floor(Math.random() * 100000),
                 name, email:'', password:'', elo:0, matches:0, wins:0, level:1,
                 role:'player', clan:'Нет клана',
-                avatar:'',
+                avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
                 frame:'', inventory:[], equippedCharacter:''
             });
 
@@ -3737,7 +3780,6 @@
 
             // Для аватарки/рамки покупка сразу надевает купленный предмет.
             if(item.type==='avatar'){
-                p.inventory=(p.inventory||[]).map(i => ({...i, equipped: i.type==='avatar' ? i.id===item.id : i.equipped}));
                 p.avatar=item.img;
                 p.activeAvatarId=item.id;
             } else if(item.type==='frame'){
@@ -3791,11 +3833,7 @@
         async function equipItemForPlayer(itemId,playerId){
             const p=(db?.players||[]).find(x=>x.id==playerId); if(!p)return;
             const item=(p.inventory||[]).find(x=>x.id==itemId); if(!item)return;
-            if(item.type==='avatar'){
-                p.inventory=(p.inventory||[]).map(i => ({...i, equipped: i.type==='avatar' ? i.id===item.id : i.equipped}));
-                p.avatar=item.img;
-                p.activeAvatarId=item.id;
-            } else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
+            if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;} else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
             else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
             else return;
             await saveDataToCloud();
@@ -4153,34 +4191,53 @@
                                 if (!player) return '';
 
                                 const inv = Array.isArray(player.inventory) ? player.inventory : [];
-                                const realAvatar = (v) => {
+                                const validImage = (v) => {
                                     const s = String(v || '').trim();
                                     if (!s) return false;
-                                    return !/dicebear\.com\/.*bottts|robot1/i.test(s);
+                                    if (/dicebear\.com\/.*bottts|robot1/i.test(s)) return false;
+                                    return true;
                                 };
 
-                                // 1) Explicitly equipped avatar.
-                                let activeItem = player.activeAvatarId != null
-                                    ? inv.find(i => String(i.id) === String(player.activeAvatarId) && i.type === 'avatar')
-                                    : null;
-
-                                // 2) Old saved-data equipped flags.
-                                if (!activeItem) {
-                                    activeItem = inv.find(i =>
+                                // First: exact equipped avatar from shop catalog.
+                                let item = null;
+                                if (player.activeAvatarId != null) {
+                                    item = (db?.shopItems || []).find(i =>
                                         i.type === 'avatar' &&
-                                        (i.equipped === true || i.isEquipped === true || i.worn === true)
-                                    );
+                                        String(i.id) === String(player.activeAvatarId) &&
+                                        validImage(i.img)
+                                    ) || null;
                                 }
 
-                                // 3) If the old data lost activeAvatarId, use the first real purchased avatar,
-                                //    not the old default robot.
-                                if (!activeItem) {
-                                    activeItem = inv.find(i => i.type === 'avatar' && realAvatar(i.img));
+                                // Second: exact equipped avatar stored in inventory.
+                                if (!item && player.activeAvatarId != null) {
+                                    item = inv.find(i =>
+                                        i.type === 'avatar' &&
+                                        String(i.id) === String(player.activeAvatarId) &&
+                                        validImage(i.img)
+                                    ) || null;
                                 }
 
-                                // 4) Stored player avatar only when it is a real custom/shop avatar.
-                                const stored = realAvatar(player.avatar) ? String(player.avatar).trim() : '';
-                                return String(activeItem?.img || stored || '').trim();
+                                // Third: an explicitly marked equipped inventory avatar.
+                                if (!item) {
+                                    item = inv.find(i =>
+                                        i.type === 'avatar' &&
+                                        (i.equipped === true || i.isEquipped === true || i.worn === true) &&
+                                        validImage(i.img)
+                                    ) || null;
+                                }
+
+                                // Fourth: match the stored player.avatar against an existing catalog item.
+                                if (!item && validImage(player.avatar)) {
+                                    item = (db?.shopItems || []).find(i =>
+                                        i.type === 'avatar' && String(i.img) === String(player.avatar)
+                                    ) || null;
+                                }
+
+                                if (!item && validImage(player.avatar)) {
+                                    return String(player.avatar).trim();
+                                }
+
+                                return item?.img ? String(item.img).trim() : '';
                             };
 
                             const avatarUrl1 = resolveObsAvatar(p1Obj);
