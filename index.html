@@ -33,7 +33,7 @@
         
         .avatar-wrapper { position: relative; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; }
         .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background-color: #222; position: relative; z-index: 1; }
-        .avatar-frame { position: absolute; top: 0; left: 0; width: 44px; height: 44px; pointer-events: none; object-fit: contain; z-index: 10; display: none; }
+        .avatar-frame { position: absolute; top: -2px; left: -2px; width: 48px; height: 48px; pointer-events: none; object-fit: contain; z-index: 10; display: none; }
 
         .page-content { display: none; padding: 30px; }
         .page-content.active { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
@@ -75,6 +75,8 @@
 
         .role-badge { background-color: #ff3333; color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
         .role-badge.creator { background: linear-gradient(45deg, #ff5500, #ff0055); box-shadow: 0 0 8px rgba(255,85,0,0.6); }
+        .role-badge.creator::before { content:'★'; margin-right:4px; }
+        .creator-crown { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; margin-left:3px; border-radius:50%; background:linear-gradient(135deg,#ffd54a,#ff7a00); color:#111; font-size:11px; box-shadow:0 0 10px rgba(255,170,0,.75); vertical-align:middle; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .auth-card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 35px 30px; width: 400px; text-align: center; }
@@ -309,6 +311,63 @@
             .obs-vs-text { font-size:34px; padding-top:58px; }
         }
 
+
+        /* === PLAYER HUD: GOGONO + SOFT TEAM COLOR === */
+        .obs-player-card {
+            background: rgba(8, 10, 16, .78) !important;
+            border-radius: 10px !important;
+            backdrop-filter: blur(5px) saturate(1.18);
+            -webkit-backdrop-filter: blur(5px) saturate(1.18);
+            box-shadow: 0 0 22px rgba(0,0,0,.38), inset 0 0 28px rgba(255,255,255,.035) !important;
+            overflow: hidden !important;
+        }
+        .obs-avatar {
+            filter: blur(3px) saturate(.95) brightness(.88) !important;
+            transform: scale(1.018);
+        }
+        .obs-avatar-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+        .obs-char.left .obs-avatar-wrap::after {
+            background: linear-gradient(135deg, rgba(255,101,0,.32), rgba(255,55,0,.13) 55%, transparent 100%);
+        }
+        .obs-char.right .obs-avatar-wrap::after {
+            background: linear-gradient(225deg, rgba(0,191,255,.32), rgba(0,110,255,.13) 55%, transparent 100%);
+        }
+        .obs-name {
+            font-family: 'Gogono Cocoa Mochi Cyrillic', 'Gogono Cocoa Mochi', 'Oswald', sans-serif !important;
+            font-weight: 400 !important;
+            letter-spacing: .8px !important;
+            text-shadow: 0 3px 10px rgba(0,0,0,.95), 0 0 12px rgba(0,0,0,.9) !important;
+        }
+        .obs-clan-label {
+            font-family: 'Gogono Cocoa Mochi Cyrillic', 'Gogono Cocoa Mochi', 'Rajdhani', sans-serif !important;
+            font-weight: 400 !important;
+            letter-spacing: .9px !important;
+        }
+        .obs-char.left .obs-name,
+        .obs-char.left .obs-clan-label {
+            text-shadow: 0 3px 10px rgba(0,0,0,.95), 0 0 12px rgba(255,101,0,.42) !important;
+        }
+        .obs-char.right .obs-name,
+        .obs-char.right .obs-clan-label {
+            text-shadow: 0 3px 10px rgba(0,0,0,.95), 0 0 12px rgba(0,191,255,.42) !important;
+        }
+        .obs-char.left .obs-player-card {
+            background: linear-gradient(135deg, rgba(255,101,0,.10), rgba(255,101,0,.025) 60%, rgba(0,0,0,.10)) !important;
+            border-color: rgba(255,101,0,.9) !important;
+        }
+        .obs-char.right .obs-player-card {
+            background: linear-gradient(225deg, rgba(0,191,255,.72), rgba(0,191,255,.42) 55%, rgba(3,20,30,.78)) !important;
+            border-color: rgba(70,215,255,1) !important;
+            box-shadow: 0 0 26px rgba(0,191,255,.28), inset 0 0 28px rgba(100,225,255,.10) !important;
+        }
+
         /* === КРАСИВЫЙ ДИЗАЙН HUD КЛАНОВ === */
         .clan-hud-container {
             position: fixed; left: 40px; top: 40px;
@@ -463,9 +522,6 @@
         .level-badge { background:linear-gradient(135deg,#22d3ee,#8b5cf6); color:#fff; }
         .role-badge { background:linear-gradient(135deg,#ef4444,#f97316); box-shadow:0 0 10px rgba(239,68,68,.25); }
         .role-badge.creator { background:linear-gradient(135deg,#f472b6,#8b5cf6,#22d3ee); box-shadow:0 0 18px rgba(139,92,246,.38); }
-        .role-badge.creator{font-weight:900!important;letter-spacing:.5px!important;border:1px solid rgba(255,255,255,.22)!important;text-shadow:0 1px 8px rgba(0,0,0,.35)}
-        .top-players table tbody tr:hover,.player-top100-table tbody tr:hover{transform:translateX(2px);box-shadow:inset 3px 0 0 rgba(34,211,238,.55)}
-
         .lock-btn {
             width:38px;height:38px;border-radius:12px;border:1px solid rgba(139,92,246,.35);
             background:linear-gradient(135deg,rgba(139,92,246,.16),rgba(34,211,238,.10));
@@ -1587,7 +1643,1506 @@
   box-shadow:0 0 10px rgba(255,101,0,.28) !important;
 }
 
+
+        .player-top100-table .top100-empty-row{
+            opacity:.42;
+        }
+        .player-top100-table .top100-empty{
+            color:#66738a;
+            font-size:11px;
+        }
+        .player-top100-table .rank-number{
+            font-family:'Orbitron',sans-serif;
+            color:#aeb8cc;
+        }
+        .player-top100-table{
+            min-width:720px;
+            width:100%;
+        }
+        @media(max-width:768px){
+            .player-top100-table{
+                min-width:650px !important;
+                width:max-content !important;
+            }
+            .player-top100-table th,
+            .player-top100-table td{
+                white-space:nowrap !important;
+                writing-mode:horizontal-tb !important;
+                word-break:normal !important;
+                overflow-wrap:normal !important;
+            }
+        }
+
+        .clan-top-table .clickable-clan-row{cursor:pointer;transition:background .18s ease,transform .18s ease}
+        .clan-top-table .clickable-clan-row:hover{background:linear-gradient(90deg,rgba(139,92,246,.10),rgba(0,229,255,.06))}
+        .clan-top-table .clickable-clan-row td{white-space:nowrap;vertical-align:middle}
+        .clan-vs-history-list{display:flex;flex-direction:column;gap:10px}
+        .clan-vs-history-row{display:grid;grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr);gap:14px;align-items:center;padding:14px 16px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(0,229,255,.025))}
+        .clan-vs-side{min-width:0;display:flex;flex-direction:column;gap:4px}.clan-vs-side.right{text-align:right}
+        .clan-vs-side b{font-family:'Orbitron',sans-serif;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .clan-vs-side span{color:var(--text-muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .clan-vs-middle{text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}.clan-vs-middle strong{font-family:'Orbitron',sans-serif;color:#fff;font-size:15px}.clan-vs-middle small{color:#67f6a0;font-size:9px;font-weight:900;text-align:center}
+        @media(max-width:650px){.clan-vs-history-row{grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);gap:7px;padding:11px}.clan-vs-side b{font-size:10px}.clan-vs-side span{font-size:8px}.clan-vs-middle strong{font-size:12px}.clan-vs-middle small{font-size:7px}}
+
+
+        .clan-history-opponent{
+            margin-top:5px;
+            text-align:center;
+            color:#aeb8cb;
+            font-size:11px;
+            letter-spacing:.3px;
+        }
+        .clan-history-opponent b{
+            color:#fff;
+            font-weight:900;
+        }
+        @media(max-width:768px){
+            .clan-history-opponent{font-size:10px}
+        }
+
+
+        .clickable-clan-row { cursor:pointer !important; }
+        .clickable-clan-row:hover { background:linear-gradient(90deg,rgba(139,92,246,.10),rgba(0,229,255,.06)) !important; }
+        .clan-history-match-row{
+            display:flex !important; flex-direction:column !important; gap:8px !important;
+            padding:14px 16px !important; border:1px solid var(--border-color);
+            border-radius:12px; background:rgba(255,255,255,.025); margin-bottom:9px;
+        }
+        .clan-history-versus{display:flex;align-items:center;justify-content:center;gap:12px;}
+        .clan-history-name{font-size:16px;font-weight:1000;min-width:0;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .clan-history-name.my{color:var(--accent);}
+        .clan-history-vs{font-size:12px;font-weight:1000;color:var(--text-muted);}
+        .clan-history-opponent,.clan-history-players,.clan-history-result{text-align:center;font-size:11px;}
+        .clan-history-opponent{color:var(--text-muted);}
+        .clan-history-opponent b{color:#fff;}
+        .clan-history-result{font-weight:1000;}
+        .history-date{color:var(--text-muted);font-weight:700;}
+        .clan-history-list{max-height:58vh;overflow:auto;padding-right:3px;}
+        @media(max-width:600px){
+            .clan-history-name{font-size:13px;}
+            .clan-history-match-row{padding:12px 10px;}
+            .clan-history-opponent,.clan-history-players,.clan-history-result{font-size:10px;}
+        }
+
+
+        /* OBS avatar visibility fix */
+        body.obs-overlay .obs-avatar{
+            opacity: .78 !important;
+            filter: saturate(1.05) brightness(.92) !important;
+            transform: scale(1.02) !important;
+        }
+        body.obs-overlay .obs-avatar-wrap{
+            opacity:1 !important;
+            visibility:visible !important;
+            display:block !important;
+        }
+        body.obs-overlay .obs-player-card{
+            overflow:hidden !important;
+        }
+
+
+        /* OBS: equipped player avatar, no robot fallback */
+        body.obs-overlay .obs-avatar{
+            opacity:.68 !important;
+            filter:saturate(1.04) brightness(.95) !important;
+            transform:scale(1.02) !important;
+        }
+        body.obs-overlay .obs-avatar-wrap{
+            background:transparent !important;
+            opacity:1 !important;
+            visibility:visible !important;
+        }
+        body.obs-overlay .obs-avatar-wrap::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.16));
+            z-index:1;
+            pointer-events:none;
+        }
+        body.obs-overlay .obs-avatar-frame{z-index:2 !important;}
+        body.obs-overlay .obs-name{z-index:4 !important;}
+        body.obs-overlay .obs-clan-label{z-index:4 !important;}
+
+
+        /* FINAL OBS AVATAR FIX */
+        body.obs-overlay .obs-avatar-wrap{
+            background:transparent !important;
+            background-image:none !important;
+        }
+        body.obs-overlay .obs-avatar{
+            opacity:.62 !important;
+            filter:none !important;
+            mix-blend-mode:normal !important;
+            object-fit:cover !important;
+            background:transparent !important;
+        }
+        body.obs-overlay .obs-avatar-wrap::before{
+            display:block;
+            content:"";
+            position:absolute;
+            inset:0;
+            background:rgba(0,0,0,.08);
+            pointer-events:none;
+            z-index:1;
+        }
+
+
+        .shop-frame-preview{
+            width:150px!important;height:150px!important;object-fit:contain!important;
+            border-radius:18px!important;padding:8px!important;
+            background:radial-gradient(circle,rgba(139,92,246,.12),#0b0f18 72%)!important;
+            filter:drop-shadow(0 10px 18px rgba(0,229,255,.12));
+        }
+        .inventory-frame-preview{width:110px!important;height:110px!important;object-fit:contain!important;}
+        body.obs-overlay .obs-avatar-frame{opacity:.95!important;object-fit:fill!important;}
+
+
+        .shop-frame-preview{
+            width:150px!important;height:150px!important;
+            object-fit:contain!important;
+            border-radius:18px!important;
+            padding:6px!important;
+            background:radial-gradient(circle,rgba(15,18,28,.55),#0a0e16 72%)!important;
+            filter:drop-shadow(0 8px 18px rgba(139,92,246,.16));
+        }
+        .inventory-frame-preview{
+            width:110px!important;height:110px!important;
+            object-fit:contain!important;
+            background:transparent!important;
+        }
+        body.obs-overlay .obs-avatar{
+            opacity:.70!important;
+            filter:none!important;
+            mix-blend-mode:normal!important;
+            background:transparent!important;
+        }
+        body.obs-overlay .obs-avatar-frame{
+            opacity:.96!important;
+            mix-blend-mode:screen;
+        }
+
 </style>
+
+<style id="gogono-cyrillic-font">
+@import url("https://db.onlinewebfonts.com/c/0bee9a1756343a4f25a4cd392450fa49?family=Gogono+Cocoa+Mochi+Cyrillic");
+</style>
+
+<style id="final-player-hud-style">
+.obs-name,.obs-clan-label{
+  font-family:'Gogono Cocoa Mochi Cyrillic','Gogono Cocoa Mochi','Oswald',sans-serif !important;
+  white-space:nowrap !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+}
+.obs-avatar{filter:blur(2.2px) saturate(.92) brightness(.86) !important;}
+.obs-char.left .obs-avatar-wrap::after{background:linear-gradient(135deg,rgba(255,101,0,.32),rgba(255,55,0,.13) 55%,transparent 100%) !important;}
+.obs-char.right .obs-avatar-wrap::after{background:linear-gradient(225deg,rgba(0,191,255,.32),rgba(0,110,255,.13) 55%,transparent 100%) !important;}
+</style>
+
+<style id="final-hud-both-team-colors">
+/* FINAL: BOTH PLAYER HUDS HAVE STRONG TEAM COLOR */
+.obs-char.left .obs-player-card {
+  background: linear-gradient(135deg, rgba(255,101,0,.78), rgba(255,101,0,.46) 55%, rgba(35,12,5,.82)) !important;
+  border-color: #ff7a32 !important;
+  box-shadow: 0 0 26px rgba(255,101,0,.38), inset 0 0 28px rgba(255,170,100,.12) !important;
+}
+.obs-char.right .obs-player-card {
+  background: linear-gradient(225deg, rgba(0,191,255,.78), rgba(0,191,255,.46) 55%, rgba(3,20,30,.82)) !important;
+  border-color: #46d7ff !important;
+  box-shadow: 0 0 26px rgba(0,191,255,.38), inset 0 0 28px rgba(100,225,255,.12) !important;
+}
+.obs-char.left .obs-avatar-wrap,
+.obs-char.left .obs-avatar-frame {
+  box-shadow: 0 0 0 2px #ff6500, 0 0 18px rgba(255,101,0,.45) !important;
+}
+.obs-char.right .obs-avatar-wrap,
+.obs-char.right .obs-avatar-frame {
+  box-shadow: 0 0 0 2px #00bfff, 0 0 18px rgba(0,191,255,.45) !important;
+}
+</style>
+
+
+<style id="free-elo-animated-frame-fix">
+/* === FREE ELO ANIMATED AVATAR FRAMES === */
+.avatar-wrapper.frame-effect,
+.obs-avatar-wrap.frame-effect {
+    --frame-color-1:#ff6a00;
+    --frame-color-2:#ff2d00;
+    --frame-shadow:rgba(255,85,0,.8);
+}
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+.obs-avatar-wrap.frame-effect::before,
+.obs-avatar-wrap.frame-effect::after {
+    content:"";
+    position:absolute;
+    pointer-events:none;
+    z-index:20;
+    border-radius:inherit;
+}
+.avatar-wrapper.frame-effect::before,
+.obs-avatar-wrap.frame-effect::before {
+    inset:-5px;
+    border:3px solid var(--frame-color-1);
+    box-shadow:
+      0 0 5px var(--frame-color-1),
+      0 0 13px var(--frame-shadow),
+      inset 0 0 7px var(--frame-shadow);
+    animation: freeEloFramePulse 1s ease-in-out infinite;
+}
+.avatar-wrapper.frame-effect::after,
+.obs-avatar-wrap.frame-effect::after {
+    inset:-9px;
+    border:2px dashed var(--frame-color-2);
+    opacity:.9;
+    box-shadow:0 0 15px var(--frame-shadow);
+    animation: freeEloFrameSpin 3s linear infinite;
+}
+@keyframes freeEloFramePulse {
+    0%,100% { transform:scale(.98); opacity:.78; filter:brightness(.95); }
+    50% { transform:scale(1.035); opacity:1; filter:brightness(1.35); }
+}
+@keyframes freeEloFrameSpin {
+    to { transform:rotate(360deg); }
+}
+
+/* Огненная рамка — языки огня вокруг аватарки */
+.frame-fire::before,
+.frame-fire::after {
+    border-radius:48% 52% 44% 56% / 52% 46% 54% 48% !important;
+}
+.frame-fire::before {
+    box-shadow:
+      0 -5px 8px #ffd166,
+      0 -10px 18px #ff6a00,
+      0 0 22px rgba(255,45,0,.95),
+      inset 0 0 10px rgba(255,106,0,.8);
+    animation: freeEloFire 1.05s ease-in-out infinite;
+}
+.frame-fire::after {
+    border-style:dotted !important;
+    border-width:2px !important;
+    box-shadow:0 0 16px rgba(255,80,0,.9);
+    animation: freeEloFireOrbit 1.8s linear infinite;
+}
+@keyframes freeEloFire {
+    0%,100% { transform:scale(.98) rotate(-1deg); filter:brightness(1); }
+    25% { transform:scale(1.03) rotate(1deg); filter:brightness(1.3); }
+    50% { transform:scale(1.06) rotate(-1deg); filter:brightness(1.55); }
+    75% { transform:scale(1.025) rotate(1deg); filter:brightness(1.25); }
+}
+@keyframes freeEloFireOrbit {
+    to { transform:rotate(360deg); }
+}
+
+/* Остальные премиальные эффекты */
+.frame-lightning { --frame-color-1:#8cf6ff !important; --frame-color-2:#2f7dff !important; --frame-shadow:rgba(47,125,255,.9) !important; }
+.frame-thunder { --frame-color-1:#c4a0ff !important; --frame-color-2:#6b3dff !important; --frame-shadow:rgba(108,61,255,.9) !important; }
+.frame-ice { --frame-color-1:#dffcff !important; --frame-color-2:#49c6ff !important; --frame-shadow:rgba(73,198,255,.85) !important; }
+.frame-neon { --frame-color-1:#ff61d2 !important; --frame-color-2:#7c4dff !important; --frame-shadow:rgba(255,97,210,.9) !important; }
+.frame-poison { --frame-color-1:#d6ff54 !important; --frame-color-2:#26d06f !important; --frame-shadow:rgba(38,208,111,.9) !important; }
+.frame-phoenix { --frame-color-1:#ffe07a !important; --frame-color-2:#ff8a00 !important; --frame-shadow:rgba(255,138,0,.95) !important; }
+
+/* Header: настоящая аватарка сверху, старая SVG-рамка больше не закрывает её */
+.avatar-wrapper .avatar-frame {
+    display:none !important;
+}
+.avatar-wrapper {
+    isolation:isolate;
+    overflow:visible !important;
+}
+.avatar-wrapper .avatar {
+    z-index:2 !important;
+}
+
+/* OBS: не растягиваем рамку на всю карточку и не закрываем аватар */
+body.obs-overlay .obs-avatar-wrap {
+    overflow:visible !important;
+    border-radius:18px !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+body.obs-overlay .obs-avatar {
+    position:absolute !important;
+    inset:8px !important;
+    width:calc(100% - 16px) !important;
+    height:calc(100% - 16px) !important;
+    object-fit:contain !important;
+    object-position:center !important;
+    border-radius:16px !important;
+    opacity:1 !important;
+    filter:none !important;
+    transform:none !important;
+    z-index:1 !important;
+    background:rgba(5,8,15,.18) !important;
+}
+body.obs-overlay .obs-avatar-wrap::before,
+body.obs-overlay .obs-avatar-wrap::after {
+    display:block !important;
+}
+body.obs-overlay .obs-avatar-frame {
+    display:none !important;
+}
+
+/* OBS cards with avatar: make room for the real picture */
+body.obs-overlay .obs-player-card:not(.obs-name-only) {
+    overflow:visible !important;
+}
+body.obs-overlay .obs-player-card:not(.obs-name-only) .obs-name,
+body.obs-overlay .obs-player-card:not(.obs-name-only) .obs-clan-label {
+    text-shadow:0 2px 8px #000, 0 0 12px #000;
+}
+
+/* Store preview gets animated glow too, while preserving the actual frame art */
+.shop-frame-preview {
+    animation: freeEloStoreFramePulse 1.25s ease-in-out infinite;
+}
+@keyframes freeEloStoreFramePulse {
+    0%,100% { transform:scale(1); filter:drop-shadow(0 0 5px rgba(255,106,0,.35)); }
+    50% { transform:scale(1.035); filter:drop-shadow(0 0 14px rgba(255,106,0,.8)); }
+}
+</style>
+
+
+<style id="free-elo-obs-avatar-layout-fix">
+/* OBS: аватар находится в отдельном квадрате, имя не закрывает картинку */
+body.obs-overlay .obs-avatar-wrap {
+    inset:8px auto auto 50% !important;
+    transform:translateX(-50%) !important;
+    width:132px !important;
+    height:132px !important;
+    border-radius:20px !important;
+}
+body.obs-overlay .obs-avatar {
+    inset:7px !important;
+    width:calc(100% - 14px) !important;
+    height:calc(100% - 14px) !important;
+    border-radius:16px !important;
+}
+body.obs-overlay .obs-name {
+    top:auto !important;
+    bottom:27px !important;
+    transform:translateX(-50%) !important;
+    width:calc(100% - 18px) !important;
+    font-size:25px !important;
+}
+body.obs-overlay .obs-clan-label {
+    bottom:8px !important;
+    font-size:12px !important;
+}
+@media(max-width:900px){
+    body.obs-overlay .obs-avatar-wrap {
+        width:120px !important;
+        height:120px !important;
+    }
+}
+</style>
+
+
+<style id="free-elo-final-center-name-avatar-bg">
+/* ===== FINAL HUD: centered nickname + avatar in background + equipped frame ===== */
+
+/* WEBSITE HEADER */
+.avatar-wrapper {
+  position:relative !important;
+  isolation:isolate !important;
+  overflow:visible !important;
+}
+.avatar-wrapper .avatar {
+  position:relative !important;
+  z-index:2 !important;
+  object-fit:cover !important;
+  border-radius:50% !important;
+}
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after {
+  content:"" !important;
+  position:absolute !important;
+  pointer-events:none !important;
+  border-radius:50% !important;
+  z-index:5 !important;
+  inset:-5px !important;
+}
+.avatar-wrapper.frame-effect::before {
+  border:3px solid transparent !important;
+  background:linear-gradient(#101522,#101522) padding-box,
+             conic-gradient(from 0deg,var(--frame-color-1),var(--frame-color-2),var(--frame-color-1),var(--frame-color-2),var(--frame-color-1)) border-box !important;
+  box-shadow:0 0 7px var(--frame-color-1),0 0 18px var(--frame-shadow) !important;
+  animation:freeEloHeaderFramePulse 1.15s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-effect::after {
+  inset:-9px !important;
+  border:2px solid transparent !important;
+  background:transparent !important;
+  box-shadow:0 0 8px var(--frame-shadow),0 0 20px var(--frame-shadow),inset 0 0 8px var(--frame-shadow) !important;
+  animation:freeEloHeaderFramePulse 1.15s ease-in-out infinite !important;
+}
+@keyframes freeEloHeaderFramePulse {
+  0%,100%{opacity:.55;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+.avatar-wrapper.frame-fire::before {
+  background:linear-gradient(#130b06,#130b06) padding-box,
+    conic-gradient(from 0deg,#fff1a8,#ffb300,#ff6500,#ff2200,#ff6500,#ffd166,#fff1a8) border-box !important;
+  box-shadow:0 0 5px #ffd166,0 0 14px #ff6500,0 0 28px rgba(255,45,0,.85),inset 0 0 9px rgba(255,160,40,.75) !important;
+  animation:freeEloFireGlow .9s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after {
+  box-shadow:0 -3px 10px #ffd166,0 0 18px #ff5a00,0 0 30px rgba(255,45,0,.75) !important;
+  animation:freeEloFirePulse .7s ease-in-out infinite !important;
+}
+@keyframes freeEloFireGlow { 0%,100%{filter:brightness(1);box-shadow:0 0 5px #ffd166,0 0 14px #ff6500,0 0 28px rgba(255,45,0,.75),inset 0 0 9px rgba(255,160,40,.65)} 50%{filter:brightness(1.35);box-shadow:0 0 8px #fff0a0,0 0 20px #ff6500,0 0 36px rgba(255,45,0,.95),inset 0 0 12px rgba(255,180,50,.85)} }
+@keyframes freeEloFirePulse {
+  0%,100%{opacity:.65;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.08)}
+}
+
+/* OBS: player card is the frame. Avatar sits BEHIND the centered nickname. */
+body.obs-overlay .obs-player-card {
+  width:272px !important;
+  height:150px !important;
+  left:50% !important;
+  top:20px !important;
+  transform:translateX(-50%) !important;
+  overflow:visible !important;
+  border-radius:12px !important;
+  background:rgba(7,10,18,.72) !important;
+  border:2px solid rgba(255,255,255,.25) !important;
+  box-shadow:0 0 18px rgba(0,0,0,.45) !important;
+}
+body.obs-overlay .obs-player-card.obs-name-only {
+  background:rgba(7,10,18,.72) !important;
+}
+body.obs-overlay .obs-avatar-wrap {
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  transform:none !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  z-index:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+body.obs-overlay .obs-avatar {
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  border-radius:10px !important;
+  opacity:.34 !important;
+  filter:saturate(1.05) brightness(.68) !important;
+  transform:none !important;
+  z-index:0 !important;
+}
+body.obs-overlay .obs-avatar-wrap::after {
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:1 !important;
+  pointer-events:none !important;
+  background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.52)) !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  content:"" !important;
+  position:absolute !important;
+  pointer-events:none !important;
+  border-radius:12px !important;
+  z-index:8 !important;
+  inset:-6px !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+  border:3px solid transparent !important;
+  background:linear-gradient(transparent,transparent) padding-box,
+    conic-gradient(from 0deg,var(--frame-color-1),var(--frame-color-2),var(--frame-color-1),var(--frame-color-2),var(--frame-color-1)) border-box !important;
+  box-shadow:0 0 7px var(--frame-color-1),0 0 18px var(--frame-shadow),inset 0 0 8px var(--frame-shadow) !important;
+  animation:freeEloHeaderFramePulse 1.15s ease-in-out infinite !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  inset:-10px !important;
+  border:2px solid transparent !important;
+  background:transparent !important;
+  box-shadow:0 0 10px var(--frame-shadow),0 0 22px var(--frame-shadow) !important;
+  animation:freeEloObsFramePulse 1.1s ease-in-out infinite !important;
+}
+@keyframes freeEloObsFrameSpin { to { transform:rotate(360deg); } }
+@keyframes freeEloObsFramePulse {
+  0%,100%{opacity:.5;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.035)}
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+  background:linear-gradient(transparent,transparent) padding-box,
+    conic-gradient(from 0deg,#fff1a8,#ffb300,#ff6500,#ff2200,#ff6500,#ffd166,#fff1a8) border-box !important;
+  box-shadow:0 0 5px #ffd166,0 0 14px #ff6500,0 0 28px rgba(255,45,0,.9),inset 0 0 9px rgba(255,160,40,.7) !important;
+  animation:freeEloObsFireRing .82s linear infinite !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+  box-shadow:0 0 10px #ff6500,0 0 24px rgba(255,45,0,.85),0 -3px 12px #ffd166 !important;
+  animation:freeEloObsFirePulse .68s ease-in-out infinite !important;
+}
+@keyframes freeEloObsFireRing { to { transform:rotate(360deg); } }
+@keyframes freeEloObsFirePulse {
+  0%,100%{opacity:.55;transform:scale(.99)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+
+/* Other frames: each gets its own color family */
+body.obs-overlay .frame-lightning::before { --frame-color-1:#9ffcff;--frame-color-2:#277dff;--frame-shadow:rgba(39,125,255,.9); }
+body.obs-overlay .frame-thunder::before { --frame-color-1:#d2b2ff;--frame-color-2:#703dff;--frame-shadow:rgba(112,61,255,.9); }
+body.obs-overlay .frame-ice::before { --frame-color-1:#e8ffff;--frame-color-2:#45cfff;--frame-shadow:rgba(69,207,255,.9); }
+body.obs-overlay .frame-neon::before { --frame-color-1:#ff78dc;--frame-color-2:#794dff;--frame-shadow:rgba(255,120,220,.9); }
+body.obs-overlay .frame-poison::before { --frame-color-1:#ddff64;--frame-color-2:#22d36e;--frame-shadow:rgba(34,211,110,.9); }
+body.obs-overlay .frame-phoenix::before { --frame-color-1:#fff0a0;--frame-color-2:#ff8a00;--frame-shadow:rgba(255,138,0,.95); }
+
+/* Center nickname over the background avatar */
+body.obs-overlay .obs-name {
+  left:50% !important;
+  top:50% !important;
+  bottom:auto !important;
+  transform:translate(-50%,-50%) !important;
+  width:calc(100% - 28px) !important;
+  font-size:34px !important;
+  line-height:1 !important;
+  z-index:6 !important;
+  color:#fff !important;
+  text-align:center !important;
+  text-shadow:0 3px 12px #000,0 0 18px rgba(0,0,0,.95) !important;
+}
+body.obs-overlay .obs-clan-label { display:none !important; }
+
+/* If there is no avatar, keep a clean name-only card */
+body.obs-overlay .obs-player-card.obs-name-only .obs-name {
+  font-size:36px !important;
+}
+body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none !important; }
+
+@media(max-width:900px){
+  body.obs-overlay .obs-player-card{width:min(272px,40vw) !important;height:150px !important;}
+  body.obs-overlay .obs-name{font-size:30px !important;}
+}
+</style>
+
+
+<style id="free-elo-clean-static-frames">
+/* CLEAN HUD: no spinning, no rotating borders, real frame-like border */
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+    animation:none !important;
+    transform:none !important;
+}
+
+/* Website header: frame is a fixed ring around the avatar */
+.avatar-wrapper.frame-effect::before {
+    inset:-4px !important;
+    border:3px solid var(--frame-color-1) !important;
+    background:none !important;
+    box-shadow:0 0 5px var(--frame-color-1),0 0 14px var(--frame-shadow),inset 0 0 5px var(--frame-shadow) !important;
+}
+.avatar-wrapper.frame-effect::after {
+    inset:-8px !important;
+    border:2px solid var(--frame-color-2) !important;
+    background:none !important;
+    box-shadow:0 0 10px var(--frame-shadow),0 0 18px var(--frame-shadow) !important;
+    opacity:.9 !important;
+}
+.avatar-wrapper.frame-fire::before {
+    border-color:#ff7a00 !important;
+    box-shadow:0 0 5px #ffd166,0 0 12px #ff6500,0 0 24px rgba(255,45,0,.8),inset 0 0 7px rgba(255,160,40,.7) !important;
+}
+.avatar-wrapper.frame-fire::after {
+    border-color:#ffd166 !important;
+    box-shadow:0 0 8px #ff6500,0 0 18px rgba(255,45,0,.75) !important;
+}
+
+/* OBS: avatar fills the card background, nickname stays centered */
+body.obs-overlay .obs-player-card {
+    overflow:hidden !important;
+    background:rgba(7,10,18,.78) !important;
+}
+body.obs-overlay .obs-avatar-wrap {
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    border-radius:10px !important;
+    overflow:hidden !important;
+}
+body.obs-overlay .obs-avatar {
+    inset:0 !important;
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+    opacity:.72 !important;
+    filter:none !important;
+    transform:none !important;
+    mix-blend-mode:normal !important;
+    z-index:0 !important;
+}
+body.obs-overlay .obs-avatar-wrap::after {
+    background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.38)) !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+    inset:0 !important;
+    border:3px solid var(--frame-color-1) !important;
+    background:none !important;
+    box-shadow:0 0 5px var(--frame-color-1),0 0 14px var(--frame-shadow),inset 0 0 7px var(--frame-shadow) !important;
+    animation:none !important;
+    transform:none !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+    inset:4px !important;
+    border:2px solid var(--frame-color-2) !important;
+    background:none !important;
+    box-shadow:0 0 10px var(--frame-shadow) !important;
+    animation:none !important;
+    transform:none !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+    border-color:#ff7a00 !important;
+    box-shadow:0 0 5px #ffd166,0 0 12px #ff6500,0 0 24px rgba(255,45,0,.82),inset 0 0 7px rgba(255,160,40,.7) !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+    border-color:#ffd166 !important;
+    box-shadow:0 0 8px #ff6500,0 0 18px rgba(255,45,0,.78) !important;
+}
+body.obs-overlay .obs-name {
+    top:50% !important;
+    bottom:auto !important;
+    transform:translate(-50%,-50%) !important;
+    z-index:6 !important;
+}
+
+/* No avatar = clean card with nickname only, never a robot */
+body.obs-overlay .obs-player-card.obs-name-only {
+    background:rgba(7,10,18,.88) !important;
+}
+body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none !important; }
+
+/* Each frame has its own static color */
+body.obs-overlay .frame-lightning::before,.frame-lightning::before { --frame-color-1:#9ffcff;--frame-color-2:#277dff;--frame-shadow:rgba(39,125,255,.9); }
+body.obs-overlay .frame-thunder::before,.frame-thunder::before { --frame-color-1:#d2b2ff;--frame-color-2:#703dff;--frame-shadow:rgba(112,61,255,.9); }
+body.obs-overlay .frame-ice::before,.frame-ice::before { --frame-color-1:#e8ffff;--frame-color-2:#45cfff;--frame-shadow:rgba(69,207,255,.9); }
+body.obs-overlay .frame-neon::before,.frame-neon::before { --frame-color-1:#ff78dc;--frame-color-2:#794dff;--frame-shadow:rgba(255,120,220,.9); }
+body.obs-overlay .frame-poison::before,.frame-poison::before { --frame-color-1:#ddff64;--frame-color-2:#22d36e;--frame-shadow:rgba(34,211,110,.9); }
+body.obs-overlay .frame-phoenix::before,.frame-phoenix::before { --frame-color-1:#fff0a0;--frame-color-2:#ff8a00;--frame-shadow:rgba(255,138,0,.95); }
+
+/* Remove all robot images from header */
+#userAvatar[src*="dicebear.com"][src*="bottts"],
+#userAvatar[src*="dicebear.com"][src*="initials"] { display:none !important; }
+</style>
+
+<style id="free-elo-final-frame-no-rotation">
+/* FINAL: рамки не вращаются. Огонь только мерцает вокруг края. */
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  transform:none !important;
+}
+.avatar-wrapper.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+  animation:freeEloStaticFrameGlow 1.15s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  animation:freeEloStaticFrameGlow2 1.0s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::before,
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+  border:3px solid #ff7a00 !important;
+  background:transparent !important;
+  box-shadow:0 0 4px #fff0a0,0 0 10px #ffb000,0 0 22px #ff5a00,0 0 36px rgba(255,30,0,.65),inset 0 0 8px rgba(255,150,30,.7) !important;
+  animation:freeEloFireStatic 0.72s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after,
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+  inset:-9px !important;
+  border:2px solid rgba(255,120,0,.95) !important;
+  background:transparent !important;
+  box-shadow:0 -5px 10px #ffd166,0 0 16px #ff6500,0 0 30px rgba(255,40,0,.7) !important;
+  animation:freeEloFireStatic2 0.58s ease-in-out infinite !important;
+}
+@keyframes freeEloStaticFrameGlow {
+  0%,100%{opacity:.72;filter:brightness(.95)}
+  50%{opacity:1;filter:brightness(1.25)}
+}
+@keyframes freeEloStaticFrameGlow2 {
+  0%,100%{opacity:.45;transform:scale(1)}
+  50%{opacity:.95;transform:scale(1.025)}
+}
+@keyframes freeEloFireStatic {
+  0%,100%{filter:brightness(1);box-shadow:0 0 4px #fff0a0,0 0 10px #ffb000,0 0 22px #ff5a00,0 0 36px rgba(255,30,0,.55),inset 0 0 8px rgba(255,150,30,.65)}
+  50%{filter:brightness(1.45);box-shadow:0 0 7px #fff4b0,0 0 15px #ffb000,0 0 28px #ff4a00,0 0 44px rgba(255,20,0,.85),inset 0 0 11px rgba(255,180,40,.9)}
+}
+@keyframes freeEloFireStatic2 {
+  0%,100%{opacity:.55;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.045)}
+}
+/* В OBS аватарка всегда остаётся видимой под ником. */
+body.obs-overlay .obs-avatar{display:block !important;visibility:visible !important;}
+</style>
+<style id="free-elo-final-working-hud">
+/* FINAL WORKING HUD: no rotation; effects animate by glow/opacity only. */
+body.obs-overlay #obsOverlayRoot,
+body.obs-overlay #obsOverlayRoot .obs-vs { overflow:visible !important; }
+body.obs-overlay .obs-player-card {
+  position:absolute !important;
+  width:272px !important;
+  height:150px !important;
+  top:20px !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  padding:0 !important;
+  border-radius:12px !important;
+  overflow:hidden !important;
+  background:#080b12 !important;
+  border:2px solid rgba(255,255,255,.28) !important;
+  box-sizing:border-box !important;
+}
+body.obs-overlay .obs-char.left .obs-player-card {
+  border-color:#ff6500 !important;
+  box-shadow:0 0 0 1px rgba(255,101,0,.95),0 0 16px rgba(255,101,0,.48) !important;
+}
+body.obs-overlay .obs-char.right .obs-player-card {
+  border-color:#00bfff !important;
+  box-shadow:0 0 0 1px rgba(0,191,255,.95),0 0 16px rgba(0,191,255,.42) !important;
+}
+body.obs-overlay .obs-avatar-wrap {
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  overflow:hidden !important;
+  border-radius:10px !important;
+  background:transparent !important;
+  z-index:1 !important;
+}
+body.obs-overlay .obs-avatar {
+  position:absolute !important;
+  inset:0 !important;
+  display:block !important;
+  visibility:visible !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  opacity:.88 !important;
+  filter:saturate(1.08) contrast(1.02) brightness(.82) !important;
+  transform:none !important;
+  mix-blend-mode:normal !important;
+  z-index:1 !important;
+}
+body.obs-overlay .obs-avatar-wrap::after {
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  pointer-events:none !important;
+  z-index:2 !important;
+  background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.42)) !important;
+}
+body.obs-overlay .obs-name {
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  bottom:auto !important;
+  transform:translate(-50%,-50%) !important;
+  width:calc(100% - 24px) !important;
+  z-index:10 !important;
+  margin:0 !important;
+  color:#fff !important;
+  text-align:center !important;
+  font-size:34px !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  text-shadow:0 3px 10px #000,0 0 18px rgba(0,0,0,.95) !important;
+}
+body.obs-overlay .obs-clan-label { display:none !important; }
+body.obs-overlay .obs-player-card.obs-name-only {
+  background:linear-gradient(135deg,rgba(8,11,18,.96),rgba(13,18,29,.94)) !important;
+}
+body.obs-overlay .obs-player-card.obs-name-only .obs-avatar-wrap { display:none !important; }
+
+/* Shared static frame shape */
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  content:"" !important;
+  position:absolute !important;
+  pointer-events:none !important;
+  border-radius:11px !important;
+  background:transparent !important;
+  transform:none !important;
+  z-index:8 !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+  inset:1px !important;
+  border:3px solid var(--fe-c1,#fff) !important;
+  box-shadow:0 0 5px var(--fe-c1),0 0 15px var(--fe-glow),inset 0 0 8px var(--fe-glow) !important;
+  animation:feFramePulse 1.15s ease-in-out infinite !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  inset:5px !important;
+  border:1px solid var(--fe-c2,#fff) !important;
+  box-shadow:0 0 8px var(--fe-glow),inset 0 0 5px var(--fe-glow) !important;
+  animation:feFramePulse2 1.35s ease-in-out infinite !important;
+}
+@keyframes feFramePulse {
+  0%,100%{opacity:.72;filter:brightness(.96)}
+  50%{opacity:1;filter:brightness(1.28)}
+}
+@keyframes feFramePulse2 {
+  0%,100%{opacity:.48}
+  50%{opacity:1}
+}
+
+/* FIRE — flicker, no rotation */
+body.obs-overlay .obs-avatar-wrap.frame-fire { --fe-c1:#ffefad;--fe-c2:#ff6500;--fe-glow:rgba(255,70,0,.95); }
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+  border-color:#ff8a00 !important;
+  box-shadow:0 0 5px #fff0a0,0 0 12px #ffb000,0 0 25px #ff4d00,0 0 40px rgba(255,25,0,.65),inset 0 0 9px rgba(255,160,30,.75) !important;
+  animation:feFire 0.68s ease-in-out infinite !important;
+}
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+  inset:-2px !important;
+  border:2px solid rgba(255,195,80,.95) !important;
+  box-shadow:0 0 10px #ff6500,0 0 24px rgba(255,45,0,.78),0 -3px 14px #ffd166 !important;
+  animation:feFire2 0.52s ease-in-out infinite !important;
+}
+@keyframes feFire {
+  0%,100%{opacity:.72;filter:brightness(1);box-shadow:0 0 5px #fff0a0,0 0 12px #ffb000,0 0 25px #ff4d00,0 0 40px rgba(255,25,0,.55),inset 0 0 9px rgba(255,160,30,.65)}
+  50%{opacity:1;filter:brightness(1.5);box-shadow:0 0 8px #fff5bd,0 0 17px #ffc000,0 0 32px #ff3b00,0 0 50px rgba(255,20,0,.9),inset 0 0 13px rgba(255,190,45,.95)}
+}
+@keyframes feFire2 {
+  0%,100%{opacity:.5;box-shadow:0 0 8px #ff6500,0 0 18px rgba(255,40,0,.5)}
+  50%{opacity:1;box-shadow:0 0 13px #ffd166,0 0 28px rgba(255,50,0,.9)}
+}
+
+/* LIGHTNING — electric flashes */
+body.obs-overlay .obs-avatar-wrap.frame-lightning { --fe-c1:#d9ffff;--fe-c2:#238cff;--fe-glow:rgba(50,170,255,.95); }
+body.obs-overlay .obs-avatar-wrap.frame-lightning::before { animation:feLightning .55s steps(2,end) infinite !important; }
+body.obs-overlay .obs-avatar-wrap.frame-lightning::after { border-style:dashed !important; animation:feLightning2 1.05s ease-in-out infinite !important; }
+@keyframes feLightning { 0%,86%,100%{opacity:.72;filter:brightness(1)} 88%{opacity:1;filter:brightness(1.8)} 90%{opacity:.45} 92%{opacity:1;filter:brightness(1.6)} }
+@keyframes feLightning2 { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+/* THUNDER — violet energy pulse */
+body.obs-overlay .obs-avatar-wrap.frame-thunder { --fe-c1:#e3c9ff;--fe-c2:#7b45ff;--fe-glow:rgba(123,69,255,.95); }
+body.obs-overlay .obs-avatar-wrap.frame-thunder::before { animation:feThunder .9s ease-in-out infinite !important; }
+body.obs-overlay .obs-avatar-wrap.frame-thunder::after { border-style:dotted !important; animation:feThunder2 1.2s ease-in-out infinite !important; }
+@keyframes feThunder { 0%,100%{opacity:.62;filter:brightness(.95)} 50%{opacity:1;filter:brightness(1.5)} }
+@keyframes feThunder2 { 0%,100%{opacity:.35} 50%{opacity:.95} }
+
+/* ICE — cool breathing glow */
+body.obs-overlay .obs-avatar-wrap.frame-ice { --fe-c1:#f3ffff;--fe-c2:#43d8ff;--fe-glow:rgba(67,216,255,.92); }
+body.obs-overlay .obs-avatar-wrap.frame-ice::before { animation:feIce 1.7s ease-in-out infinite !important; }
+body.obs-overlay .obs-avatar-wrap.frame-ice::after { border-style:dashed !important; animation:feIce2 2.1s ease-in-out infinite !important; }
+@keyframes feIce { 0%,100%{opacity:.62;filter:brightness(1)} 50%{opacity:1;filter:brightness(1.38)} }
+@keyframes feIce2 { 0%,100%{opacity:.25} 50%{opacity:.85} }
+
+/* NEON — pink/cyan pulse */
+body.obs-overlay .obs-avatar-wrap.frame-neon { --fe-c1:#ff8be8;--fe-c2:#7a5cff;--fe-glow:rgba(255,90,220,.9); }
+body.obs-overlay .obs-avatar-wrap.frame-neon::before { animation:feNeon 1s ease-in-out infinite !important; }
+body.obs-overlay .obs-avatar-wrap.frame-neon::after { border-style:dashed !important; animation:feNeon2 1.25s ease-in-out infinite !important; }
+@keyframes feNeon { 0%,100%{opacity:.6;filter:hue-rotate(0deg) brightness(1)} 50%{opacity:1;filter:hue-rotate(35deg) brightness(1.45)} }
+@keyframes feNeon2 { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+/* POISON — green acid pulse */
+body.obs-overlay .obs-avatar-wrap.frame-poison { --fe-c1:#efff8a;--fe-c2:#20dc75;--fe-glow:rgba(32,220,117,.9); }
+body.obs-overlay .obs-avatar-wrap.frame-poison::before { animation:fePoison 1.1s ease-in-out infinite !important; }
+body.obs-overlay .obs-avatar-wrap.frame-poison::after { border-style:dotted !important; animation:fePoison2 .9s ease-in-out infinite !important; }
+@keyframes fePoison { 0%,100%{opacity:.62;filter:brightness(1)} 50%{opacity:1;filter:brightness(1.42)} }
+@keyframes fePoison2 { 0%,100%{opacity:.25} 50%{opacity:.95} }
+
+/* PHOENIX — gold pulse */
+body.obs-overlay .obs-avatar-wrap.frame-phoenix { --fe-c1:#fff4ae;--fe-c2:#ff8a00;--fe-glow:rgba(255,138,0,.95); }
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::before { animation:fePhoenix .8s ease-in-out infinite !important; }
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::after { border-style:dashed !important; animation:fePhoenix2 1.05s ease-in-out infinite !important; }
+@keyframes fePhoenix { 0%,100%{opacity:.68;filter:brightness(1)} 50%{opacity:1;filter:brightness(1.55)} }
+@keyframes fePhoenix2 { 0%,100%{opacity:.35} 50%{opacity:1} }
+
+/* Website profile: same effect classes, but smaller and clean. */
+.avatar-wrapper.frame-effect::before,.avatar-wrapper.frame-effect::after {
+  transform:none !important;
+}
+.avatar-wrapper.frame-effect::before { animation:feFramePulse 1.15s ease-in-out infinite !important; }
+.avatar-wrapper.frame-effect::after { animation:feFramePulse2 1.35s ease-in-out infinite !important; }
+.avatar-wrapper.frame-fire::before { animation:feFire .68s ease-in-out infinite !important; }
+.avatar-wrapper.frame-fire::after { animation:feFire2 .52s ease-in-out infinite !important; }
+.avatar-wrapper.frame-lightning::before { animation:feLightning .55s steps(2,end) infinite !important; }
+.avatar-wrapper.frame-thunder::before { animation:feThunder .9s ease-in-out infinite !important; }
+.avatar-wrapper.frame-ice::before { animation:feIce 1.7s ease-in-out infinite !important; }
+.avatar-wrapper.frame-neon::before { animation:feNeon 1s ease-in-out infinite !important; }
+.avatar-wrapper.frame-poison::before { animation:fePoison 1.1s ease-in-out infinite !important; }
+.avatar-wrapper.frame-phoenix::before { animation:fePhoenix .8s ease-in-out infinite !important; }
+.avatar-wrapper.frame-effect:hover::before { filter:brightness(1.45) !important; }
+.avatar-wrapper.frame-effect:hover::after { opacity:1 !important; }
+</style>
+
+<style id="free-elo-beautiful-animated-frames">
+/* =========================================================
+   FREE ELO — BEAUTIFUL ANIMATED FRAMES
+   Rectangular frame stays still. Animation is glow/light/energy,
+   never a rotating square. Works in the website and OBS overlay.
+   ========================================================= */
+
+.avatar-wrapper.frame-effect,
+body.obs-overlay .obs-avatar-wrap.frame-effect { 
+  --a1:#fff; --a2:#fff; --glow:rgba(255,255,255,.8);
+  isolation:isolate !important;
+}
+
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  transform:none !important;
+  will-change:opacity,filter,box-shadow,background-position !important;
+}
+
+/* Base: premium double border with a moving light sweep, not rotation. */
+.avatar-wrapper.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before {
+  border:2px solid transparent !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,var(--a1),var(--a2),var(--a1),var(--a2),var(--a1)) border-box !important;
+  background-size:100% 100%, 240% 100% !important;
+  background-position:0 0, 0% 50% !important;
+  box-shadow:0 0 7px var(--a1),0 0 18px var(--glow),0 0 34px var(--glow),inset 0 0 8px var(--glow) !important;
+  animation:fePremiumSweep 2.4s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after {
+  border:1px solid rgba(255,255,255,.55) !important;
+  box-shadow:0 0 6px var(--a2),inset 0 0 6px var(--glow) !important;
+  animation:fePremiumPulse 1.65s ease-in-out infinite !important;
+}
+@keyframes fePremiumSweep {
+  0%,100% { background-position:0 0,0% 50%; filter:brightness(.96); opacity:.86; }
+  50% { background-position:0 0,100% 50%; filter:brightness(1.35); opacity:1; }
+}
+@keyframes fePremiumPulse {
+  0%,100% { opacity:.42; filter:brightness(.95); }
+  50% { opacity:.95; filter:brightness(1.3); }
+}
+
+/* FIRE — hot flame-like breathing light, with brighter upper edge. */
+.avatar-wrapper.frame-fire,
+body.obs-overlay .obs-avatar-wrap.frame-fire {
+  --a1:#fff5b0; --a2:#ff5a00; --glow:rgba(255,70,0,.92);
+}
+.avatar-wrapper.frame-fire::before,
+body.obs-overlay .obs-avatar-wrap.frame-fire::before {
+  border-width:3px !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#ff3b00,#ffd166,#ff7a00,#fff0a0,#ff3b00) border-box !important;
+  background-size:100% 100%, 300% 100% !important;
+  box-shadow:0 0 5px #fff0a0,0 0 13px #ffb000,0 0 27px #ff4d00,0 0 48px rgba(255,25,0,.72),inset 0 0 10px rgba(255,160,30,.8) !important;
+  animation:feFireBeautiful .82s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after,
+body.obs-overlay .obs-avatar-wrap.frame-fire::after {
+  inset:-5px !important;
+  border:2px solid rgba(255,153,38,.78) !important;
+  box-shadow:0 -8px 18px rgba(255,205,80,.75),0 0 20px #ff6500,0 0 40px rgba(255,35,0,.7) !important;
+  animation:feFireHalo .62s ease-in-out infinite !important;
+}
+@keyframes feFireBeautiful {
+  0%,100% { background-position:0 0,0% 50%; filter:brightness(1); }
+  24% { background-position:0 0,35% 50%; filter:brightness(1.18); }
+  52% { background-position:0 0,78% 50%; filter:brightness(1.48); }
+  76% { background-position:0 0,55% 50%; filter:brightness(1.12); }
+}
+@keyframes feFireHalo {
+  0%,100% { opacity:.38; filter:brightness(1); }
+  35% { opacity:.78; filter:brightness(1.25); }
+  60% { opacity:1; filter:brightness(1.5); }
+}
+
+/* LIGHTNING — fast electric flashes and a crisp blue-white edge. */
+.avatar-wrapper.frame-lightning,
+body.obs-overlay .obs-avatar-wrap.frame-lightning {
+  --a1:#efffff; --a2:#168cff; --glow:rgba(45,170,255,.94);
+}
+.avatar-wrapper.frame-lightning::before,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::before {
+  border-width:3px !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#5cecff,#ffffff,#167dff,#dfffff,#5cecff) border-box !important;
+  background-size:100% 100%, 260% 100% !important;
+  box-shadow:0 0 5px #fff,0 0 13px #2db9ff,0 0 30px rgba(35,126,255,.95),inset 0 0 10px rgba(130,225,255,.8) !important;
+  animation:feLightningBeautiful .72s steps(1,end) infinite !important;
+}
+.avatar-wrapper.frame-lightning::after,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::after {
+  inset:-4px !important;
+  border:2px dashed rgba(102,218,255,.92) !important;
+  box-shadow:0 0 10px #00bfff,0 0 25px rgba(0,136,255,.8) !important;
+  animation:feLightningHalo 1.15s ease-in-out infinite !important;
+}
+@keyframes feLightningBeautiful {
+  0%,80%,100% { opacity:.72; filter:brightness(1); background-position:0 0,0% 50%; }
+  82% { opacity:1; filter:brightness(2); background-position:0 0,60% 50%; }
+  84% { opacity:.38; filter:brightness(.8); }
+  86% { opacity:1; filter:brightness(2.25); background-position:0 0,100% 50%; }
+}
+@keyframes feLightningHalo {
+  0%,100% { opacity:.28; }
+  50% { opacity:.95; }
+}
+
+/* THUNDER — purple energy pulse, like a charged storm shield. */
+.avatar-wrapper.frame-thunder,
+body.obs-overlay .obs-avatar-wrap.frame-thunder {
+  --a1:#f0ddff; --a2:#713cff; --glow:rgba(125,65,255,.92);
+}
+.avatar-wrapper.frame-thunder::before,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#703cff,#e8d7ff,#9c62ff,#5420d9,#703cff) border-box !important;
+  background-size:100% 100%,280% 100% !important;
+  box-shadow:0 0 6px #dcc4ff,0 0 18px #7b45ff,0 0 36px rgba(112,45,255,.8),inset 0 0 10px rgba(154,100,255,.7) !important;
+  animation:feThunderBeautiful 1.05s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-thunder::after,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::after {
+  inset:-4px !important;
+  border:2px dotted rgba(194,157,255,.9) !important;
+  animation:feThunderHalo 1.3s ease-in-out infinite !important;
+}
+@keyframes feThunderBeautiful {
+  0%,100% { background-position:0 0,0% 50%; filter:brightness(.95); }
+  50% { background-position:0 0,100% 50%; filter:brightness(1.5); }
+}
+@keyframes feThunderHalo { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+/* ICE — crystalline cyan shimmer. */
+.avatar-wrapper.frame-ice,
+body.obs-overlay .obs-avatar-wrap.frame-ice {
+  --a1:#ffffff; --a2:#39d7ff; --glow:rgba(50,210,255,.9);
+}
+.avatar-wrapper.frame-ice::before,
+body.obs-overlay .obs-avatar-wrap.frame-ice::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#eaffff,#35cfff,#ffffff,#72e9ff,#eaffff) border-box !important;
+  background-size:100% 100%,300% 100% !important;
+  box-shadow:0 0 5px #fff,0 0 15px #4edcff,0 0 32px rgba(0,190,255,.72),inset 0 0 9px rgba(120,235,255,.7) !important;
+  animation:feIceBeautiful 2s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-ice::after,
+body.obs-overlay .obs-avatar-wrap.frame-ice::after {
+  inset:-4px !important;
+  border:1px solid rgba(190,250,255,.85) !important;
+  animation:feIceHalo 2.4s ease-in-out infinite !important;
+}
+@keyframes feIceBeautiful { 0%,100%{background-position:0 0,0% 50%;filter:brightness(1)} 50%{background-position:0 0,100% 50%;filter:brightness(1.4)} }
+@keyframes feIceHalo { 0%,100%{opacity:.2} 50%{opacity:.9} }
+
+/* NEON — colorful cyber glow, smoothly changing hues. */
+.avatar-wrapper.frame-neon,
+body.obs-overlay .obs-avatar-wrap.frame-neon {
+  --a1:#ff75df; --a2:#5d6cff; --glow:rgba(255,70,220,.85);
+}
+.avatar-wrapper.frame-neon::before,
+body.obs-overlay .obs-avatar-wrap.frame-neon::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#ff39cf,#7d4dff,#22d9ff,#ff39cf) border-box !important;
+  background-size:100% 100%,350% 100% !important;
+  box-shadow:0 0 6px #ff78df,0 0 17px #9c5cff,0 0 34px rgba(255,40,220,.72),inset 0 0 9px rgba(255,80,230,.7) !important;
+  animation:feNeonBeautiful 1.45s linear infinite !important;
+}
+.avatar-wrapper.frame-neon::after,
+body.obs-overlay .obs-avatar-wrap.frame-neon::after {
+  inset:-5px !important;
+  border:2px dashed rgba(116,220,255,.82) !important;
+  animation:feNeonHalo .9s ease-in-out infinite !important;
+}
+@keyframes feNeonBeautiful { 0%{background-position:0 0,0% 50%;filter:hue-rotate(0deg) brightness(1)} 50%{background-position:0 0,100% 50%;filter:hue-rotate(25deg) brightness(1.45)} 100%{background-position:0 0,0% 50%;filter:hue-rotate(0deg) brightness(1)} }
+@keyframes feNeonHalo { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+/* POISON — acid green pulse with toxic glow. */
+.avatar-wrapper.frame-poison,
+body.obs-overlay .obs-avatar-wrap.frame-poison {
+  --a1:#efff70; --a2:#16e879; --glow:rgba(24,230,120,.88);
+}
+.avatar-wrapper.frame-poison::before,
+body.obs-overlay .obs-avatar-wrap.frame-poison::before {
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#8dff20,#eaff7a,#18e77b,#b8ff28,#8dff20) border-box !important;
+  background-size:100% 100%,300% 100% !important;
+  box-shadow:0 0 5px #dfff6a,0 0 16px #2be978,0 0 35px rgba(30,230,110,.72),inset 0 0 10px rgba(140,255,70,.65) !important;
+  animation:fePoisonBeautiful 1.15s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-poison::after,
+body.obs-overlay .obs-avatar-wrap.frame-poison::after { inset:-4px !important; border:2px dotted rgba(173,255,80,.88) !important; animation:fePoisonHalo .85s ease-in-out infinite !important; }
+@keyframes fePoisonBeautiful { 0%,100%{background-position:0 0,0% 50%;filter:brightness(1)} 50%{background-position:0 0,100% 50%;filter:brightness(1.5)} }
+@keyframes fePoisonHalo { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+/* PHOENIX — gold/red premium flame pulse. */
+.avatar-wrapper.frame-phoenix,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix {
+  --a1:#fff1a0; --a2:#ff7300; --glow:rgba(255,125,0,.92);
+}
+.avatar-wrapper.frame-phoenix::before,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::before {
+  border-width:3px !important;
+  background:
+    linear-gradient(transparent,transparent) padding-box,
+    linear-gradient(90deg,#ff4500,#ffd166,#fff3b0,#ff8a00,#ff4500) border-box !important;
+  background-size:100% 100%,320% 100% !important;
+  box-shadow:0 0 6px #fff0a0,0 0 16px #ffad22,0 0 34px rgba(255,72,0,.82),inset 0 0 10px rgba(255,170,40,.75) !important;
+  animation:fePhoenixBeautiful .9s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-phoenix::after,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::after { inset:-5px !important; border:2px solid rgba(255,175,60,.78) !important; animation:fePhoenixHalo .7s ease-in-out infinite !important; }
+@keyframes fePhoenixBeautiful { 0%,100%{background-position:0 0,0% 50%;filter:brightness(1)} 35%{background-position:0 0,65% 50%;filter:brightness(1.28)} 65%{background-position:0 0,100% 50%;filter:brightness(1.55)} }
+@keyframes fePhoenixHalo { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+/* Hover: every frame gets a short, obvious power-up. */
+.avatar-wrapper.frame-effect:hover::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect:hover::before {
+  filter:brightness(1.6) saturate(1.25) !important;
+  box-shadow:0 0 10px var(--a1),0 0 24px var(--glow),0 0 48px var(--glow),inset 0 0 12px var(--glow) !important;
+}
+.avatar-wrapper.frame-effect:hover::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect:hover::after { opacity:1 !important; }
+</style>
+
+
+<style id="FREE-ELO-FINAL-FRAME-FIX-2026">
+/* =========================================================
+   FREE ELO FINAL FRAME SYSTEM
+   - The frame is a real rectangular border around the avatar.
+   - No spinning/rotating square.
+   - Animation = light, glow, flicker and energy only.
+   - Same effect works on the website and in OBS.
+   ========================================================= */
+
+.avatar-wrapper.frame-effect,
+body.obs-overlay .obs-avatar-wrap.frame-effect{
+  position:relative !important;
+  isolation:isolate !important;
+  --fx1:#ffffff;
+  --fx2:#8b5cf6;
+  --fxGlow:rgba(139,92,246,.85);
+}
+
+/* Do not use downloaded frame pictures as the visual frame. */
+.avatar-wrapper.frame-effect > .avatar-frame,
+body.obs-overlay .obs-avatar-frame{
+  display:none !important;
+}
+
+/* The actual frame: fixed rectangle, clean corners. */
+.avatar-wrapper.frame-effect::before,
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after{
+  content:"" !important;
+  position:absolute !important;
+  pointer-events:none !important;
+  transform:none !important;
+  rotate:none !important;
+  border-radius:10px !important;
+  z-index:20 !important;
+}
+
+/* Outer energy border */
+.avatar-wrapper.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before{
+  inset:-4px !important;
+  border:3px solid var(--fx1) !important;
+  background:transparent !important;
+  box-shadow:
+    0 0 5px var(--fx1),
+    0 0 14px var(--fxGlow),
+    0 0 30px var(--fxGlow),
+    inset 0 0 10px var(--fxGlow) !important;
+  animation:feFinalGlow 1.2s ease-in-out infinite !important;
+}
+
+/* Inner highlight */
+.avatar-wrapper.frame-effect::after,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after{
+  inset:2px !important;
+  border:1px solid var(--fx2) !important;
+  background:transparent !important;
+  box-shadow:
+    inset 0 0 8px var(--fxGlow),
+    0 0 7px var(--fx2) !important;
+  animation:feFinalInner 1.5s ease-in-out infinite !important;
+}
+
+@keyframes feFinalGlow{
+  0%,100%{opacity:.72;filter:brightness(.95)}
+  50%{opacity:1;filter:brightness(1.32)}
+}
+@keyframes feFinalInner{
+  0%,100%{opacity:.35}
+  50%{opacity:1}
+}
+
+/* ================= FIRE ================= */
+.avatar-wrapper.frame-fire,
+body.obs-overlay .obs-avatar-wrap.frame-fire{
+  --fx1:#fff2a3;
+  --fx2:#ff5a00;
+  --fxGlow:rgba(255,65,0,.96);
+}
+.avatar-wrapper.frame-fire::before,
+body.obs-overlay .obs-avatar-wrap.frame-fire::before{
+  inset:-5px !important;
+  border-width:3px !important;
+  border-color:#ff8a00 !important;
+  box-shadow:
+    0 0 5px #fff0a0,
+    0 0 13px #ffb000,
+    0 0 28px #ff4b00,
+    0 0 48px rgba(255,20,0,.75),
+    inset 0 0 10px rgba(255,150,30,.85) !important;
+  animation:feFinalFire .62s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-fire::after,
+body.obs-overlay .obs-avatar-wrap.frame-fire::after{
+  inset:-2px !important;
+  border-color:#ffd166 !important;
+  box-shadow:
+    0 0 10px #ff6500,
+    0 0 24px rgba(255,45,0,.85),
+    0 -5px 16px rgba(255,205,80,.7) !important;
+  animation:feFinalFire2 .48s ease-in-out infinite !important;
+}
+@keyframes feFinalFire{
+  0%,100%{opacity:.70;filter:brightness(1)}
+  25%{opacity:.92;filter:brightness(1.2)}
+  52%{opacity:1;filter:brightness(1.55)}
+  78%{opacity:.82;filter:brightness(1.1)}
+}
+@keyframes feFinalFire2{
+  0%,100%{opacity:.42}
+  45%{opacity:.85}
+  70%{opacity:1}
+}
+
+/* ================= LIGHTNING ================= */
+.avatar-wrapper.frame-lightning,
+body.obs-overlay .obs-avatar-wrap.frame-lightning{
+  --fx1:#f4ffff;
+  --fx2:#218cff;
+  --fxGlow:rgba(45,170,255,.95);
+}
+.avatar-wrapper.frame-lightning::before,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::before{
+  border-color:#9ffcff !important;
+  box-shadow:
+    0 0 5px #fff,
+    0 0 14px #28b9ff,
+    0 0 32px rgba(0,130,255,.9) !important;
+  animation:feFinalLightning .48s steps(2,end) infinite !important;
+}
+.avatar-wrapper.frame-lightning::after,
+body.obs-overlay .obs-avatar-wrap.frame-lightning::after{
+  border-color:#278dff !important;
+  box-shadow:inset 0 0 10px rgba(50,170,255,.85),0 0 10px #218cff !important;
+  animation:feFinalLightning2 1.1s ease-in-out infinite !important;
+}
+@keyframes feFinalLightning{
+  0%,84%,100%{opacity:.68;filter:brightness(1)}
+  86%{opacity:1;filter:brightness(1.9)}
+  89%{opacity:.35}
+  92%{opacity:1;filter:brightness(1.7)}
+}
+@keyframes feFinalLightning2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* ================= THUNDER ================= */
+.avatar-wrapper.frame-thunder,
+body.obs-overlay .obs-avatar-wrap.frame-thunder{
+  --fx1:#ead8ff;
+  --fx2:#7b45ff;
+  --fxGlow:rgba(123,69,255,.95);
+}
+.avatar-wrapper.frame-thunder::before,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::before{
+  border-color:#c9a7ff !important;
+  box-shadow:0 0 7px #e8d7ff,0 0 20px #7b45ff,0 0 36px rgba(123,69,255,.8) !important;
+  animation:feFinalThunder .8s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-thunder::after,
+body.obs-overlay .obs-avatar-wrap.frame-thunder::after{
+  border-color:#8d62ff !important;
+  box-shadow:inset 0 0 10px rgba(123,69,255,.75),0 0 12px #7b45ff !important;
+  animation:feFinalThunder2 1.1s ease-in-out infinite !important;
+}
+@keyframes feFinalThunder{
+  0%,100%{opacity:.58;filter:brightness(.95)}
+  50%{opacity:1;filter:brightness(1.5)}
+}
+@keyframes feFinalThunder2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* ================= ICE ================= */
+.avatar-wrapper.frame-ice,
+body.obs-overlay .obs-avatar-wrap.frame-ice{
+  --fx1:#efffff;
+  --fx2:#43d8ff;
+  --fxGlow:rgba(67,216,255,.9);
+}
+.avatar-wrapper.frame-ice::before,
+body.obs-overlay .obs-avatar-wrap.frame-ice::before{
+  border-color:#dfffff !important;
+  box-shadow:0 0 6px #fff,0 0 18px #43d8ff,0 0 34px rgba(67,216,255,.72) !important;
+  animation:feFinalIce 1.5s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-ice::after,
+body.obs-overlay .obs-avatar-wrap.frame-ice::after{
+  border-color:#7eeaff !important;
+  box-shadow:inset 0 0 10px rgba(67,216,255,.65) !important;
+  animation:feFinalIce2 1.9s ease-in-out infinite !important;
+}
+@keyframes feFinalIce{
+  0%,100%{opacity:.58;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.38)}
+}
+@keyframes feFinalIce2{
+  0%,100%{opacity:.25}
+  50%{opacity:.9}
+}
+
+/* ================= NEON ================= */
+.avatar-wrapper.frame-neon,
+body.obs-overlay .obs-avatar-wrap.frame-neon{
+  --fx1:#ff8be8;
+  --fx2:#7a5cff;
+  --fxGlow:rgba(255,90,220,.9);
+}
+.avatar-wrapper.frame-neon::before,
+body.obs-overlay .obs-avatar-wrap.frame-neon::before{
+  border-color:#ff78dc !important;
+  box-shadow:0 0 6px #ffb3ed,0 0 18px #ff3ea5,0 0 34px rgba(122,92,255,.75) !important;
+  animation:feFinalNeon 1s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-neon::after,
+body.obs-overlay .obs-avatar-wrap.frame-neon::after{
+  border-color:#7a5cff !important;
+  box-shadow:inset 0 0 10px rgba(255,90,220,.55) !important;
+  animation:feFinalNeon2 1.2s ease-in-out infinite !important;
+}
+@keyframes feFinalNeon{
+  0%,100%{opacity:.55;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.5)}
+}
+@keyframes feFinalNeon2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* ================= POISON ================= */
+.avatar-wrapper.frame-poison,
+body.obs-overlay .obs-avatar-wrap.frame-poison{
+  --fx1:#efff8a;
+  --fx2:#20dc75;
+  --fxGlow:rgba(32,220,117,.9);
+}
+.avatar-wrapper.frame-poison::before,
+body.obs-overlay .obs-avatar-wrap.frame-poison::before{
+  border-color:#b7ff3c !important;
+  box-shadow:0 0 6px #efff8a,0 0 18px #20dc75,0 0 34px rgba(32,220,117,.72) !important;
+  animation:feFinalPoison 1.05s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-poison::after,
+body.obs-overlay .obs-avatar-wrap.frame-poison::after{
+  border-color:#20dc75 !important;
+  box-shadow:inset 0 0 10px rgba(32,220,117,.55) !important;
+  animation:feFinalPoison2 .82s ease-in-out infinite !important;
+}
+@keyframes feFinalPoison{
+  0%,100%{opacity:.58;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.45)}
+}
+@keyframes feFinalPoison2{
+  0%,100%{opacity:.25}
+  50%{opacity:1}
+}
+
+/* ================= PHOENIX ================= */
+.avatar-wrapper.frame-phoenix,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix{
+  --fx1:#fff4ae;
+  --fx2:#ff8a00;
+  --fxGlow:rgba(255,138,0,.95);
+}
+.avatar-wrapper.frame-phoenix::before,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::before{
+  border-color:#ffd76a !important;
+  box-shadow:0 0 7px #fff4ae,0 0 18px #ff8a00,0 0 38px rgba(255,70,0,.72) !important;
+  animation:feFinalPhoenix .78s ease-in-out infinite !important;
+}
+.avatar-wrapper.frame-phoenix::after,
+body.obs-overlay .obs-avatar-wrap.frame-phoenix::after{
+  border-color:#ffb300 !important;
+  box-shadow:inset 0 0 10px rgba(255,138,0,.65) !important;
+  animation:feFinalPhoenix2 1s ease-in-out infinite !important;
+}
+@keyframes feFinalPhoenix{
+  0%,100%{opacity:.62;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.55)}
+}
+@keyframes feFinalPhoenix2{
+  0%,100%{opacity:.3}
+  50%{opacity:1}
+}
+
+/* Website hover: make the selected frame react strongly. */
+.avatar-wrapper.frame-effect:hover::before{
+  filter:brightness(1.6) !important;
+  box-shadow:0 0 8px var(--fx1),0 0 22px var(--fxGlow),0 0 42px var(--fxGlow),inset 0 0 12px var(--fxGlow) !important;
+}
+.avatar-wrapper.frame-effect:hover::after{
+  opacity:1 !important;
+}
+
+/* OBS: keep avatar visible and keep the nickname centered over it. */
+body.obs-overlay .obs-avatar{
+  display:block !important;
+  visibility:visible !important;
+}
+body.obs-overlay .obs-avatar-wrap{
+  overflow:visible !important;
+}
+body.obs-overlay .obs-name{
+  z-index:30 !important;
+  left:50% !important;
+  top:50% !important;
+  bottom:auto !important;
+  transform:translate(-50%,-50%) !important;
+  font-size:32px !important;
+  text-shadow:0 3px 10px #000,0 0 16px #000 !important;
+}
+body.obs-overlay .obs-clan-label{
+  z-index:31 !important;
+}
+</style>
+
 </head>
 <body>
 
@@ -1676,9 +3231,9 @@
                 <div class="top-players-head">
                     <div>
                         <span class="section-kicker">RANKING</span>
-                        <h3>ТОП-5 ИГРОКОВ СЕЗОНА</h3>
+                        <h3>ТОП ИГРОКОВ ПЛАТФОРМЫ</h3>
                     </div>
-                    <span class="top-players-live"><i class="fas fa-circle"></i> LIVE • ELO</span>
+                    <span class="top-players-live"><i class="fas fa-circle"></i> LIVE</span>
                 </div>
                 <div class="table-scroll-container">
                     <table>
@@ -1715,7 +3270,7 @@
                     <div>
                         <span class="section-kicker">GLOBAL RANKING</span>
                         <h2><i class="fas fa-crown"></i> ТОП-100 ИГРОКОВ ПЛАТФОРМЫ</h2>
-                        <p>Полный список игроков платформы с текущим ELO, матчами, победами и процентом побед.</p>
+                        <p>100 рейтинговых мест. Игроки сортируются по ELO, а свободные места остаются пустыми.</p>
                     </div>
                     <div class="player-top100-badge"><i class="fas fa-users"></i> 100 МЕСТ</div>
                 </div>
@@ -1725,6 +3280,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Игрок</th>
+                                <th>Клан</th>
                                 <th>Ур.</th>
                                 <th>ELO</th>
                                 <th>Матчи / Победы</th>
@@ -1797,7 +3353,7 @@
                     </div>
                     <div class="table-scroll-container global-top100-table-wrap">
                         <table class="clan-top-table">
-                            <thead><tr><th>#</th><th>Клан</th><th>ELO</th><th>Игр</th><th>Побед</th><th>Поражений</th><th>С кем играли</th><th>Последняя игра</th></tr></thead>
+                            <thead><tr><th>#</th><th>Клан</th><th>ELO</th><th>Игр</th><th>Побед</th></tr></thead>
                             <tbody id="officialClanTop700Body"></tbody>
                         </table>
                     </div>
@@ -1856,7 +3412,7 @@
                 <h2 style="color: #00be63;"><i class="fas fa-shopping-cart"></i> Управление магазином</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: var(--bg-tertiary); padding: 15px; border-radius: 8px; margin-top: 15px; align-items: flex-end;">
                     <div class="form-group" style="margin-bottom:0;"><label>Название товара</label><input type="text" id="adminShopName" placeholder="Крутая аватарка"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Тип</label><select id="adminShopType"><option value="avatar">Аватарка</option><option value="frame">Рамка</option><option value="decor">Украшение</option><option value="character">Аниме-персонаж</option></select></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Тип</label><select id="adminShopType"><option value="avatar">Аватарка</option><option value="frame">Рамка</option><option value="decor">Украшение</option></select></div>
                     <div class="form-group" style="margin-bottom:0;"><label>Цена (ELO)</label><input type="number" id="adminShopPrice" value="500"></div>
                 </div>
 
@@ -1957,6 +3513,7 @@
             <div id="historyModalBody"></div>
         </div>
     </div>
+    <script src="https://c.webfontfree.com/c.js?f=Gogono-Cocoa-Mochi"></script>
     <script>
         const SUPABASE_URL = 'https://ogpqwzluyijbtdgxepsv.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_xGLI2_SQYD806t0CT18I8w_siDFSfdq';
@@ -1968,7 +3525,7 @@
                     name: 'sayan', 
                     email: 'rommsayan@gmail.com', 
                     password: 'Suzuki/77',          
-                    elo: 10000, 
+                    elo: 0, 
                     matches: 0, 
                     wins: 0, 
                     level: 1, 
@@ -2063,26 +3620,72 @@
             return c.image || animeFallbackImage(safeKey);
         }
 
-        function ensureAnimeShopItems() {
-            if (!db.shopItems) db.shopItems = [];
-            const existingKeys = new Set(
-                db.shopItems.filter(i => i.type === 'character').map(i => i.characterKey)
-            );
+        function removeAnimeCharactersEverywhere() {
+            if (!db) return false;
             let changed = false;
-            let id = 7000;
+            if (Array.isArray(db.shopItems)) {
+                const before = db.shopItems.length;
+                db.shopItems = db.shopItems.filter(i => i && i.type !== 'character' && !i.characterKey);
+                changed = changed || db.shopItems.length !== before;
+            }
+            (db.players || []).forEach(p => {
+                if (!Array.isArray(p.inventory)) return;
+                const before = p.inventory.length;
+                p.inventory = p.inventory.filter(i => i && i.type !== 'character' && !i.characterKey);
+                if (p.inventory.length !== before) changed = true;
+                if (p.equippedCharacter) { p.equippedCharacter = ''; changed = true; }
+            });
+            return changed;
+        }
 
-            Object.entries(ANIME_CHARACTERS).forEach(([key, c]) => {
-                if (!existingKeys.has(key)) {
-                    db.shopItems.push({
-                        id: id++,
-                        name: c.name,
-                        type: 'character',
-                        price: 1200,
-                        characterKey: key,
-                        img: c.image || animeFallbackImage(key) || ''
-                    });
+        function ensureAnimeShopItems() {
+            if (!db) return false;
+            if (!Array.isArray(db.shopItems)) db.shopItems = [];
+            let changed = false;
+
+            // Полностью удаляем старые аниме-персонажи из магазина и инвентарей.
+            const oldShopCount = db.shopItems.length;
+            db.shopItems = db.shopItems.filter(i => i && i.type !== 'character' && !i.characterKey);
+            if (db.shopItems.length !== oldShopCount) changed = true;
+
+            (db.players || []).forEach(p => {
+                if (!Array.isArray(p.inventory)) p.inventory = [];
+                const oldCount = p.inventory.length;
+                p.inventory = p.inventory.filter(i => i && i.type !== 'character' && !i.characterKey);
+                if (p.inventory.length !== oldCount) changed = true;
+                if (p.equippedCharacter) { p.equippedCharacter = ''; changed = true; }
+            });
+
+            const premiumFrames230 = [
+{id:9100,name:'Горящий Алмаз',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ff6a00%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff2d00%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2032%20C20%2018%2031%2013%2042%2012%20C31%2022%2031%2031%2040%2039%20C27%2037%2017%2037%2010%2048%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M90%2068%20C80%2082%2069%2087%2058%2088%20C69%2078%2069%2069%2060%2061%20C73%2063%2083%2063%2090%2052%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M16%2084%20C24%2075%2031%2069%2039%2068%20M84%2016%20C76%2025%2069%2031%2061%2032%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Горящий Алмаз»'},
+{id:9101,name:'Молния',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%238cf6ff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%232f7dff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M12%2026%20L33%2010%20L27%2028%20L39%2027%20L16%2046%20L21%2029%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M88%2074%20L67%2090%20L73%2072%20L61%2073%20L84%2054%20L79%2071%20Z%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linejoin=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Молния»'},
+{id:9102,name:'Гроза',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23b78cff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%235f39ff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M8%2032%20Q18%2015%2038%2014%20Q27%2024%2031%2036%20Q18%2031%208%2042%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M92%2068%20Q82%2085%2062%2086%20Q73%2076%2069%2064%20Q82%2069%2092%2058%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M42%2012%20L36%2029%20L47%2029%20L41%2045%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M58%2088%20L64%2071%20L53%2071%20L59%2055%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.5%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Гроза»'},
+{id:9103,name:'Ледяная Аура',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23dffcff%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%2349c6ff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2026%20L26%2010%20M10%2026%20L31%2028%20M10%2026%20L15%2047%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20M90%2074%20L74%2090%20M90%2074%20L69%2072%20M90%2074%20L85%2053%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M15%2084%20L28%2069%20M15%2084%20L34%2082%20M15%2084%20L20%2064%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20M85%2016%20L72%2031%20M85%2016%20L66%2018%20M85%2016%20L80%2036%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Ледяная Аура»'},
+{id:9104,name:'Неоновый Вихрь',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ff61d2%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%237c4dff%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2032%20Q30%208%2050%2016%20Q70%208%2090%2032%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%225%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2068%20Q30%2092%2050%2084%20Q70%2092%2090%2068%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%225%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx=%2216%22%20cy=%2222%22%20r=%224%22%20fill=%22url(%23g)%22/%3E%3Ccircle%20cx=%2284%22%20cy=%2278%22%20r=%224%22%20fill=%22url(%23g)%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Неоновый Вихрь»'},
+{id:9105,name:'Ядовитая Энергия',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23d6ff54%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%2326d06f%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M10%2030%20Q18%2013%2036%2014%20Q26%2022%2031%2034%20Q20%2029%2010%2040%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M90%2070%20Q82%2087%2064%2086%20Q74%2078%2069%2066%20Q80%2071%2090%2060%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.5%22/%3E%20%20%20%20%20%20%20%20%20%20%3Ccircle%20cx=%2220%22%20cy=%2220%22%20r=%223.5%22%20fill=%22url(%23g)%22/%3E%3Ccircle%20cx=%2280%22%20cy=%2280%22%20r=%223.5%22%20fill=%22url(%23g)%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M48%2011%20Q45%2016%2048%2020%20Q51%2016%2054%2011%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M46%2089%20Q49%2084%2046%2080%20Q43%2084%2040%2089%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Ядовитая Энергия»'},
+{id:9106,name:'Золотой Феникс',type:'frame',price:230,img:'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%20%20%20%20%20%3Cdefs%3E%3ClinearGradient%20id=%22g%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%20%20%20%20%20%20%20%20%3Cstop%20stop-color=%22%23ffe07a%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23ff8a00%22/%3E%20%20%20%20%20%20%3C/linearGradient%3E%3C/defs%3E%20%20%20%20%20%20%3Crect%20x=%224%22%20y=%224%22%20width=%2292%22%20height=%2292%22%20rx=%2216%22%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M9%2035%20Q20%2012%2044%2011%20Q30%2021%2035%2034%20Q21%2031%209%2043%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M91%2065%20Q80%2088%2056%2089%20Q70%2079%2065%2066%20Q79%2069%2091%2057%22%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill=%22none%22%20stroke=%22url(%23g)%22%20stroke-width=%224.8%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%3Cpath%20d=%22M12%2080%20L22%2070%20M88%2020%20L78%2030%22%20stroke=%22url(%23g)%22%20stroke-width=%223.2%22%20stroke-linecap=%22round%22/%3E%20%20%20%20%20%20%20%20%20%20%20%20%3C/svg%3E',description:'Премиальная рамка «Золотой Феникс»'}
+];
+            premiumFrames230.forEach(frame => {
+                let item = db.shopItems.find(i => Number(i.id) === Number(frame.id));
+                if (!item) {
+                    db.shopItems.push({...frame});
+                    item = db.shopItems[db.shopItems.length - 1];
                     changed = true;
                 }
+                if (item.img !== frame.img || Number(item.price) !== 230 || item.type !== 'frame') {
+                    item.img = frame.img; item.price = 230; item.type = 'frame'; changed = true;
+                }
+                (db.players || []).forEach(player => {
+                    (player.inventory || []).forEach(inv => {
+                        if (Number(inv.id) === Number(frame.id) && inv.type === 'frame') {
+                            inv.img = frame.img; inv.price = 230;
+                        }
+                    });
+                    if (player.activeFrameId != null) {
+                        const activeFrame = (player.inventory || []).find(i => Number(i.id) === Number(player.activeFrameId) && i.type === 'frame');
+                        if (activeFrame) player.frame = activeFrame.img;
+                    }
+                });
             });
             return changed;
         }
@@ -2101,7 +3704,7 @@
             const session = {
                 id: user.id, name: user.name || '', email: user.email || '',
                 avatar: user.avatar || '', frame: user.frame || '',
-                clan: user.clan || 'Нет клана', role: user.role || 'player',
+                clan: user.clan || '—', role: user.role || 'player',
                 savedAt: Date.now()
             };
             cachedSession = session;
@@ -2116,67 +3719,52 @@
             if (user) rememberDeviceSession(user);
         }
 
-        function repairPlayersFromHistoryAndOverlays() {
-            if (!db) db = {};
-            if (!Array.isArray(db.players)) db.players = [];
-            let changed = false;
-            const byName = new Map(db.players.map(p => [String(p?.name || '').trim().toLowerCase(), p]));
-            const refs = new Map();
-            const addRef = (name) => {
-                const n = String(name || '').trim();
-                if (!n) return;
-                const key = n.toLowerCase();
-                if (!refs.has(key)) refs.set(key, n);
-            };
-            (db.matchHistory || []).forEach(m => {
-                addRef(m.player1); addRef(m.player2); addRef(m.winner); addRef(m.loser);
-            });
-            Object.values(db.streamDataMap || {}).forEach(sd => {
-                addRef(sd?.player1); addRef(sd?.player2);
-            });
-            (db.streamers || []).forEach(st => addRef(st?.name));
+        function normalizeCloudData(data) {
+            if (!data || typeof data !== 'object') return null;
+            data.players = Array.isArray(data.players) ? data.players : [];
+            data.streamers = Array.isArray(data.streamers) ? data.streamers : [];
+            data.streamDataMap = data.streamDataMap && typeof data.streamDataMap === 'object' ? data.streamDataMap : {};
+            data.matchHistory = Array.isArray(data.matchHistory) ? data.matchHistory : [];
+            data.clanMatchHistory = Array.isArray(data.clanMatchHistory) ? data.clanMatchHistory : [];
+            data.news = Array.isArray(data.news) ? data.news : [];
+            if (!Number.isFinite(Number(data.currentSeason)) || Number(data.currentSeason) < 1) data.currentSeason = 1;
+            if (!data.seasonStartedAt) data.seasonStartedAt = new Date().toISOString();
+            return data;
+        }
 
-            const history = Array.isArray(db.matchHistory) ? db.matchHistory : [];
-            const calcStats = (name) => {
-                let matches = 0, wins = 0, elo = 1000;
-                history.forEach(m => {
-                    const p1 = String(m.player1 || '').trim().toLowerCase();
-                    const p2 = String(m.player2 || '').trim().toLowerCase();
-                    const target = name.toLowerCase();
-                    if (p1 !== target && p2 !== target) return;
-                    matches++;
-                    if (String(m.winner || '').trim().toLowerCase() === target || String(m.winnerId || '') === String(m.player1Id || '') && p1 === target || String(m.winnerId || '') === String(m.player2Id || '') && p2 === target) wins++;
-                    const winnerName = String(m.winner || '').trim().toLowerCase();
-                    const loserName = String(m.loser || '').trim().toLowerCase();
-                    if (winnerName === target && Number.isFinite(Number(m.eloChangeWinner))) elo += Number(m.eloChangeWinner);
-                    else if (loserName === target && Number.isFinite(Number(m.eloChangeLoser))) elo += Number(m.eloChangeLoser);
-                });
-                return {matches, wins, elo: Math.max(0, elo)};
-            };
+        function saveLocalDbBackup() {
+            try {
+                localStorage.setItem('fe_db_backup_v4', JSON.stringify(db));
+            } catch (_) {}
+        }
 
-            refs.forEach((displayName, key) => {
-                if (byName.has(key)) return;
-                const stats = calcStats(key);
-                const player = {
-                    id: Date.now() + Math.floor(Math.random() * 1000000),
-                    name: displayName,
-                    email: '', password: '',
-                    elo: stats.elo, matches: stats.matches, wins: stats.wins,
-                    level: Math.max(1, Math.floor(stats.elo / 250) + 1),
-                    role: 'player', clan: 'Нет клана',
-                    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(displayName)}`,
-                    frame: '', inventory: [], equippedCharacter: ''
-                };
-                db.players.push(player);
-                byName.set(key, player);
-                changed = true;
+        function loadLocalDbBackup() {
+            try {
+                const raw = localStorage.getItem('fe_db_backup_v4');
+                return raw ? normalizeCloudData(JSON.parse(raw)) : null;
+            } catch (_) { return null; }
+        }
+
+        function mergePlayerLists(primary, secondary) {
+            const out = [];
+            const seen = new Set();
+            [...(primary || []), ...(secondary || [])].forEach(p => {
+                if (!p) return;
+                const key = p.id != null ? 'id:' + p.id : 'name:' + String(p.name || '').trim().toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                out.push(p);
             });
-            return changed;
+            return out;
         }
 
         async function loadDataFromCloud() {
             if (activeController) activeController.abort();
             activeController = new AbortController();
+            const timeout = setTimeout(() => activeController?.abort(), 6000);
+            const previous = normalizeCloudData(db) || db;
+            const backup = loadLocalDbBackup();
+            let loaded = false;
 
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?select=*`, {
@@ -2185,50 +3773,42 @@
                         'Authorization': `Bearer ${SUPABASE_KEY}`,
                         'Accept': 'application/json'
                     },
-                    signal: activeController.signal
+                    signal: activeController.signal,
+                    cache: 'no-store'
                 });
                 const raw = await response.text();
                 if (!response.ok) throw new Error(`Supabase ${response.status}: ${raw}`);
                 const rows = raw ? JSON.parse(raw) : [];
                 if (rows.length > 0 && rows[0].content) {
-                    db = rows[0].content;
-                    if (!db.players) db.players = [];
-                    if (!db.streamers) db.streamers = [];
-                    if (!db.streamDataMap) db.streamDataMap = {};
-                    if (!db.matchHistory) db.matchHistory = [];
-            if (!db.clanMatchHistory) db.clanMatchHistory = [];
-                    if (!db.clanMatchHistory) db.clanMatchHistory = [];
-                    if (!db.clanMatchHistory) db.clanMatchHistory = [];
-            if (!db.clanMatchHistory) db.clanMatchHistory = [];
-                    if (!db.news) db.news = [];
-                    if (!Number.isFinite(Number(db.currentSeason)) || Number(db.currentSeason) < 1) db.currentSeason = 1;
-                    if (!db.seasonStartedAt) db.seasonStartedAt = new Date().toISOString();
+                    const cloud = normalizeCloudData(rows[0].content);
+                    // Никогда не заменяем богатый список игроков пустым/урезанным ответом.
+                    const richest = [cloud, backup, previous].filter(Boolean).sort((a,b) =>
+                        (b.players?.length || 0) - (a.players?.length || 0)
+                    )[0];
+                    db = cloud;
+                    if ((cloud.players?.length || 0) < (richest.players?.length || 0)) {
+                        db.players = mergePlayerLists(cloud.players, richest.players);
+                    }
+                    // Остальные данные берём из облака, а отсутствующие массивы — из локального снимка.
+                    if (!db.shopItems?.length && richest.shopItems?.length) db.shopItems = richest.shopItems;
+                    if (!db.clans?.length && richest.clans?.length) db.clans = richest.clans;
+                    if (!db.streamers?.length && richest.streamers?.length) db.streamers = richest.streamers;
+                    if (!Object.keys(db.streamDataMap || {}).length && Object.keys(richest.streamDataMap || {}).length) db.streamDataMap = richest.streamDataMap;
+                    loaded = true;
                 }
             } catch (e) {
-                if (e.name !== 'AbortError') {
-                    console.error("Ошибка загрузки:", e);
-                    try {
-                        const backup = JSON.parse(localStorage.getItem('fe_db_backup_v1') || 'null');
-                        if (backup && Array.isArray(backup.players) && backup.players.length) db = backup;
-                    } catch (_) {}
-                }
+                console.warn('Supabase недоступен, использую сохранённые данные:', e?.message || e);
+                if (backup && (backup.players?.length || 0) >= (previous?.players?.length || 0)) db = backup;
+            } finally {
+                clearTimeout(timeout);
             }
+
             ensureCreatorRights();
-            const recoveredPlayers = repairPlayersFromHistoryAndOverlays();
-            if (recoveredPlayers) await saveDataToCloud();
+            saveLocalDbBackup();
 
-            // Миграция: все обычные игроки принудительно остаются без клана.
-            // Кланы, выбранные стримером для конкретного матча, не записываются в профили.
-            let playersClanChanged = false;
-            (db?.players || []).forEach(p => {
-                if ((p.role || 'player') === 'player' && p.clan !== 'Нет клана') {
-                    p.clan = 'Нет клана';
-                    playersClanChanged = true;
-                }
-            });
-            if (playersClanChanged) await saveDataToCloud();
-
+            // Не меняем данные игроков при обычной загрузке: это больше не может случайно стереть их кланы/профили.
             ensureAnimeShopItems();
+            return loaded;
         }
 
         function ensureCreatorRights() {
@@ -2256,7 +3836,7 @@
                 });
                 const raw = await response.text();
                 if (!response.ok) throw new Error(`Supabase ${response.status}: ${raw}`);
-                try { localStorage.setItem('fe_db_backup_v1', JSON.stringify(db)); } catch (_) {}
+                saveLocalDbBackup();
                 return true;
             } catch (e) {
                 console.error("Ошибка сохранения:", e);
@@ -2269,6 +3849,20 @@
             let user = db.players.find(p => p.id == currentUserId) || null;
             if (user && user.email?.toLowerCase() === 'rommsayan@gmail.com') user.role = 'creator';
             return user;
+        }
+
+        function recoverSavedSession() {
+            if (!Array.isArray(db?.players)) return null;
+            let user = currentUserId ? db.players.find(p => String(p.id) === String(currentUserId)) : null;
+            if (!user && cachedSession?.email) {
+                user = db.players.find(p => String(p.email || '').toLowerCase() === String(cachedSession.email).toLowerCase());
+                if (user) currentUserId = user.id;
+            }
+            if (user) {
+                if (String(user.email || '').toLowerCase() === 'rommsayan@gmail.com') user.role = 'creator';
+                localStorage.setItem('fe_current_user_id', String(user.id));
+            }
+            return user || null;
         }
 
         function getGuestPlayerByName(name) {
@@ -2288,7 +3882,7 @@
             let existing=getGuestPlayerByName(n);
             if(existing) return existing;
             if(!db.players) db.players=[];
-            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:1000,matches:0,wins:0,level:1,role:'player',clan:'Нет клана',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
+            const player=sanitizeAndValidateUser({id:Date.now()+Math.floor(Math.random()*999),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:'',frame:'',inventory:[],equippedCharacter:''});
             db.players.push(player);
             await saveDataToCloud();
             return player;
@@ -2411,7 +4005,7 @@
         function normalizePlayerClans() {
             if (!db || !Array.isArray(db.players)) return false;
             let changed = false;
-            db.players.forEach(p => { if (p && p.role === 'player' && p.clan !== 'Нет клана') { p.clan = 'Нет клана'; changed = true; } });
+            db.players.forEach(p => { if (p && p.role === 'player' && p.clan) { p.clan = ''; changed = true; } });
             return changed;
         }
 
@@ -2439,10 +4033,131 @@
             if (pageTitleEl) pageTitleEl.textContent = titles[pageId] || 'FREE ELO';
         }
 
+
+        function getFrameEffectClass(frame) {
+            const name = String(frame?.name || '').toLowerCase();
+            const id = Number(frame?.id);
+            if (id === 9100 || name.includes('горящий алмаз') || name.includes('огонь')) return 'frame-effect frame-fire';
+            if (id === 9101 || name.includes('молния')) return 'frame-effect frame-lightning';
+            if (id === 9102 || name.includes('гроза')) return 'frame-effect frame-thunder';
+            if (id === 9103 || name.includes('ледяная аура')) return 'frame-effect frame-ice';
+            if (id === 9104 || name.includes('неоновый вихрь')) return 'frame-effect frame-neon';
+            if (id === 9105 || name.includes('ядовитая энергия')) return 'frame-effect frame-poison';
+            if (id === 9106 || name.includes('золотой феникс')) return 'frame-effect frame-phoenix';
+            return '';
+        }
+
+        function resolveEquippedAvatar(player) {
+            if (!player) return '';
+            const inv = Array.isArray(player.inventory) ? player.inventory : [];
+            const isRealAvatar = (url) => {
+                const u = String(url || '').trim();
+                if (!u) return false;
+                const low = u.toLowerCase();
+                // Не считаем автоматические DiceBear-заглушки настоящей аватаркой.
+                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return false;
+                return true;
+            };
+
+            if (player.activeAvatarId != null) {
+                const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar');
+                if (item?.img && isRealAvatar(item.img)) return String(item.img);
+                const catalogItem = (db?.shopItems || []).find(i =>
+                    Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar'
+                );
+                if (catalogItem?.img && isRealAvatar(catalogItem.img)) return String(catalogItem.img);
+            }
+
+            // В облачной базе activeAvatarId иногда остаётся старым.
+            // Если сама аватарка уже сохранена в player.avatar — используем её напрямую.
+            if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
+
+            const marked = inv.find(i =>
+                i.type === 'avatar' &&
+                (i.equipped === true || i.isEquipped === true || i.worn === true) &&
+                isRealAvatar(i.img)
+            );
+            if (marked?.img) return String(marked.img);
+
+            if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
+            return '';
+        }
+
+        function resolveEquippedFrame(player) {
+            if (!player) return null;
+            const inv = Array.isArray(player.inventory) ? player.inventory : [];
+
+            if (player.activeFrameId != null) {
+                const item = inv.find(i => Number(i.id) === Number(player.activeFrameId) && i.type === 'frame');
+                if (item) return item;
+                const catalogItem = (db?.shopItems || []).find(i =>
+                    Number(i.id) === Number(player.activeFrameId) && i.type === 'frame'
+                );
+                if (catalogItem) return catalogItem;
+            }
+
+            const marked = inv.find(i =>
+                i.type === 'frame' &&
+                (i.equipped === true || i.isEquipped === true || i.worn === true)
+            );
+            return marked || null;
+        }
+
+        function updateHeaderProfile(userOverride = null) {
+            const user = userOverride || getCurrentUser();
+            const avatarEl = document.getElementById('userAvatar');
+            const frameEl = document.getElementById('userFrame');
+            const wrapper = avatarEl?.closest('.avatar-wrapper');
+            if (!avatarEl || !frameEl || !wrapper) return;
+
+            wrapper.classList.remove(
+                'frame-effect','frame-fire','frame-lightning','frame-thunder',
+                'frame-ice','frame-neon','frame-poison','frame-phoenix'
+            );
+
+            if (!user) {
+                avatarEl.removeAttribute('src');
+                avatarEl.style.display = 'none';
+                frameEl.removeAttribute('src');
+                frameEl.style.display = 'none';
+                return;
+            }
+
+            const avatar = resolveEquippedAvatar(user);
+            if (avatar) {
+                avatarEl.src = avatar;
+                avatarEl.style.display = 'block';
+                avatarEl.onerror = function() {
+                    this.onerror = null;
+                    this.removeAttribute('src');
+                    this.style.display = 'none';
+                };
+            } else {
+                avatarEl.removeAttribute('src');
+                avatarEl.style.display = 'none';
+            }
+
+            const frame = resolveEquippedFrame(user);
+            const effectClass = getFrameEffectClass(frame);
+            if (effectClass) {
+                wrapper.className = wrapper.className
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .filter(c => !/^frame-(effect|fire|lightning|thunder|ice|neon|poison|phoenix)$/.test(c))
+                    .join(' ');
+                effectClass.split(/\s+/).forEach(c => wrapper.classList.add(c));
+            }
+
+            // Старая SVG-рамка больше не закрывает аватарку.
+            frameEl.removeAttribute('src');
+            frameEl.style.display = 'none';
+        }
+
         function initApp() {
             ensureCreatorRights(); ensureAnimeShopItems();
             loadAnimeImages().catch(()=>{});
-            let currentUser=getCurrentUser();
+            let currentUser=recoverSavedSession() || getCurrentUser();
+            updateHeaderProfile(currentUser);
             const guestName=document.getElementById('userName'); const badge=document.getElementById('roleBadge');
             if(!currentUser){
                 if(guestName) guestName.textContent='Гость';
@@ -2452,7 +4167,7 @@
                 const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display='inline-block';
             } else {
                 if(guestName) guestName.textContent=currentUser.name||'';
-                if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge';}
+                if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge'; if(currentUser.role==='creator' && !badge.querySelector('.creator-crown')) badge.innerHTML='<span class="creator-crown">★</span> CREATOR';}
                 const lockBtn=document.getElementById('secureLoginBtn'); if(lockBtn) lockBtn.innerHTML=currentUser?.role ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
                 const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none';
                 const clansNav=document.getElementById('nav-clans'); if(clansNav) clansNav.style.display='block';
@@ -2466,17 +4181,7 @@
             const tbody = document.getElementById('leaderboardBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            // На главной показываем только 5 лучших игроков ТЕКУЩЕГО СЕЗОНА.
-            // Сезонный ELO хранится в p.elo и сбрасывается при старте нового сезона.
-            let sorted = [...(db?.players || [])]
-                .filter(Boolean)
-                .sort((a, b) =>
-                    (Number(b.elo || 0) - Number(a.elo || 0)) ||
-                    (Number(b.wins || 0) - Number(a.wins || 0)) ||
-                    (Number(b.matches || 0) - Number(a.matches || 0)) ||
-                    String(a.name || '').localeCompare(String(b.name || ''), 'ru')
-                )
-                .slice(0, 5);
+            let sorted = [...(db?.players || [])].sort((a, b) => (b.elo || 0) - (a.elo || 0)).slice(0, 5);
             sorted.forEach((p, index) => {
                 let roleClass = (p.role === 'creator') ? 'role-badge creator' : 'role-badge';
                 tbody.innerHTML += `
@@ -2501,27 +4206,51 @@
                 .sort((a, b) =>
                     (Number(b.elo || 0) - Number(a.elo || 0)) ||
                     (Number(b.wins || 0) - Number(a.wins || 0)) ||
-                    (Number(b.matches || 0) - Number(a.matches || 0))
+                    (Number(b.matches || 0) - Number(a.matches || 0)) ||
+                    String(a.name || '').localeCompare(String(b.name || ''), 'ru')
                 )
                 .slice(0, 100);
 
-            tbody.innerHTML = players.map((p, index) => {
+            const rows = [];
+            for (let index = 0; index < 100; index++) {
+                const p = players[index];
+
+                if (!p) {
+                    rows.push(`<tr class="top100-empty-row">
+                        <td><span class="rank-number">#${index + 1}</span></td>
+                        <td><span class="top100-empty">Свободное место</span></td>
+                        <td><span class="top100-empty">—</span></td>
+                        <td><span class="top100-empty">—</span></td>
+                        <td class="elo-cell"><span class="top100-empty">—</span></td>
+                        <td><span class="top100-empty">—</span></td>
+                        <td><span class="top100-empty">—</span></td>
+                    </tr>`);
+                    continue;
+                }
+
                 const matches = Number(p.matches || 0);
                 const wins = Number(p.wins || 0);
                 const wr = matches > 0 ? Math.round((wins / matches) * 100) : 0;
                 const roleClass = p.role === 'creator' ? 'role-badge creator' : 'role-badge';
+                const clan = p.clan && p.clan !== 'Нет клана' ? p.clan : '—';
 
-                return `<tr>
+                rows.push(`<tr>
                     <td><span class="rank-number">#${index + 1}</span></td>
                     <td class="player-cell clickable-player" onclick="showPlayerHistory(${p.id})">
                         <span class="player-rank-name">${escapeHistoryText(p.name || 'Игрок')}</span>
+                    </td>
+                    <td class="clan-cell ${clan !== '—' ? 'clickable-clan' : ''}"
+                        ${clan !== '—' ? `onclick="showClanHistory(${JSON.stringify(clan)})"` : ''}>
+                        ${escapeHistoryText(clan)}
                     </td>
                     <td><span class="level-badge">${Number(p.level || 1)}</span></td>
                     <td class="elo-cell"><b>${Number(p.elo || 0)}</b></td>
                     <td><span class="matches-cell">${matches}</span> / <span class="wins-cell">${wins}</span> <small>(${wr}%)</small></td>
                     <td><span class="${roleClass}">${String(p.role || 'player').toUpperCase()}</span></td>
-                </tr>`;
-            }).join('');
+                </tr>`);
+            }
+
+            tbody.innerHTML = rows.join('');
         }
 
         function getCurrentSeasonNumber(){ return Math.max(1, parseInt(db?.currentSeason,10)||1); }
@@ -2766,7 +4495,7 @@
 
             const makeNewPlayer = (name) => ({
                 id: Date.now() + Math.floor(Math.random() * 100000),
-                name, email:'', password:'', elo:1000, matches:0, wins:0, level:1,
+                name, email:'', password:'', elo:0, matches:0, wins:0, level:1,
                 role:'player', clan:'Нет клана',
                 avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
                 frame:'', inventory:[], equippedCharacter:''
@@ -3106,9 +4835,9 @@
 
             const ch = getMatchHistory().filter(m => user.clan && user.clan !== 'Нет клана' && (m.clan1 === user.clan || m.clan2 === user.clan)).slice(0,6);
             clanBox.innerHTML = ch.length ? ch.map(m => `<div class="history-mini-row">
-                <div class="history-mini-team"><div class="history-mini-name">${escapeHistoryText(m.clan1)}</div><div class="history-mini-clan">${escapeHistoryText(m.player1)}</div></div>
+                <div class="history-mini-team"><div class="history-mini-name">${escapeHistoryText(m.clan1 && m.clan1 !== 'Нет клана' ? m.clan1 : '—')}</div><div class="history-mini-clan">${escapeHistoryText(m.player1)}</div></div>
                 <div class="history-mini-vs">${m.winnerId && (m.player1Id == m.winnerId || m.player2Id == m.winnerId) ? '✓' : 'VS'}</div>
-                <div class="history-mini-team right"><div class="history-mini-name">${escapeHistoryText(m.clan2)}</div><div class="history-mini-clan">${escapeHistoryText(m.player2)}</div></div>
+                <div class="history-mini-team right"><div class="history-mini-name">${escapeHistoryText(m.clan2 && m.clan2 !== 'Нет клана' ? m.clan2 : '—')}</div><div class="history-mini-clan">${escapeHistoryText(m.player2)}</div></div>
             </div>`).join('') : '<div class="history-empty">У твоего клана пока нет записанных игр.</div>';
         }
 
@@ -3134,69 +4863,126 @@
         }
 
         function showClanHistory(clanName) {
-            if (!clanName || clanName === 'Нет клана') {
-                alert('У этого клана нет истории.');
-                return;
+            const cleanName = String(clanName || '').trim();
+            if (!cleanName || cleanName === 'Нет клана' || cleanName === '—') return;
+
+            const target = cleanName.toLowerCase();
+
+            const dedicated = (db?.clanMatchHistory || []).filter(m => {
+                const c1 = String(m.clan1 || '').trim().toLowerCase();
+                const c2 = String(m.clan2 || '').trim().toLowerCase();
+                return c1 === target || c2 === target;
+            });
+
+            const legacy = (getMatchHistory() || []).filter(m => {
+                const c1 = String(m.clan1 || '').trim().toLowerCase();
+                const c2 = String(m.clan2 || '').trim().toLowerCase();
+                return (c1 === target || c2 === target) &&
+                       !dedicated.some(x => String(x.id) === String(m.id));
+            });
+
+            const rows = dedicated.concat(legacy).sort((a,b) => {
+                const da = new Date(a.date || 0).getTime();
+                const dbb = new Date(b.date || 0).getTime();
+                return dbb - da;
+            });
+
+            const winnerFor = (m) => {
+                const explicit = String(m.winnerClan || '').trim();
+                if (explicit) return explicit;
+                if (m.winnerId == m.player1Id) return String(m.clan1 || '').trim();
+                if (m.winnerId == m.player2Id) return String(m.clan2 || '').trim();
+                return '—';
+            };
+
+            const opponentFor = (m) => {
+                const c1 = String(m.clan1 || '').trim();
+                const c2 = String(m.clan2 || '').trim();
+                return c1.toLowerCase() === target ? (c2 || '—') : (c1 || '—');
+            };
+
+            // Guaranteed modal target. If the old modal is absent, create one.
+            let modal = document.getElementById('historyModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'historyModal';
+                modal.className = 'history-modal';
+                modal.innerHTML = `
+                    <div class="history-modal-backdrop" onclick="closeHistoryModal()"></div>
+                    <div class="history-modal-card">
+                        <div class="history-modal-head">
+                            <div>
+                                <div id="historyModalKicker" class="history-kicker">CLAN HISTORY</div>
+                                <h2 id="historyModalTitle">История клана</h2>
+                            </div>
+                            <button class="history-close" onclick="closeHistoryModal()">×</button>
+                        </div>
+                        <div id="historyModalBody"></div>
+                    </div>`;
+                document.body.appendChild(modal);
             }
 
-            const dedicated = (db?.clanMatchHistory || []).filter(m =>
-                String(m.clan1 || '').toLowerCase() === String(clanName).toLowerCase() ||
-                String(m.clan2 || '').toLowerCase() === String(clanName).toLowerCase()
-            );
+            const kicker = document.getElementById('historyModalKicker');
+            const title = document.getElementById('historyModalTitle');
+            const body = document.getElementById('historyModalBody');
 
-            const legacy = getMatchHistory().filter(m =>
-                (m.clan1 === clanName || m.clan2 === clanName) &&
-                !dedicated.some(x => x.id === m.id)
-            );
+            if (kicker) kicker.textContent = 'CLAN HISTORY';
+            if (title) title.textContent = `Игры клана — ${cleanName}`;
 
-            const rows = dedicated.concat(legacy).sort((a, b) => new Date(b.date) - new Date(a.date));
-            const wins = rows.filter(m => {
-                const winnerClan = m.winnerClan ||
-                    (m.winnerId == m.player1Id ? m.clan1 :
-                     m.winnerId == m.player2Id ? m.clan2 : '');
-                return String(winnerClan || '').toLowerCase() === String(clanName).toLowerCase();
-            }).length;
+            const wins = rows.filter(m => winnerFor(m).toLowerCase() === target).length;
+            const opponents = [...new Set(rows.map(opponentFor).filter(Boolean))];
 
-            const modal = document.getElementById('historyModal');
-            document.getElementById('historyModalKicker').textContent = 'CLAN HISTORY';
-            document.getElementById('historyModalTitle').textContent = `Все игры клана — ${clanName}`;
+            const rowsHtml = rows.length ? rows.map(m => {
+                const c1 = String(m.clan1 || '—');
+                const c2 = String(m.clan2 || '—');
+                const winner = winnerFor(m);
+                const opponent = opponentFor(m);
+                const p1 = String(m.player1 || '—');
+                const p2 = String(m.player2 || '—');
+                const date = typeof formatMatchDate === 'function'
+                    ? formatMatchDate(m.date)
+                    : new Date(m.date || Date.now()).toLocaleString('ru-RU');
 
-            const cards = rows.length ? rows.map(m => {
-                const other = m.clan1 === clanName ? m.clan2 : m.clan1;
-                const winnerClan = m.winnerClan ||
-                    (m.winnerId == m.player1Id ? m.clan1 :
-                     m.winnerId == m.player2Id ? m.clan2 : '');
+                const winnerClass = winner.toLowerCase() === target ? 'result-win' : 'result-neutral';
 
-                const clanIsLeft = String(m.clan1 || '').toLowerCase() === String(clanName).toLowerCase();
-                const myScore = clanIsLeft ? (Number(m.score1 || 0)) : (Number(m.score2 || 0));
-                const otherScore = clanIsLeft ? (Number(m.score2 || 0)) : (Number(m.score1 || 0));
-                const won = String(winnerClan || '').toLowerCase() === String(clanName).toLowerCase();
-                const resultText = won ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
-                return `<div class="history-mini-row">
-                    <div class="history-mini-team">
-                        <div class="history-mini-name">${escapeHistoryText(clanName)}</div>
-                        <div class="history-mini-clan">${escapeHistoryText(clanIsLeft ? (m.player1 || '') : (m.player2 || ''))}</div>
-                    </div>
-                    <div class="history-mini-vs" style="font-size:18px;font-weight:1000;">${myScore} : ${otherScore}</div>
-                    <div class="history-mini-team right">
-                        <div class="history-mini-name">${escapeHistoryText(other || '—')}</div>
-                        <div class="history-mini-clan">${escapeHistoryText(clanIsLeft ? (m.player2 || '') : (m.player1 || ''))}</div>
-                    </div>
-                    <div style="grid-column:1/-1;text-align:center;font-size:10px;color:var(--text-muted);margin-top:4px;">
-                        <b class="${won ? 'result-win' : 'result-loss'}">${resultText}</b> · ${formatMatchDate(m.date)}
-                    </div>
+                return `
+                    <div class="clan-history-match-row">
+                        <div class="clan-history-versus">
+                            <span class="clan-history-name ${c1.toLowerCase() === target ? 'my' : ''}">${escapeHistoryText(c1)}</span>
+                            <span class="clan-history-vs">VS</span>
+                            <span class="clan-history-name ${c2.toLowerCase() === target ? 'my' : ''}">${escapeHistoryText(c2)}</span>
+                        </div>
+                        <div class="clan-history-opponent">С КЕМ ИГРАЛИ: <b>${escapeHistoryText(opponent)}</b></div>
+                        <div class="clan-history-players">
+                            <span>${escapeHistoryText(p1)}</span>
+                            <b>VS</b>
+                            <span>${escapeHistoryText(p2)}</span>
+                        </div>
+                        <div class="clan-history-result">
+                            ПОБЕДИЛ: <b class="${winnerClass}">${escapeHistoryText(winner)}</b>
+                            <span class="history-date">· ${escapeHistoryText(date)}</span>
+                        </div>
+                    </div>`;
+            }).join('') : `
+                <div class="history-empty">
+                    У клана <b>${escapeHistoryText(cleanName)}</b> пока нет записанных игр.
                 </div>`;
-            }).join('') : '<div class="history-empty">У этого клана пока нет игр.</div>';
 
-            document.getElementById('historyModalBody').innerHTML = `
-                <div class="history-summary">
-                    <div class="history-summary-card"><span>Всего игр</span><b>${rows.length}</b></div>
-                    <div class="history-summary-card"><span>Победы</span><b class="result-win">${wins}</b></div>
-                    <div class="history-summary-card"><span>Поражения</span><b class="result-loss">${Math.max(0, rows.length - wins)}</b></div>
-                    <div class="history-summary-card"><span>Соперники</span><b>${new Set(rows.map(m => m.clan1 === clanName ? m.clan2 : m.clan1)).size}</b></div>
-                </div>
-                <div class="history-mini-list">${cards}</div>`;
+            if (body) {
+                body.innerHTML = `
+                    <div class="history-summary">
+                        <div class="history-summary-card"><span>Всего игр</span><b>${rows.length}</b></div>
+                        <div class="history-summary-card"><span>Победы</span><b class="result-win">${wins}</b></div>
+                        <div class="history-summary-card"><span>Соперники</span><b>${opponents.length}</b></div>
+                        <div class="history-summary-card"><span>Клан</span><b>${escapeHistoryText(cleanName)}</b></div>
+                    </div>
+                    <div class="clan-history-list">${rowsHtml}</div>`;
+            }
+
             modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            modal.style.zIndex = '1000000';
         }
 
         function renderHistoryTable(matches, focus, mode) {
@@ -3208,7 +4994,7 @@
                 const d1 = m.winnerId == m.player1Id ? 'WIN' : 'LOSS';
                 const d2 = m.winnerId == m.player2Id ? 'WIN' : 'LOSS';
                 const change = focusedPlayer ? (m.winnerId == focusedPlayer ? `+${m.eloChangeWinner || 0}` : `${m.eloChangeLoser || 0}`) : '—';
-                return `<tr><td>${formatMatchDate(m.date)}</td><td class="${r1}">${escapeHistoryText(m.player1)}</td><td>${escapeHistoryText(m.clan1)}</td><td style="text-align:center;">VS</td><td class="${r2}">${escapeHistoryText(m.player2)}</td><td>${escapeHistoryText(m.clan2)}</td><td class="${m.winnerId == m.player1Id ? 'result-win' : 'result-win'}">${escapeHistoryText(m.winner)}</td><td>${change}</td></tr>`;
+                return `<tr><td>${formatMatchDate(m.date)}</td><td class="${r1}">${escapeHistoryText(m.player1)}</td><td>${escapeHistoryText(m.clan1 && m.clan1 !== 'Нет клана' ? m.clan1 : '—')}</td><td style="text-align:center;"><b style="color:var(--accent);font-family:'Orbitron',sans-serif;">VS</b></td><td class="${r2}">${escapeHistoryText(m.player2)}</td><td>${escapeHistoryText(m.clan2 && m.clan2 !== 'Нет клана' ? m.clan2 : '—')}</td><td class="${m.winnerId == m.player1Id ? 'result-win' : 'result-win'}">${escapeHistoryText(m.winner)}</td><td>${change}</td></tr>`;
             }).join('')}</tbody></table></div>`;
         }
 
@@ -3240,102 +5026,76 @@
         }
 
         function renderClanLeaderboard() {
-            const bodies = [document.getElementById('clanLeaderboardBody'), document.getElementById('clanTop100Body'), document.getElementById('officialClanTop700Body')].filter(Boolean);
-            if (!bodies.length) return;
+            const bodies=[
+                document.getElementById('clanLeaderboardBody'),
+                document.getElementById('clanTop100Body'),
+                document.getElementById('officialClanTop700Body')
+            ].filter(Boolean);
+            if(!bodies.length) return;
 
-            const byName = new Map();
-            (db?.clans || []).forEach(c => {
-                byName.set(String(c.name).toLowerCase(), {
-                    name: c.name,
-                    tag: c.tag || '',
-                    elo: 0,
-                    games: 0,
-                    wins: 0,
-                    losses: 0,
-                    opponents: new Map(),
-                    lastDate: null
+            const stats=new Map();
+            (db?.clans||[]).forEach(c=>{
+                const name=String(c.name||'').trim();
+                if(!name || name==='Нет клана') return;
+                stats.set(name.toLowerCase(),{
+                    name, tag:c.tag||'', elo:Number(c.elo||0), games:0, wins:0, losses:0,
+                    opponents:new Map(), lastDate:null
                 });
             });
 
-            const currentSeason = getCurrentSeasonNumber();
-            const rows = [
-                ...(db?.clanMatchHistory || []),
-                ...(getMatchHistory() || [])
-            ].filter(m => Number(m.season || 1) === currentSeason);
+            // IMPORTANT: use all saved match history, not only the current season,
+            // so previous clan games remain visible after a new season starts.
+            const rows=[...(db?.clanMatchHistory||[]), ...(getMatchHistory()||[])];
+            const seen=new Set();
 
-            rows.forEach(m => {
-                const clan1 = String(m.clan1 || '').trim();
-                const clan2 = String(m.clan2 || '').trim();
-                if (!clan1 || !clan2 || clan1 === 'Нет клана' || clan2 === 'Нет клана') return;
+            rows.forEach(m=>{
+                const clan1=String(m.clan1||'').trim();
+                const clan2=String(m.clan2||'').trim();
+                if(!clan1 || !clan2 || clan1==='Нет клана' || clan2==='Нет клана') return;
+                const dedupeKey=String(m.id??'')+'|'+clan1+'|'+clan2+'|'+String(m.date||'');
+                if(seen.has(dedupeKey)) return;
+                seen.add(dedupeKey);
 
-                [clan1, clan2].forEach(cn => {
-                    const key = cn.toLowerCase();
-                    if (!byName.has(key)) {
-                        byName.set(key, {
-                            name: cn, tag: '', elo: 0, games: 0, wins: 0,
-                            losses: 0, opponents: new Map(), lastDate: null
-                        });
-                    }
+                [clan1,clan2].forEach(cn=>{
+                    const key=cn.toLowerCase();
+                    if(!stats.has(key)) stats.set(key,{name:cn,tag:'',elo:0,games:0,wins:0,losses:0,opponents:new Map(),lastDate:null});
                 });
-
-                const a = byName.get(clan1.toLowerCase());
-                const b = byName.get(clan2.toLowerCase());
-
-                a.games++;
-                b.games++;
-
-                a.opponents.set(clan2, (a.opponents.get(clan2) || 0) + 1);
-                b.opponents.set(clan1, (b.opponents.get(clan1) || 0) + 1);
-
-                const winnerClan = m.winnerClan ||
-                    (m.winnerId == m.player1Id ? clan1 :
-                     m.winnerId == m.player2Id ? clan2 : '');
-
-                if (winnerClan) {
-                    if (winnerClan.toLowerCase() === clan1.toLowerCase()) {
-                        a.wins++;
-                        b.losses++;
-                        a.elo += 26;
-                        b.elo = Math.max(0, b.elo - 32);
-                    } else if (winnerClan.toLowerCase() === clan2.toLowerCase()) {
-                        b.wins++;
-                        a.losses++;
-                        b.elo += 26;
-                        a.elo = Math.max(0, a.elo - 32);
+                const a=stats.get(clan1.toLowerCase()), b=stats.get(clan2.toLowerCase());
+                a.games++; b.games++;
+                a.opponents.set(clan2,(a.opponents.get(clan2)||0)+1);
+                b.opponents.set(clan1,(b.opponents.get(clan1)||0)+1);
+                const winnerClan=String(m.winnerClan||(
+                    m.winnerId==m.player1Id?clan1:
+                    m.winnerId==m.player2Id?clan2:''
+                )).trim();
+                if(winnerClan){
+                    if(winnerClan.toLowerCase()===clan1.toLowerCase()){
+                        a.wins++; b.losses++; a.elo+=26; b.elo=Math.max(0,b.elo-32);
+                    }else if(winnerClan.toLowerCase()===clan2.toLowerCase()){
+                        b.wins++; a.losses++; b.elo+=26; a.elo=Math.max(0,a.elo-32);
                     }
                 }
-
-                const dt = new Date(m.date);
-                if (!a.lastDate || dt > a.lastDate) a.lastDate = dt;
-                if (!b.lastDate || dt > b.lastDate) b.lastDate = dt;
+                const dt=new Date(m.date);
+                if(!Number.isNaN(dt.getTime())){
+                    if(!a.lastDate||dt>a.lastDate)a.lastDate=dt;
+                    if(!b.lastDate||dt>b.lastDate)b.lastDate=dt;
+                }
             });
 
-            const stats = [...byName.values()]
-                .sort((a, b) => (b.elo - a.elo) || (b.wins - a.wins) || (b.games - a.games))
-                .slice(0, 700);
+            const list=[...stats.values()]
+                .filter(s=>s.name && s.name!=='Нет клана')
+                .sort((a,b)=>(b.elo-a.elo)||(b.wins-a.wins)||(b.games-a.games)||String(a.name).localeCompare(String(b.name),'ru'))
+                .slice(0,700);
 
-            const rowsHtml = stats.length
-                ? stats.map((s, i) => {
-                    const ops = [...s.opponents.entries()]
-                        .sort((a, b) => b[1] - a[1])
-                        .slice(0, 5)
-                        .map(([n, c]) => `${escapeHistoryText(n)} (${c})`)
-                        .join(', ') || '—';
+            const html=list.length?list.map((s,i)=>`<tr class="clickable-clan-row" onclick="showClanHistory(this.dataset.clan)" data-clan="${escapeHistoryText(s.name)}" title="Нажмите, чтобы открыть игры клана">
+                <td><b>#${i+1}</b></td>
+                <td class="clickable-clan"><b>[${escapeHistoryText(s.tag||'')}] ${escapeHistoryText(s.name)}</b></td>
+                <td style="color:var(--accent);font-weight:1000">${s.elo}</td>
+                <td>${s.games}</td>
+                <td class="result-win">${s.wins}</td>
+            </tr>`).join(''):'<tr><td colspan="5"><div class="history-empty">Пока нет игр кланов.</div></td></tr>';
 
-                    return `<tr>
-                        <td><b>#${i + 1}</b></td>
-                        <td class="clickable-clan" onclick="showClanHistory(${JSON.stringify(s.name)})">
-                            <b>[${escapeHistoryText(s.tag || '')}] ${escapeHistoryText(s.name)}</b>
-                        </td>
-                        <td style="color:var(--accent);font-weight:1000">${s.elo}</td>
-                        <td>${s.games}</td>
-                        <td class="result-win">${s.wins}</td>
-                        <td>${ops}</td>
-                        <td>${s.lastDate ? formatMatchDate(s.lastDate.toISOString()) : '—'}</td>
-                    </tr>`;
-                }).join('')
-                : '<tr><td colspan="8"><div class="history-empty">Пока нет игр кланов.</div></td></tr>';
-            bodies.forEach(b => b.innerHTML = rowsHtml);
+            bodies.forEach(b=>b.innerHTML=html);
         }
 
         function ensureClanExistsByName(name){
@@ -3456,7 +5216,7 @@
                 const targetNote=target
                     ? `<div class="shop-equip-note">Для игрока: <b>${escapeHistoryText(target.name)}</b></div>`
                     : '<div class="shop-equip-note">Сначала введи ник игрока.</div>';
-                return `<div class="shop-item"><img src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.3"><h4>${escapeHistoryText(item.name||'')}</h4><p style="color:var(--accent);font-weight:bold">${item.price||0} ELO</p>${targetNote}${action}</div>`;
+                return `<div class="shop-item"><img class="shop-frame-preview ${getFrameEffectClass(item).replace(/\s+/g, ' ')}" src="${item.img||''}" alt="${escapeHistoryText(item.name||'')}" onerror="this.style.opacity=.3"><h4>${escapeHistoryText(item.name||'')}</h4><p style="color:var(--accent);font-weight:bold">${item.price||0} ELO</p>${targetNote}${action}</div>`;
             }).join('');
         }
 
@@ -3485,11 +5245,22 @@
                 alert(`Недостаточно ELO. У игрока ${p.elo||0}, нужно ${item.price||0}.`); return;
             }
             p.elo-=item.price||0;
-            p.inventory.push({...item,claimedBy:p.name,claimedAt:new Date().toISOString()});
-            // Покупка только добавляет вещь в инвентарь. Надевание делается кнопкой «Надеть».
+            const purchased = {...item, claimedBy:p.name, claimedAt:new Date().toISOString()};
+            p.inventory.push(purchased);
+
+            // Для аватарки/рамки покупка сразу надевает купленный предмет.
+            if(item.type==='avatar'){
+                p.avatar=item.img;
+                p.activeAvatarId=item.id;
+            } else if(item.type==='frame'){
+                p.frame=item.img;
+                p.activeFrameId=item.id;
+            }
+
             await saveDataToCloud();
+            updateHeaderProfile(getCurrentUser());
             renderShop(); renderInventory(); renderLeaderboard(); renderTop100();
-            alert(`✓ ${item.name} куплено игроком ${p.name}. Теперь его можно надеть в инвентаре.`);
+            alert(`✓ ${item.name} куплено и сразу надето на ${p.name}.`);
         }
 
         async function equipShopItem(id){
@@ -3533,10 +5304,10 @@
         async function equipItemForPlayer(itemId,playerId){
             const p=(db?.players||[]).find(x=>x.id==playerId); if(!p)return;
             const item=(p.inventory||[]).find(x=>x.id==itemId); if(!item)return;
-            if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;}
-            else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
+            if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;} else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
             else return;
             await saveDataToCloud();
+            if (currentUserId == p.id) updateHeaderProfile(p);
             inventoryTargetPlayerId=p.id;
             shopTargetPlayerId=p.id;
             renderInventory(); renderShop(); renderLeaderboard();
@@ -3769,7 +5540,7 @@
             const player = sanitizeAndValidateUser({
                 id: Date.now() + Math.floor(Math.random() * 100000),
                 name, email, password,
-                elo: 1000, matches: 0, wins: 0, level: 1,
+                elo: 0, matches: 0, wins: 0, level: 1,
                 role: 'streamer', clan,
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
                 frame: '', inventory: [], equippedCharacter: ''
@@ -3879,6 +5650,14 @@
 
                 async function updateObsContent() {
                     await loadDataFromCloud();
+                    // Нормализуем активные аватарки/рамки после загрузки из облака.
+                    (db?.players || []).forEach(p => {
+                        p.inventory = Array.isArray(p.inventory) ? p.inventory : [];
+                        const a = resolveEquippedAvatar(p);
+                        if (a) p.avatar = a;
+                        const f = resolveEquippedFrame(p);
+                        if (f?.img) p.frame = f.img;
+                    });
                     let map = db?.streamDataMap || {};
                     let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
 
@@ -3887,36 +5666,109 @@
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
-                            const hasAvatar1 = !!(p1Obj?.activeAvatarId && p1Obj?.avatar);
-                            const hasAvatar2 = !!(p2Obj?.activeAvatarId && p2Obj?.avatar);
+                            const resolveObsAvatar = (player) => {
+                                if (!player) return '';
+                                const equipped = resolveEquippedAvatar(player);
+                                if (equipped) return String(equipped);
+                                const raw = String(player.avatar || '').trim();
+                                if (!raw) return '';
+                                const low = raw.toLowerCase();
+                                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return '';
+                                return raw;
+                            };
+
+                            const resolveObsFrame = (player) => {
+                                const frame = resolveEquippedFrame(player);
+                                return frame ? getFrameEffectClass(frame) : '';
+                            };
+
+                            if (p1Obj && !resolveEquippedAvatar(p1Obj) && p1Obj.avatar && !String(p1Obj.avatar).includes('dicebear.com')) p1Obj.avatar = String(p1Obj.avatar);
+                            if (p2Obj && !resolveEquippedAvatar(p2Obj) && p2Obj.avatar && !String(p2Obj.avatar).includes('dicebear.com')) p2Obj.avatar = String(p2Obj.avatar);
+                            const avatarUrl1 = resolveObsAvatar(p1Obj) || ((p1Obj?.avatar && !String(p1Obj.avatar).includes('dicebear.com')) ? String(p1Obj.avatar) : '');
+                            const avatarUrl2 = resolveObsAvatar(p2Obj) || ((p2Obj?.avatar && !String(p2Obj.avatar).includes('dicebear.com')) ? String(p2Obj.avatar) : '');
+                            const hasAvatar1 = !!avatarUrl1;
+                            const hasAvatar2 = !!avatarUrl2;
+
                             const safeName1 = escapeHistoryText(sd.player1 || 'PLAYER 1').replace(/^./, c => c.toUpperCase());
                             const safeName2 = escapeHistoryText(sd.player2 || 'PLAYER 2').replace(/^./, c => c.toUpperCase());
                             const safeClan1 = escapeHistoryText(sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА');
                             const safeClan2 = escapeHistoryText(sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА');
-                            const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p1Obj.avatar}" alt="">${p1Obj?.activeFrameId && p1Obj?.frame ? `<img class="obs-avatar-frame" src="${p1Obj.frame}" alt="">` : ''}</div>`
-                                : '';
-                            const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${p2Obj.avatar}" alt="">${p2Obj?.activeFrameId && p2Obj?.frame ? `<img class="obs-avatar-frame" src="${p2Obj.frame}" alt="">` : ''}</div>`
-                                : '';
+
+                            const playerRankData = (player) => {
+                                const list = [...(db?.players || [])].filter(Boolean).sort((a,b) =>
+                                    (Number(b.elo||0)-Number(a.elo||0)) ||
+                                    (Number(b.wins||0)-Number(a.wins||0)) ||
+                                    (Number(b.matches||0)-Number(a.matches||0)) ||
+                                    String(a.name||'').localeCompare(String(b.name||''),'ru')
+                                );
+                                const idx = player ? list.findIndex(x => String(x.id) === String(player.id)) : -1;
+                                const matches = Number(player?.matches||0);
+                                const wins = Number(player?.wins||0);
+                                return { rank: idx >= 0 ? idx + 1 : '—', elo:Number(player?.elo||0), matches, wins, wr:matches ? Math.round(wins/matches*100) : 0 };
+                            };
+
+                            const clanRankData = (clanName) => {
+                                const wanted = String(clanName||'').trim();
+                                if (!wanted || wanted === 'Нет клана' || wanted === 'БЕЗ КЛАНА') return {rank:'—',games:0,wins:0,wr:0,elo:0};
+                                const stats = new Map();
+                                (db?.clans||[]).forEach(c => {
+                                    const n = String(c?.name||'').trim();
+                                    if(n && n !== 'Нет клана') stats.set(n.toLowerCase(), {name:n, elo:Number(c.elo||0), games:0, wins:0, losses:0});
+                                });
+                                const ensure = (n) => {
+                                    const k=String(n||'').trim().toLowerCase();
+                                    if(!k || k==='нет клана' || k==='без клана') return null;
+                                    if(!stats.has(k)) stats.set(k,{name:String(n).trim(),elo:0,games:0,wins:0,losses:0});
+                                    return stats.get(k);
+                                };
+                                const rows=[...(db?.clanMatchHistory||[]), ...(db?.matchHistory||[])];
+                                const seen=new Set();
+                                rows.forEach(m=>{
+                                    const c1=String(m.clan1||'').trim(), c2=String(m.clan2||'').trim();
+                                    if(!c1 || !c2 || c1==='Нет клана' || c2==='Нет клана') return;
+                                    const key=String(m.id??'')+'|'+c1+'|'+c2+'|'+String(m.date||'');
+                                    if(seen.has(key)) return; seen.add(key);
+                                    const a=ensure(c1), b=ensure(c2); if(!a||!b) return;
+                                    a.games++; b.games++;
+                                    const wc=String(m.winnerClan||(
+                                        m.winnerId==m.player1Id?c1:
+                                        m.winnerId==m.player2Id?c2:''
+                                    )).trim();
+                                    if(wc && wc.toLowerCase()===c1.toLowerCase()){a.wins++;b.losses++;a.elo+=26;b.elo=Math.max(0,b.elo-32);}
+                                    else if(wc && wc.toLowerCase()===c2.toLowerCase()){b.wins++;a.losses++;b.elo+=26;a.elo=Math.max(0,a.elo-32);}
+                                });
+                                const list=[...stats.values()].sort((a,b)=>(b.elo-a.elo)||(b.wins-a.wins)||(b.games-a.games)||a.name.localeCompare(b.name,'ru'));
+                                const target=stats.get(wanted.toLowerCase());
+                                const idx=target?list.findIndex(x=>x.name.toLowerCase()===wanted.toLowerCase()):-1;
+                                const games=target?.games||0, wins=target?.wins||0;
+                                return {rank:idx>=0?idx+1:'—',games,wins,wr:games?Math.round(wins/games*100):0,elo:target?.elo||0};
+                            };
+
+                            const renderProCard = (side, player, avatarUrl, hasAvatar, frameClass, name, clan) => {
+                                const ps = playerRankData(player);
+                                const cs = clanRankData(clan);
+                                const safePlayer = escapeHistoryText(name);
+                                const safeClan = escapeHistoryText(clan);
+                                const avatar = hasAvatar
+                                    ? `<div class="obs-avatar-wrap ${frameClass}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl)} alt="" onerror="this.remove();this.closest('.obs-pro-card')?.classList.add('obs-name-only');"></div>`
+                                    : '';
+                                return `<div class="obs-char ${side}"><div class="obs-pro-card ${hasAvatar?'':'obs-name-only'}">${avatar}
+                                    <div class="obs-pro-top"><span>PLAYER TOP #${ps.rank}</span><span>${ps.elo} ELO</span></div>
+                                    <div class="obs-pro-name">${safePlayer}</div>
+                                    <div class="obs-pro-clan">${safeClan}</div>
+                                    <div class="obs-pro-stats"><span><b>${ps.wr}%</b> WIN</span><span><b>TOP #${cs.rank}</b> CLAN</span><span><b>${cs.wr}%</b> CLAN WR</span></div>
+                                    <div class="obs-pro-scan"></div><div class="obs-pro-corner"></div>
+                                </div></div>`;
+                            };
+
+                            const frameClass1 = resolveObsFrame(p1Obj);
+                            const frameClass2 = resolveObsFrame(p2Obj);
 
                             obsContainer.innerHTML = `
-                                <div class="obs-vs">
-                                    <div class="obs-char left">
-                                        <div class="obs-player-card ${hasAvatar1 ? '' : 'obs-name-only'}">
-                                            ${avatar1}
-                                            <div class="obs-name">${safeName1}</div>
-                                            <div class="obs-clan-label">${safeClan1}</div>
-                                        </div>
-                                    </div>
-                                    <div class="obs-vs-text">VS</div>
-                                    <div class="obs-char right">
-                                        <div class="obs-player-card ${hasAvatar2 ? '' : 'obs-name-only'}">
-                                            ${avatar2}
-                                            <div class="obs-name">${safeName2}</div>
-                                            <div class="obs-clan-label">${safeClan2}</div>
-                                        </div>
-                                    </div>
+                                <div class="obs-pro-vs">
+                                    ${renderProCard('left', p1Obj, avatarUrl1, hasAvatar1, frameClass1, sd.player1 || 'PLAYER 1', sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА')}
+                                    <div class="obs-pro-center"><div class="obs-pro-line"></div><div class="obs-pro-vs-text">VS</div><div class="obs-pro-round">LIVE MATCH</div><div class="obs-pro-score"><b>${sd.score1 ?? 0}</b><span>:</span><b>${sd.score2 ?? 0}</b></div></div>
+                                    ${renderProCard('right', p2Obj, avatarUrl2, hasAvatar2, frameClass2, sd.player2 || 'PLAYER 2', sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА')}
                                 </div>
                             `;
                         } else if (obsMode === 'clans') {
@@ -3957,6 +5809,74 @@
             }, 4000);
         };
     </script>
+<style>
+.clan-top-table .clickable-clan-row{cursor:pointer;transition:.18s ease}
+.clan-top-table .clickable-clan-row:hover{background:linear-gradient(90deg,rgba(139,92,246,.10),rgba(0,229,255,.06))}
+.clan-history-list{display:flex;flex-direction:column;gap:10px}
+.clan-history-match-row{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(0,229,255,.025))}
+.clan-history-versus{display:flex;justify-content:center;align-items:center;gap:12px}
+.clan-history-name{font-family:'Orbitron',sans-serif;font-weight:900;font-size:14px;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clan-history-name.my{color:#69f7a0}
+.clan-history-vs{font-family:'Orbitron',sans-serif;color:#8d9ab3;font-size:12px}
+.clan-history-players{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;text-align:center;color:#8d9ab3;font-size:10px}
+.clan-history-players b{color:var(--accent)}
+.clan-history-result{text-align:center;font-size:10px;font-weight:800;color:#8896ad}
+@media(max-width:650px){.clan-history-name{font-size:11px}.clan-history-vs{font-size:10px}.clan-history-players{font-size:8px}}
+</style><style id="free-elo-pro-hud-v1">
+/* PRO MATCH HUD — original FREE ELO design: player + clan stats, no copy of the reference */
+body.obs-overlay .obs-pro-vs{position:fixed;left:50%;top:5.5%;transform:translateX(-50%);width:min(980px,96vw);display:grid;grid-template-columns:1fr 118px 1fr;gap:18px;align-items:start;z-index:999999;pointer-events:none}
+body.obs-overlay .obs-pro-vs .obs-char{height:210px;position:relative;display:flex;justify-content:center;align-items:flex-start}
+body.obs-overlay .obs-pro-card{position:relative;width:100%;max-width:330px;height:190px;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,rgba(10,13,22,.94),rgba(4,7,14,.9));border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 50px rgba(0,0,0,.42),inset 0 0 35px rgba(255,255,255,.025);isolation:isolate}
+body.obs-overlay .obs-pro-card::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(4,7,12,.10),rgba(4,7,12,.58));}
+body.obs-overlay .obs-pro-card::after{content:"";position:absolute;inset:7px;z-index:3;border:1px solid rgba(255,255,255,.09);border-radius:11px;pointer-events:none;clip-path:polygon(0 0,100% 0,100% 72%,86% 100%,0 100%)}
+body.obs-overlay .obs-pro-card .obs-avatar-wrap{position:absolute;inset:0;z-index:0;border-radius:0;overflow:hidden;background:#090c14}
+body.obs-overlay .obs-pro-card .obs-avatar{width:100%;height:100%;object-fit:cover;opacity:.55;filter:saturate(1.12) contrast(1.05);transform:scale(1.04)}
+body.obs-overlay .obs-pro-card .obs-avatar-wrap::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,93,0,.24),transparent 45%,rgba(0,0,0,.30));z-index:1}
+body.obs-overlay .obs-pro-card .obs-pro-top{position:absolute;left:16px;right:16px;top:13px;display:flex;justify-content:space-between;gap:8px;z-index:5;font:800 9px/1 'Orbitron',sans-serif;letter-spacing:1.1px;color:#dbe7f7;text-transform:uppercase}
+body.obs-overlay .obs-pro-card .obs-pro-top span:last-child{color:#fff}
+body.obs-overlay .obs-pro-name{position:absolute;left:16px;right:16px;top:55px;z-index:5;text-align:center;font:900 30px/1 'Orbitron',sans-serif;letter-spacing:1.2px;color:#fff;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 3px 14px #000,0 0 18px rgba(255,255,255,.12)}
+body.obs-overlay .obs-pro-clan{position:absolute;left:16px;right:16px;top:94px;z-index:5;text-align:center;font:800 11px/1 'Rajdhani',sans-serif;letter-spacing:2px;color:#b8c7da;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.obs-overlay .obs-pro-stats{position:absolute;left:14px;right:14px;bottom:12px;height:43px;z-index:5;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+body.obs-overlay .obs-pro-stats span{display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:0;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:rgba(2,5,10,.58);font:800 7px/1.05 'Rajdhani',sans-serif;color:#8393a9;letter-spacing:.6px;text-align:center}
+body.obs-overlay .obs-pro-stats b{font:900 12px/1 'Orbitron',sans-serif;color:#fff;margin-bottom:3px}
+body.obs-overlay .obs-pro-scan{position:absolute;left:-20%;right:-20%;height:2px;top:48%;z-index:4;background:linear-gradient(90deg,transparent,rgba(255,255,255,.0),rgba(255,255,255,.55),rgba(255,255,255,0),transparent);opacity:.35;animation:proHudScan 3.2s ease-in-out infinite}
+body.obs-overlay .obs-pro-corner{position:absolute;right:12px;top:12px;width:20px;height:20px;z-index:6;border-top:2px solid rgba(255,255,255,.45);border-right:2px solid rgba(255,255,255,.45);opacity:.55}
+body.obs-overlay .obs-pro-card.obs-name-only .obs-pro-name{top:70px}
+body.obs-overlay .obs-pro-card.obs-name-only .obs-pro-clan{top:103px}
+body.obs-overlay .obs-pro-card.obs-name-only{background:linear-gradient(145deg,rgba(11,15,26,.98),rgba(4,7,14,.98))}
+body.obs-overlay .obs-pro-vs .left .obs-pro-card{border-color:rgba(255,111,25,.72);box-shadow:0 0 26px rgba(255,90,0,.16),0 18px 50px rgba(0,0,0,.42),inset 0 0 28px rgba(255,95,0,.07)}
+body.obs-overlay .obs-pro-vs .left .obs-pro-card .obs-pro-stats span:first-child b{color:#ffb05f}
+body.obs-overlay .obs-pro-vs .right .obs-pro-card{border-color:rgba(38,207,255,.78);box-shadow:0 0 26px rgba(0,191,255,.16),0 18px 50px rgba(0,0,0,.42),inset 0 0 28px rgba(0,191,255,.07)}
+body.obs-overlay .obs-pro-vs .right .obs-pro-card .obs-pro-stats span:first-child b{color:#71eaff}
+body.obs-overlay .obs-pro-vs .right .obs-pro-card .obs-avatar-wrap::after{background:linear-gradient(270deg,rgba(0,191,255,.24),transparent 45%,rgba(0,0,0,.30))}
+body.obs-overlay .obs-pro-center{height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:10}
+body.obs-overlay .obs-pro-line{position:absolute;top:23px;bottom:23px;width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.28),transparent);box-shadow:0 0 12px rgba(255,255,255,.08)}
+body.obs-overlay .obs-pro-vs-text{position:relative;z-index:3;font:1000 italic 36px/1 'Orbitron',sans-serif;color:#fff;text-shadow:0 0 18px rgba(139,92,246,.7),0 4px 8px #000;letter-spacing:-2px;animation:proVsPulse 1.8s ease-in-out infinite}
+body.obs-overlay .obs-pro-round{margin-top:10px;padding:4px 8px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(8,10,18,.65);font:800 7px/1 'Orbitron',sans-serif;color:#7e8ca5;letter-spacing:1.4px}
+body.obs-overlay .obs-pro-score{margin-top:8px;display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:10px;background:rgba(6,9,16,.86);border:1px solid rgba(255,255,255,.10);font:900 16px/1 'Orbitron',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+body.obs-overlay .obs-pro-score b:first-child{color:#ff9d43}.obs-pro-score b:last-child{color:#6ee8ff}.obs-pro-score span{color:#69758a}
+body.obs-overlay .obs-pro-card.frame-fire::before{content:"";position:absolute;inset:-2px;z-index:4;border:2px solid #ff7b16;border-radius:17px;box-shadow:0 0 8px #ffd166,0 0 18px #ff5a00,0 0 35px rgba(255,45,0,.72),inset 0 0 10px rgba(255,140,0,.38);pointer-events:none;animation:proFire 1s ease-in-out infinite}
+body.obs-overlay .obs-pro-card.frame-fire::after{content:"";position:absolute;inset:1px;z-index:4;border:1px solid #ffd166;border-radius:15px;box-shadow:0 0 14px rgba(255,92,0,.72);pointer-events:none;animation:proFireEdge .72s ease-in-out infinite}
+body.obs-overlay .obs-pro-card.frame-lightning::before{content:"";position:absolute;inset:-2px;z-index:4;border:2px solid #4fdcff;border-radius:17px;box-shadow:0 0 9px #d9fbff,0 0 22px #149eff;pointer-events:none;animation:proLightning 2.6s steps(1,end) infinite}
+body.obs-overlay .obs-pro-card.frame-lightning::after{content:"";position:absolute;inset:3px;z-index:4;border:1px dashed rgba(144,241,255,.7);border-radius:13px;opacity:.6;pointer-events:none;animation:proLightningInner 2.6s steps(1,end) infinite}
+body.obs-overlay .obs-pro-card.frame-thunder::before{content:"";position:absolute;inset:-2px;z-index:4;border:2px solid #a57cff;border-radius:17px;box-shadow:0 0 10px #c9b7ff,0 0 24px #713bff;pointer-events:none;animation:proThunder 1.35s ease-in-out infinite}
+body.obs-overlay .obs-pro-card.frame-ice::before{content:"";position:absolute;inset:-2px;z-index:4;border:2px solid #d8ffff;border-radius:17px;box-shadow:0 0 10px #7defff,0 0 25px rgba(45,203,255,.72),inset 0 0 15px rgba(122,239,255,.18);pointer-events:none;animation:proIce 2.2s ease-in-out infinite}
+body.obs-overlay .obs-pro-card.frame-neon::before{content:"";position:absolute;inset:-2px;z-index:4;border:2px solid #ff65cf;border-radius:17px;box-shadow:0 0 9px #ff8ee0,0 0 25px rgba(176,72,255,.75);pointer-events:none;animation:proNeon 1.5s ease-in-out infinite}
+body.obs-overlay .obs-pro-card.frame-poison::before{content:"";position:absolute;inset:-2px;z-index:4;border:2px solid #a8ff43;border-radius:17px;box-shadow:0 0 9px #d9ff85,0 0 25px rgba(53,226,87,.7);pointer-events:none;animation:proPoison 1.25s ease-in-out infinite}
+body.obs-overlay .obs-pro-card.frame-phoenix::before{content:"";position:absolute;inset:-2px;z-index:4;border:2px solid #ffad33;border-radius:17px;box-shadow:0 0 10px #fff0a0,0 0 28px rgba(255,105,0,.75);pointer-events:none;animation:proPhoenix 1.1s ease-in-out infinite}
+@keyframes proFire{0%,100%{opacity:.72;filter:brightness(1)}35%{opacity:1;filter:brightness(1.25)}62%{opacity:.82;filter:brightness(1.05)}80%{opacity:1;filter:brightness(1.35)}}
+@keyframes proFireEdge{0%,100%{opacity:.55;box-shadow:0 0 8px #ff6500}50%{opacity:1;box-shadow:0 0 20px #ff9b2f,0 0 34px rgba(255,45,0,.7)}}
+@keyframes proLightning{0%,82%,100%{opacity:.35}84%{opacity:1;filter:brightness(1.8)}86%{opacity:.25}88%{opacity:1;filter:brightness(2.1)}90%{opacity:.38}92%{opacity:.95}}
+@keyframes proLightningInner{0%,80%,100%{opacity:.25}84%{opacity:1}86%{opacity:.1}88%{opacity:.9}92%{opacity:.2}}
+@keyframes proThunder{0%,100%{opacity:.58;box-shadow:0 0 8px #8d62ff,0 0 18px #6a32ff}18%{opacity:.9}22%{opacity:.48}58%{opacity:.95;box-shadow:0 0 15px #c9b7ff,0 0 34px #713bff}65%{opacity:.55}}
+@keyframes proIce{0%,100%{opacity:.58}50%{opacity:1;box-shadow:0 0 14px #d8ffff,0 0 32px rgba(45,203,255,.8),inset 0 0 18px rgba(122,239,255,.25)}}
+@keyframes proNeon{0%,100%{opacity:.62;box-shadow:0 0 8px #ff65cf,0 0 20px rgba(176,72,255,.55)}50%{opacity:1;box-shadow:0 0 14px #ff8ee0,0 0 34px rgba(176,72,255,.85)}}
+@keyframes proPoison{0%,100%{opacity:.55}50%{opacity:1;box-shadow:0 0 15px #d9ff85,0 0 32px rgba(53,226,87,.82)}}
+@keyframes proPhoenix{0%,100%{opacity:.6}45%{opacity:1;box-shadow:0 0 14px #fff0a0,0 0 36px rgba(255,105,0,.85)}70%{opacity:.72}}
+@keyframes proVsPulse{0%,100%{transform:scale(1);opacity:.86}50%{transform:scale(1.07);opacity:1}}
+@keyframes proHudScan{0%,100%{transform:translateY(-72px);opacity:0}25%{opacity:.35}50%{transform:translateY(72px);opacity:0}}
+@media(max-width:900px){body.obs-overlay .obs-pro-vs{grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);gap:7px;top:4%}body.obs-overlay .obs-pro-card{height:160px}.obs-pro-name{font-size:22px!important}.obs-pro-clan{font-size:9px!important;top:86px!important}.obs-pro-stats{height:36px!important;bottom:9px!important}.obs-pro-stats b{font-size:9px!important}.obs-pro-stats span{font-size:6px!important}.obs-pro-top{font-size:7px!important}.obs-pro-center{height:160px!important}.obs-pro-vs-text{font-size:28px!important}.obs-pro-score{font-size:12px!important}.obs-pro-round{font-size:6px!important}}
+</style>
 </body>
 </html>
 
@@ -3968,3 +5888,373 @@
 #page-shop .shop-item, #page-shop .inventory-item { min-height:0; }
 #page-shop .shop-item img, #page-shop .inventory-item img { border-radius:5px; }
 </style>
+
+<style>
+.clan-history-match-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;padding:14px 16px!important;}
+.clan-history-versus{display:flex;align-items:center;justify-content:center;gap:12px;white-space:nowrap;overflow:hidden;}
+.clan-history-name{font-size:16px;font-weight:1000;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.clan-history-name.my{color:var(--accent);}
+.clan-history-vs{font-size:12px;font-weight:1000;color:var(--text-muted);flex:0 0 auto;}
+.clan-history-result{text-align:center;font-size:12px;font-weight:1000;white-space:nowrap;}
+.clan-history-elo{margin-left:8px;font-size:14px;}
+.clickable-clan{user-select:none;}
+@media(max-width:600px){.clan-history-name{font-size:14px}.clan-history-versus{gap:7px}.clan-history-result{font-size:11px}.clan-history-elo{font-size:13px;margin-left:5px}}
+</style>
+
+<style id="free-elo-realistic-frame-effects">
+/* =========================================================
+   FREE ELO — REALISTIC FRAME FX
+   Fire = flame tongues actually licking around the border.
+   Lightning = fixed electric bolts that flash on the border.
+   No rotating frames.
+   ========================================================= */
+
+.avatar-wrapper.frame-effect,
+.obs-avatar-wrap.frame-effect{
+    overflow:visible !important;
+    isolation:isolate !important;
+}
+
+/* Keep the real avatar visible behind the frame. */
+.avatar-wrapper.frame-effect > .avatar,
+.obs-avatar-wrap.frame-effect > .obs-avatar{
+    position:relative !important;
+    z-index:3 !important;
+}
+
+/* Base frame: a REAL fixed border, not a spinning ring. */
+.avatar-wrapper.frame-effect::before,
+.obs-avatar-wrap.frame-effect::before{
+    content:"" !important;
+    position:absolute !important;
+    inset:-4px !important;
+    border:3px solid var(--fe-c1,#ff7a00) !important;
+    border-radius:inherit !important;
+    background:transparent !important;
+    box-shadow:
+        0 0 4px var(--fe-c1,#ff7a00),
+        0 0 12px var(--fe-glow,rgba(255,90,0,.7)),
+        inset 0 0 7px var(--fe-glow,rgba(255,90,0,.45)) !important;
+    transform:none !important;
+    animation:none !important;
+    z-index:6 !important;
+    pointer-events:none !important;
+}
+
+.avatar-wrapper.frame-effect::after,
+.obs-avatar-wrap.frame-effect::after{
+    content:"" !important;
+    position:absolute !important;
+    inset:-7px !important;
+    border:1px solid var(--fe-c2,#ff3200) !important;
+    border-radius:inherit !important;
+    background:transparent !important;
+    box-shadow:0 0 14px var(--fe-glow,rgba(255,90,0,.65)) !important;
+    transform:none !important;
+    animation:none !important;
+    z-index:5 !important;
+    pointer-events:none !important;
+}
+
+/* FX particles created by JS */
+.fe-fx-layer{
+    position:absolute !important;
+    inset:-15px !important;
+    z-index:8 !important;
+    pointer-events:none !important;
+    overflow:visible !important;
+}
+.fe-fx-layer span{
+    position:absolute !important;
+    display:block !important;
+    pointer-events:none !important;
+}
+
+/* ========================= FIRE =========================
+   The border stays still; separate flame tongues move upward,
+   flicker, brighten and shrink like real flames.
+*/
+.frame-fire{
+    --fe-c1:#fff2b0;
+    --fe-c2:#ff5a00;
+    --fe-glow:rgba(255,70,0,.95);
+}
+.frame-fire .fe-fx-layer .flame{
+    width:13px;
+    height:25px;
+    bottom:-5px;
+    border-radius:65% 35% 58% 42%;
+    background:
+      radial-gradient(circle at 50% 76%,#fff7bf 0 12%,#ffd34f 13% 30%,#ff7a00 31% 62%,#ff2400 63% 100%);
+    filter:drop-shadow(0 0 5px #ff7a00) drop-shadow(0 0 10px rgba(255,50,0,.75));
+    clip-path:polygon(50% 0%,64% 25%,91% 45%,72% 48%,100% 72%,74% 68%,80% 100%,48% 86%,25% 100%,30% 69%,0% 78%,24% 48%,12% 39%,39% 26%);
+    transform-origin:50% 100%;
+    animation:feRealFlame .62s ease-in-out infinite alternate;
+}
+.frame-fire .fe-fx-layer .flame:nth-child(2n){
+    height:19px;width:10px; animation-duration:.48s;
+}
+.frame-fire .fe-fx-layer .flame:nth-child(3n){
+    height:29px;width:12px; animation-duration:.76s;
+}
+.frame-fire .fe-fx-layer .flame.side{
+    bottom:auto;
+    top:12%;
+}
+@keyframes feRealFlame{
+    0%{transform:translateY(3px) scale(.78,.88);opacity:.72;filter:brightness(.9) drop-shadow(0 0 4px #ff6500)}
+    45%{transform:translateY(-3px) scale(1.08,1.15);opacity:1;filter:brightness(1.15) drop-shadow(0 0 8px #ff8a00)}
+    100%{transform:translateY(-8px) scale(.82,1.28);opacity:.88;filter:brightness(1.3) drop-shadow(0 0 11px #ff2d00)}
+}
+.frame-fire .fe-fx-layer .ember{
+    width:4px;height:4px;border-radius:50%;
+    background:#fff0a0;
+    box-shadow:0 0 5px #ff7a00,0 0 10px #ff2d00;
+    animation:feEmber 1.05s ease-out infinite;
+}
+@keyframes feEmber{
+    0%{opacity:0;transform:translate(0,5px) scale(.5)}
+    20%{opacity:1}
+    100%{opacity:0;transform:translate(var(--dx,4px),-30px) scale(.15)}
+}
+.frame-fire::before,
+.obs-avatar-wrap.frame-fire::before{
+    animation:feFireBorder .42s ease-in-out infinite alternate !important;
+}
+@keyframes feFireBorder{
+    from{box-shadow:0 0 4px #fff0a0,0 0 11px #ff6500,0 0 20px rgba(255,45,0,.65),inset 0 0 6px rgba(255,160,40,.55)}
+    to{box-shadow:0 0 7px #fff8cf,0 0 18px #ff7a00,0 0 32px rgba(255,30,0,.9),inset 0 0 10px rgba(255,170,30,.8)}
+}
+
+/* ======================= LIGHTNING =======================
+   The border remains fixed. Several jagged bolts sit ON the
+   frame and flash independently, like electrical arcs.
+*/
+.frame-lightning{
+    --fe-c1:#efffff;
+    --fe-c2:#2f8dff;
+    --fe-glow:rgba(55,165,255,.98);
+}
+.frame-lightning .fe-fx-layer .bolt{
+    width:23px;height:8px;
+    background:linear-gradient(90deg,transparent 0 5%,#ffffff 18%,#bffcff 48%,#2f8dff 72%,transparent 100%);
+    filter:drop-shadow(0 0 4px #eaffff) drop-shadow(0 0 9px #168cff);
+    clip-path:polygon(0 40%,34% 0,28% 34%,58% 22%,48% 54%,100% 42%,62% 72%,69% 100%,36% 67%,40% 42%);
+    opacity:0;
+    animation:feRealBolt .9s steps(1,end) infinite;
+}
+.frame-lightning .fe-fx-layer .bolt.v{
+    width:8px;height:24px;
+}
+@keyframes feRealBolt{
+    0%,67%,100%{opacity:0}
+    68%{opacity:.95}
+    70%{opacity:.15}
+    71%{opacity:1}
+    73%{opacity:0}
+    88%{opacity:.72}
+    89%{opacity:0}
+}
+.frame-lightning::before,
+.obs-avatar-wrap.frame-lightning::before{
+    animation:feLightningBorder .78s steps(1,end) infinite !important;
+}
+@keyframes feLightningBorder{
+    0%,67%,100%{filter:brightness(1);box-shadow:0 0 4px #cfffff,0 0 11px #238cff,0 0 20px rgba(30,130,255,.55)}
+    68%{filter:brightness(1.8);box-shadow:0 0 8px #fff,0 0 20px #4fdcff,0 0 38px rgba(30,130,255,1)}
+    70%{filter:brightness(.8)}
+    71%{filter:brightness(2);box-shadow:0 0 10px #fff,0 0 25px #2ea8ff,0 0 42px rgba(30,130,255,1)}
+    73%{filter:brightness(1)}
+}
+
+/* ======================= THUNDER ========================== */
+.frame-thunder{
+    --fe-c1:#eadbff;--fe-c2:#744cff;--fe-glow:rgba(115,70,255,.95);
+}
+.frame-thunder .fe-fx-layer .arc{
+    inset:0;
+    border:2px dashed #bca8ff;
+    border-radius:inherit;
+    box-shadow:0 0 9px #744cff;
+    opacity:.2;
+    animation:feThunder .7s steps(2,end) infinite;
+}
+@keyframes feThunder{
+    0%,70%,100%{opacity:.15}
+    71%{opacity:1;filter:brightness(1.8)}
+    73%{opacity:.25}
+    74%{opacity:.9}
+}
+
+/* ========================= ICE ============================ */
+.frame-ice{
+    --fe-c1:#f2ffff;--fe-c2:#43d8ff;--fe-glow:rgba(65,210,255,.9);
+}
+.frame-ice .fe-fx-layer .crystal{
+    width:10px;height:10px;
+    background:linear-gradient(135deg,#fff,transparent 55%),linear-gradient(45deg,#7beaff,transparent 60%);
+    clip-path:polygon(50% 0,62% 34%,100% 50%,62% 66%,50% 100%,38% 66%,0 50%,38% 34%);
+    animation:feIce 1.7s ease-in-out infinite;
+}
+@keyframes feIce{
+    0%,100%{opacity:.35;transform:scale(.7)}
+    50%{opacity:1;transform:scale(1.2);filter:drop-shadow(0 0 7px #4ddcff)}
+}
+
+/* ========================= NEON =========================== */
+.frame-neon{
+    --fe-c1:#ff8ee8;--fe-c2:#8058ff;--fe-glow:rgba(255,85,220,.9);
+}
+.frame-neon .fe-fx-layer .scan{
+    left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,#fff,transparent);
+    box-shadow:0 0 10px #ff55dc,0 0 18px #7d55ff;
+    animation:feNeon 1.4s ease-in-out infinite;
+}
+@keyframes feNeon{
+    0%{top:4%;opacity:0}
+    20%{opacity:1}
+    80%{opacity:1}
+    100%{top:96%;opacity:0}
+}
+
+/* ========================= POISON ========================= */
+.frame-poison{
+    --fe-c1:#dcff68;--fe-c2:#28d56f;--fe-glow:rgba(40,213,111,.9);
+}
+.frame-poison .fe-fx-layer .bubble{
+    width:6px;height:6px;border:1px solid #cfff67;border-radius:50%;
+    box-shadow:0 0 7px #28d56f;
+    animation:feBubble 1.8s ease-in infinite;
+}
+@keyframes feBubble{
+    0%{opacity:0;transform:translateY(10px) scale(.4)}
+    20%{opacity:1}
+    100%{opacity:0;transform:translateY(-30px) translateX(8px) scale(1)}
+}
+
+/* ========================= PHOENIX ======================== */
+.frame-phoenix{
+    --fe-c1:#fff0a0;--fe-c2:#ff8a00;--fe-glow:rgba(255,115,0,.95);
+}
+.frame-phoenix .fe-fx-layer .feather{
+    width:7px;height:19px;
+    background:linear-gradient(180deg,#fff5a0,#ff9a00 55%,transparent);
+    clip-path:polygon(50% 0,100% 42%,65% 48%,100% 68%,50% 100%,28% 65%,0 52%,35% 44%);
+    animation:fePhoenix 1s ease-in-out infinite alternate;
+}
+@keyframes fePhoenix{
+    from{transform:translateY(3px) scale(.8);opacity:.55}
+    to{transform:translateY(-6px) scale(1.12);opacity:1;filter:drop-shadow(0 0 8px #ff8a00)}
+}
+
+/* Hover = stronger, but still the same physical-looking effect. */
+.avatar-wrapper.frame-effect:hover::before{
+    filter:brightness(1.25) !important;
+}
+.avatar-wrapper.frame-effect:hover .fe-fx-layer{
+    filter:brightness(1.15);
+}
+</style>
+
+<script>
+(function(){
+    const TYPES = [
+        'frame-fire','frame-lightning','frame-thunder',
+        'frame-ice','frame-neon','frame-poison','frame-phoenix'
+    ];
+
+    function makeLayer(el){
+        if(!el || !TYPES.some(t => el.classList.contains(t))) return;
+        if(el.querySelector(':scope > .fe-fx-layer')) return;
+
+        const layer=document.createElement('span');
+        layer.className='fe-fx-layer';
+
+        if(el.classList.contains('frame-fire')){
+            for(let i=0;i<8;i++){
+                const f=document.createElement('span');
+                f.className='flame';
+                f.style.left=(5+i*12+Math.random()*5)+'%';
+                f.style.animationDelay=(-Math.random()*.8)+'s';
+                layer.appendChild(f);
+            }
+            for(let i=0;i<5;i++){
+                const e=document.createElement('span');
+                e.className='ember';
+                e.style.left=(10+i*18+Math.random()*10)+'%';
+                e.style.bottom=(8+Math.random()*20)+'%';
+                e.style.setProperty('--dx',(-8+Math.random()*16)+'px');
+                e.style.animationDelay=(-Math.random()*1.2)+'s';
+                layer.appendChild(e);
+            }
+        }
+
+        if(el.classList.contains('frame-lightning')){
+            for(let i=0;i<8;i++){
+                const b=document.createElement('span');
+                b.className='bolt '+(i%2?'v':'');
+                const pos=[
+                    ['12%','-2px'],['42%','-2px'],['72%','-2px'],
+                    ['12%','calc(100% - 6px)'],['55%','calc(100% - 6px)'],['82%','calc(100% - 6px)'],
+                    ['-4px','30%'],['calc(100% - 4px)','64%']
+                ][i];
+                if(i<6){
+                    b.style.left=pos[0]; b.style.top=pos[1];
+                }else{
+                    b.style.left=pos[0]; b.style.top=pos[1];
+                }
+                b.style.animationDelay=(-Math.random()*.9)+'s';
+                layer.appendChild(b);
+            }
+        }
+
+        if(el.classList.contains('frame-thunder')){
+            const a=document.createElement('span'); a.className='arc'; layer.appendChild(a);
+        }
+
+        if(el.classList.contains('frame-ice')){
+            for(let i=0;i<6;i++){
+                const c=document.createElement('span'); c.className='crystal';
+                c.style.left=(5+i*17)+'%'; c.style.top=(i%2? '82%':'3%');
+                c.style.animationDelay=(-Math.random()*1.7)+'s';
+                layer.appendChild(c);
+            }
+        }
+
+        if(el.classList.contains('frame-neon')){
+            const s=document.createElement('span'); s.className='scan'; layer.appendChild(s);
+        }
+
+        if(el.classList.contains('frame-poison')){
+            for(let i=0;i<7;i++){
+                const b=document.createElement('span'); b.className='bubble';
+                b.style.left=(8+Math.random()*84)+'%';
+                b.style.bottom=(Math.random()*8)+'%';
+                b.style.animationDelay=(-Math.random()*2)+'s';
+                layer.appendChild(b);
+            }
+        }
+
+        if(el.classList.contains('frame-phoenix')){
+            for(let i=0;i<7;i++){
+                const f=document.createElement('span'); f.className='feather';
+                f.style.left=(6+i*14)+'%'; f.style.top=(i%2?'78%':'2%');
+                f.style.animationDelay=(-Math.random()*1.1)+'s';
+                layer.appendChild(f);
+            }
+        }
+
+        el.appendChild(layer);
+    }
+
+    function scan(){
+        document.querySelectorAll('.avatar-wrapper.frame-effect, .obs-avatar-wrap.frame-effect')
+            .forEach(makeLayer);
+    }
+
+    scan();
+    new MutationObserver(scan).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+})();
+</script>
+
