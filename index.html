@@ -2839,6 +2839,325 @@
             body.obs-overlay .signature-rank{font-size:6px !important}
         }
 
+
+        /* === SEPARATED PLAYER HUD + SEPARATED CLAN HUD === */
+        body.obs-overlay .freeelo-separated-hud{
+            position:absolute !important;
+            inset:0 !important;
+            width:100% !important;
+            height:100% !important;
+            box-sizing:border-box !important;
+            padding:clamp(18px,3.4vh,40px) clamp(18px,3.2vw,48px) !important;
+            display:grid !important;
+            grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) !important;
+            gap:clamp(10px,1.5vw,22px) !important;
+            align-items:center !important;
+            pointer-events:none !important;
+        }
+
+        body.obs-overlay .freeelo-side{
+            min-width:0 !important;
+            display:flex !important;
+            flex-direction:column !important;
+            align-items:center !important;
+            gap:9px !important;
+        }
+
+        body.obs-overlay .freeelo-player-hud{
+            position:relative !important;
+            width:min(100%,430px) !important;
+            height:clamp(118px,19vh,165px) !important;
+            min-width:0 !important;
+            overflow:hidden !important;
+            border-radius:14px !important;
+            box-sizing:border-box !important;
+            background:
+                linear-gradient(145deg,rgba(13,17,29,.94),rgba(6,9,16,.90)) !important;
+            border:1px solid rgba(255,255,255,.08) !important;
+            backdrop-filter:blur(10px) saturate(1.18) !important;
+            -webkit-backdrop-filter:blur(10px) saturate(1.18) !important;
+            box-shadow:0 16px 38px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.05) !important;
+        }
+
+        body.obs-overlay .freeelo-left .freeelo-player-hud{
+            border-color:rgba(255,126,53,.52) !important;
+            box-shadow:0 0 0 1px rgba(255,126,53,.10),0 0 30px rgba(255,103,0,.12),inset 0 0 30px rgba(255,103,0,.05) !important;
+        }
+
+        body.obs-overlay .freeelo-right .freeelo-player-hud{
+            border-color:rgba(69,225,255,.54) !important;
+            box-shadow:0 0 0 1px rgba(69,225,255,.10),0 0 30px rgba(0,190,255,.12),inset 0 0 30px rgba(0,190,255,.05) !important;
+        }
+
+        body.obs-overlay .freeelo-player-hud .sig-avatar-wrap{
+            position:absolute !important;
+            inset:0 !important;
+            z-index:0 !important;
+            overflow:hidden !important;
+        }
+
+        body.obs-overlay .freeelo-player-hud .sig-avatar{
+            position:absolute !important;
+            inset:0 !important;
+            width:100% !important;
+            height:100% !important;
+            object-fit:cover !important;
+            opacity:.24 !important;
+            filter:saturate(1.15) brightness(.82) !important;
+        }
+
+        body.obs-overlay .freeelo-player-hud .sig-frame{
+            position:absolute !important;
+            inset:0 !important;
+            width:100% !important;
+            height:100% !important;
+            object-fit:fill !important;
+            opacity:.92 !important;
+        }
+
+        body.obs-overlay .freeelo-player-hud::after{
+            content:"" !important;
+            position:absolute !important;
+            inset:0 !important;
+            z-index:1 !important;
+            background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.22)) !important;
+        }
+
+        body.obs-overlay .freeelo-player-top{
+            position:absolute !important;
+            top:10px !important;
+            left:12px !important;
+            right:12px !important;
+            height:34px !important;
+            display:grid !important;
+            grid-template-columns:auto minmax(0,1fr) auto !important;
+            align-items:center !important;
+            gap:8px !important;
+            z-index:4 !important;
+        }
+
+        body.obs-overlay .freeelo-rank{
+            font:900 9px/1 'Orbitron',sans-serif !important;
+            color:#8693aa !important;
+            letter-spacing:.9px !important;
+        }
+
+        body.obs-overlay .freeelo-player-name{
+            min-width:0 !important;
+            overflow:hidden !important;
+            text-overflow:ellipsis !important;
+            white-space:nowrap !important;
+            text-align:center !important;
+            padding:7px 12px !important;
+            border-radius:8px !important;
+            background:rgba(4,7,13,.88) !important;
+            font-family:'Gogono Cocoa Mochi Cyrillic','Gogono Cocoa Mochi','Rajdhani','Segoe UI',sans-serif !important;
+            font-size:clamp(16px,1.55vw,24px) !important;
+            font-weight:700 !important;
+            line-height:1 !important;
+            letter-spacing:.8px !important;
+            color:#fff !important;
+            text-shadow:0 2px 8px rgba(0,0,0,.96) !important;
+        }
+
+        body.obs-overlay .freeelo-left .freeelo-player-name{
+            border:1px solid rgba(255,131,64,.65) !important;
+            color:#ffe0cf !important;
+            box-shadow:0 0 18px rgba(255,103,0,.10) !important;
+        }
+
+        body.obs-overlay .freeelo-right .freeelo-player-name{
+            border:1px solid rgba(91,231,255,.65) !important;
+            color:#dcfbff !important;
+            box-shadow:0 0 18px rgba(0,190,255,.10) !important;
+        }
+
+        body.obs-overlay .freeelo-win{
+            padding:5px 8px !important;
+            border-radius:999px !important;
+            background:linear-gradient(135deg,#ffe065,#ff7a00) !important;
+            color:#fff !important;
+            font:900 8px/1 'Orbitron',sans-serif !important;
+            letter-spacing:1px !important;
+            box-shadow:0 0 16px rgba(255,122,0,.28) !important;
+        }
+
+        body.obs-overlay .freeelo-player-stats{
+            position:absolute !important;
+            left:13px !important;
+            right:13px !important;
+            bottom:11px !important;
+            height:39px !important;
+            display:grid !important;
+            grid-template-columns:repeat(3,1fr) !important;
+            gap:6px !important;
+            z-index:4 !important;
+        }
+
+        body.obs-overlay .freeelo-player-stats span{
+            min-width:0 !important;
+            display:flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            flex-direction:column !important;
+            border-radius:7px !important;
+            background:rgba(3,6,11,.78) !important;
+            border:1px solid rgba(255,255,255,.07) !important;
+        }
+
+        body.obs-overlay .freeelo-player-stats b{
+            font:900 10px/1 'Orbitron',sans-serif !important;
+            color:#fff !important;
+        }
+
+        body.obs-overlay .freeelo-player-stats small{
+            margin-top:3px !important;
+            font:800 6px/1 'Rajdhani',sans-serif !important;
+            letter-spacing:1px !important;
+            color:#7f8da5 !important;
+        }
+
+        /* Separate clan HUD — same design language, but visually distinct */
+        body.obs-overlay .freeelo-clan-hud{
+            width:min(100%,430px) !important;
+            min-height:37px !important;
+            padding:7px 10px !important;
+            box-sizing:border-box !important;
+            display:grid !important;
+            grid-template-columns:auto minmax(0,1fr) auto !important;
+            align-items:center !important;
+            gap:8px !important;
+            border-radius:10px !important;
+            background:
+                linear-gradient(135deg,rgba(8,12,20,.96),rgba(10,14,24,.90)) !important;
+            border:1px solid rgba(255,255,255,.11) !important;
+            box-shadow:0 10px 24px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.05) !important;
+        }
+
+        body.obs-overlay .freeelo-left .freeelo-clan-hud{
+            border-color:rgba(255,126,53,.55) !important;
+            box-shadow:0 0 18px rgba(255,103,0,.10) !important;
+        }
+
+        body.obs-overlay .freeelo-right .freeelo-clan-hud{
+            border-color:rgba(69,225,255,.58) !important;
+            box-shadow:0 0 18px rgba(0,190,255,.10) !important;
+        }
+
+        body.obs-overlay .freeelo-clan-kicker{
+            font:900 7px/1 'Orbitron',sans-serif !important;
+            letter-spacing:1px !important;
+            color:#8190a7 !important;
+        }
+
+        body.obs-overlay .freeelo-clan-hud b{
+            min-width:0 !important;
+            overflow:hidden !important;
+            white-space:nowrap !important;
+            text-overflow:ellipsis !important;
+            text-align:center !important;
+            font-family:'Gogono Cocoa Mochi Cyrillic','Gogono Cocoa Mochi','Rajdhani','Segoe UI',sans-serif !important;
+            font-size:clamp(11px,1.05vw,15px) !important;
+            font-weight:700 !important;
+            letter-spacing:.8px !important;
+        }
+
+        body.obs-overlay .freeelo-left .freeelo-clan-hud b{
+            color:#ffd9c9 !important;
+        }
+
+        body.obs-overlay .freeelo-right .freeelo-clan-hud b{
+            color:#d7faff !important;
+        }
+
+        body.obs-overlay .freeelo-clan-rank{
+            font:800 7px/1 'Orbitron',sans-serif !important;
+            color:#7e8aa0 !important;
+        }
+
+        body.obs-overlay .freeelo-center{
+            min-width:clamp(54px,6vw,90px) !important;
+            display:flex !important;
+            flex-direction:column !important;
+            align-items:center !important;
+            justify-content:center !important;
+            padding-top:18px !important;
+            z-index:10 !important;
+        }
+
+        body.obs-overlay .freeelo-vs{
+            font:1000 italic clamp(24px,3.3vw,44px)/1 'Orbitron',sans-serif !important;
+            background:linear-gradient(180deg,#ffffff,#d3dcff,#9f84ff) !important;
+            -webkit-background-clip:text !important;
+            background-clip:text !important;
+            -webkit-text-fill-color:transparent !important;
+            filter:drop-shadow(0 0 14px rgba(139,92,246,.30)) !important;
+        }
+
+        body.obs-overlay .freeelo-brand{
+            margin-top:5px !important;
+            font:900 7px/1 'Orbitron',sans-serif !important;
+            letter-spacing:2px !important;
+            color:#8091ad !important;
+        }
+
+        body.obs-overlay .freeelo-score{
+            margin-top:8px !important;
+            padding:4px 9px !important;
+            border-radius:7px !important;
+            background:rgba(5,8,15,.78) !important;
+            border:1px solid rgba(139,92,246,.24) !important;
+            color:#fff !important;
+            font:900 12px/1 'Orbitron',sans-serif !important;
+        }
+
+        body.obs-overlay .freeelo-score i{
+            color:#8b5cf6 !important;
+            font-style:normal !important;
+            margin:0 3px !important;
+        }
+
+        @media(max-width:900px){
+            body.obs-overlay .freeelo-separated-hud{
+                padding:10px !important;
+                gap:6px !important;
+            }
+            body.obs-overlay .freeelo-player-hud{
+                height:108px !important;
+            }
+            body.obs-overlay .freeelo-player-top{
+                top:7px !important;
+                left:7px !important;
+                right:7px !important;
+                height:27px !important;
+                gap:4px !important;
+            }
+            body.obs-overlay .freeelo-player-name{
+                font-size:11px !important;
+                padding:6px 7px !important;
+            }
+            body.obs-overlay .freeelo-player-stats{
+                left:7px !important;
+                right:7px !important;
+                bottom:8px !important;
+                height:27px !important;
+                gap:4px !important;
+            }
+            body.obs-overlay .freeelo-player-stats b{font-size:7px !important}
+            body.obs-overlay .freeelo-player-stats small{font-size:5px !important}
+            body.obs-overlay .freeelo-clan-hud{
+                min-height:29px !important;
+                padding:5px 7px !important;
+                gap:5px !important;
+            }
+            body.obs-overlay .freeelo-clan-hud b{font-size:8px !important}
+            body.obs-overlay .freeelo-clan-kicker, body.obs-overlay .freeelo-clan-rank{font-size:5px !important}
+            body.obs-overlay .freeelo-center{min-width:44px !important;padding-top:16px !important}
+            body.obs-overlay .freeelo-vs{font-size:20px !important}
+            body.obs-overlay .freeelo-brand{font-size:5px !important}
+            body.obs-overlay .freeelo-score{font-size:8px !important;margin-top:3px !important;padding:3px 5px !important}
+        }
+
 </style>
 
 <style id="gogono-cyrillic-font">
@@ -6857,52 +7176,54 @@ body.obs-overlay .obs-clan-label{
                             : '';
 
                         obsContainer.innerHTML = `
-                            <div class="signature-hud">
-                                <div class="signature-team signature-left">
-                                    <div class="signature-card">
+                            <div class="freeelo-separated-hud">
+                                <div class="freeelo-side freeelo-left">
+                                    <div class="freeelo-player-hud">
                                         ${avatarHtml(avatar1, frame1)}
-                                        <div class="signature-topline">
-                                            <div class="signature-rank">#${r1.rank}</div>
-                                            <div class="signature-player-name">${playerName1}</div>
-                                            ${score1 > score2 ? '<div class="signature-win">WIN</div>' : ''}
+                                        <div class="freeelo-player-top">
+                                            <span class="freeelo-rank">#${r1.rank}</span>
+                                            <div class="freeelo-player-name">${playerName1}</div>
+                                            ${score1 > score2 ? '<span class="freeelo-win">WIN</span>' : ''}
                                         </div>
-                                        <div class="signature-stats">
+                                        <div class="freeelo-player-stats">
                                             <span><b>${r1.elo}</b><small>ELO</small></span>
                                             <span><b>${r1.wins}/${r1.matches}</b><small>W/M</small></span>
                                             <span><b>${r1.wr}%</b><small>WR</small></span>
                                         </div>
-                                        <div class="signature-clan">
-                                            <span class="signature-clan-tag">CLAN</span>
-                                            <b>${clanName1}</b>
-                                            <em>#${clanRank(sd.clan1 || p1Obj?.clan || '')}</em>
-                                        </div>
+                                    </div>
+
+                                    <div class="freeelo-clan-hud">
+                                        <span class="freeelo-clan-kicker">CLAN</span>
+                                        <b>${clanName1}</b>
+                                        <span class="freeelo-clan-rank">#${clanRank(sd.clan1 || p1Obj?.clan || '')}</span>
                                     </div>
                                 </div>
 
-                                <div class="signature-center">
-                                    <div class="signature-vs">VS</div>
-                                    <div class="signature-brand">FREE ELO</div>
-                                    <div class="signature-score">${score1}<i>:</i>${score2}</div>
+                                <div class="freeelo-center">
+                                    <div class="freeelo-vs">VS</div>
+                                    <div class="freeelo-brand">FREE ELO</div>
+                                    <div class="freeelo-score">${score1}<i>:</i>${score2}</div>
                                 </div>
 
-                                <div class="signature-team signature-right">
-                                    <div class="signature-card">
+                                <div class="freeelo-side freeelo-right">
+                                    <div class="freeelo-player-hud">
                                         ${avatarHtml(avatar2, frame2)}
-                                        <div class="signature-topline">
-                                            <div class="signature-rank">#${r2.rank}</div>
-                                            <div class="signature-player-name">${playerName2}</div>
-                                            ${score2 > score1 ? '<div class="signature-win">WIN</div>' : ''}
+                                        <div class="freeelo-player-top">
+                                            <span class="freeelo-rank">#${r2.rank}</span>
+                                            <div class="freeelo-player-name">${playerName2}</div>
+                                            ${score2 > score1 ? '<span class="freeelo-win">WIN</span>' : ''}
                                         </div>
-                                        <div class="signature-stats">
+                                        <div class="freeelo-player-stats">
                                             <span><b>${r2.elo}</b><small>ELO</small></span>
                                             <span><b>${r2.wins}/${r2.matches}</b><small>W/M</small></span>
                                             <span><b>${r2.wr}%</b><small>WR</small></span>
                                         </div>
-                                        <div class="signature-clan">
-                                            <span class="signature-clan-tag">CLAN</span>
-                                            <b>${clanName2}</b>
-                                            <em>#${clanRank(sd.clan2 || p2Obj?.clan || '')}</em>
-                                        </div>
+                                    </div>
+
+                                    <div class="freeelo-clan-hud">
+                                        <span class="freeelo-clan-kicker">CLAN</span>
+                                        <b>${clanName2}</b>
+                                        <span class="freeelo-clan-rank">#${clanRank(sd.clan2 || p2Obj?.clan || '')}</span>
                                     </div>
                                 </div>
                             </div>
