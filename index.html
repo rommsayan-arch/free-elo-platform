@@ -3158,6 +3158,355 @@
             body.obs-overlay .freeelo-score{font-size:8px !important;margin-top:3px !important;padding:3px 5px !important}
         }
 
+
+        /* === REFERENCE-INSPIRED FREE ELO HUD === */
+        body.obs-overlay .reference-hud{
+            position:absolute !important;
+            inset:0 !important;
+            width:100% !important;
+            height:100% !important;
+            padding:clamp(18px,4vh,42px) clamp(18px,4vw,54px) !important;
+            box-sizing:border-box !important;
+            display:grid !important;
+            grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) !important;
+            gap:clamp(10px,1.4vw,24px) !important;
+            align-items:start !important;
+            pointer-events:none !important;
+        }
+
+        body.obs-overlay .reference-team{
+            min-width:0 !important;
+            display:flex !important;
+            flex-direction:column !important;
+            gap:10px !important;
+            align-items:center !important;
+        }
+
+        /* PLAYER HUD — compact like the reference */
+        body.obs-overlay .ref-player-hud{
+            position:relative !important;
+            width:min(100%,430px) !important;
+            height:clamp(116px,17.5vh,150px) !important;
+            overflow:hidden !important;
+            box-sizing:border-box !important;
+            border-radius:12px !important;
+            background:
+                linear-gradient(145deg,rgba(9,13,24,.96),rgba(7,10,17,.92)) !important;
+            border:1px solid rgba(255,255,255,.09) !important;
+            box-shadow:0 12px 30px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.05) !important;
+        }
+
+        body.obs-overlay .ref-player-hud.orange{
+            border-color:rgba(255,114,37,.72) !important;
+            box-shadow:0 0 22px rgba(255,95,22,.14),inset 0 0 24px rgba(255,95,22,.05) !important;
+        }
+
+        body.obs-overlay .ref-player-hud.cyan{
+            border-color:rgba(54,224,255,.74) !important;
+            box-shadow:0 0 22px rgba(0,191,255,.14),inset 0 0 24px rgba(0,191,255,.05) !important;
+        }
+
+        body.obs-overlay .ref-avatar-wrap{
+            position:absolute !important;
+            inset:0 !important;
+            overflow:hidden !important;
+            z-index:0 !important;
+        }
+
+        body.obs-overlay .ref-avatar{
+            width:100% !important;
+            height:100% !important;
+            object-fit:cover !important;
+            opacity:.18 !important;
+            filter:saturate(1.2) brightness(.8) !important;
+        }
+
+        body.obs-overlay .ref-frame{
+            position:absolute !important;
+            inset:0 !important;
+            width:100% !important;
+            height:100% !important;
+            object-fit:fill !important;
+            opacity:.90 !important;
+            z-index:1 !important;
+        }
+
+        body.obs-overlay .ref-player-head{
+            position:absolute !important;
+            top:7px !important;
+            left:11px !important;
+            right:11px !important;
+            display:flex !important;
+            justify-content:space-between !important;
+            align-items:center !important;
+            z-index:5 !important;
+        }
+
+        body.obs-overlay .ref-player-rank,
+        body.obs-overlay .ref-player-elo{
+            font:900 8px/1 'Orbitron',sans-serif !important;
+            color:#aeb8cb !important;
+            letter-spacing:.9px !important;
+        }
+
+        body.obs-overlay .orange .ref-player-elo{color:#ffd4bd !important;}
+        body.obs-overlay .cyan .ref-player-elo{color:#c6f8ff !important;}
+
+        body.obs-overlay .ref-player-name{
+            position:absolute !important;
+            left:50% !important;
+            top:43% !important;
+            transform:translate(-50%,-50%) !important;
+            width:calc(100% - 30px) !important;
+            padding:5px 10px !important;
+            z-index:5 !important;
+            text-align:center !important;
+            white-space:nowrap !important;
+            overflow:hidden !important;
+            text-overflow:ellipsis !important;
+            border-radius:8px !important;
+            background:rgba(4,7,12,.77) !important;
+            font-family:'Gogono Cocoa Mochi Cyrillic','Gogono Cocoa Mochi','Rajdhani',sans-serif !important;
+            font-size:clamp(18px,2vw,27px) !important;
+            font-weight:700 !important;
+            line-height:1 !important;
+            letter-spacing:1px !important;
+            color:#fff !important;
+            text-shadow:0 2px 8px rgba(0,0,0,.95) !important;
+        }
+
+        body.obs-overlay .orange .ref-player-name{
+            color:#ffe0cf !important;
+            border:1px solid rgba(255,126,61,.58) !important;
+        }
+
+        body.obs-overlay .cyan .ref-player-name{
+            color:#ddfbff !important;
+            border:1px solid rgba(80,231,255,.58) !important;
+        }
+
+        body.obs-overlay .ref-player-win{
+            position:absolute !important;
+            top:26px !important;
+            right:12px !important;
+            z-index:7 !important;
+            padding:4px 8px !important;
+            border-radius:999px !important;
+            background:linear-gradient(135deg,#ffdf66,#ff7800) !important;
+            color:#fff !important;
+            font:900 7px/1 'Orbitron',sans-serif !important;
+            letter-spacing:1px !important;
+        }
+
+        body.obs-overlay .ref-player-metrics{
+            position:absolute !important;
+            left:11px !important;
+            right:11px !important;
+            bottom:8px !important;
+            height:29px !important;
+            display:grid !important;
+            grid-template-columns:repeat(3,1fr) !important;
+            gap:5px !important;
+            z-index:5 !important;
+        }
+
+        body.obs-overlay .ref-player-metrics div{
+            display:flex !important;
+            flex-direction:column !important;
+            align-items:center !important;
+            justify-content:center !important;
+            border:1px solid rgba(255,255,255,.07) !important;
+            border-radius:6px !important;
+            background:rgba(4,7,12,.74) !important;
+        }
+
+        body.obs-overlay .ref-player-metrics b{
+            font:900 8px/1 'Orbitron',sans-serif !important;
+            color:#fff !important;
+        }
+
+        body.obs-overlay .ref-player-metrics small{
+            margin-top:2px !important;
+            font:800 5px/1 'Rajdhani',sans-serif !important;
+            letter-spacing:1px !important;
+            color:#8491a8 !important;
+        }
+
+        /* CLAN HUD — separate, compact, reference-like */
+        body.obs-overlay .ref-clan-hud{
+            width:min(100%,430px) !important;
+            min-height:58px !important;
+            padding:7px 11px !important;
+            box-sizing:border-box !important;
+            border-radius:10px !important;
+            display:grid !important;
+            grid-template-columns:auto minmax(0,1fr) auto !important;
+            align-items:center !important;
+            gap:10px !important;
+            background:
+                linear-gradient(145deg,rgba(8,12,20,.96),rgba(7,10,17,.92)) !important;
+            border:1px solid rgba(255,255,255,.09) !important;
+            box-shadow:0 10px 26px rgba(0,0,0,.26) !important;
+        }
+
+        body.obs-overlay .ref-clan-hud.orange{
+            border-color:rgba(255,114,37,.65) !important;
+            box-shadow:0 0 18px rgba(255,95,22,.10) !important;
+        }
+
+        body.obs-overlay .ref-clan-hud.cyan{
+            border-color:rgba(54,224,255,.68) !important;
+            box-shadow:0 0 18px rgba(0,191,255,.10) !important;
+        }
+
+        body.obs-overlay .ref-clan-top{
+            display:contents !important;
+        }
+
+        body.obs-overlay .ref-clan-kicker{
+            font:900 7px/1 'Orbitron',sans-serif !important;
+            letter-spacing:1px !important;
+            color:#8390a8 !important;
+        }
+
+        body.obs-overlay .ref-clan-name{
+            min-width:0 !important;
+            padding:5px 9px !important;
+            border-radius:7px !important;
+            background:rgba(4,7,12,.78) !important;
+            text-align:center !important;
+            white-space:nowrap !important;
+            overflow:hidden !important;
+            text-overflow:ellipsis !important;
+            font-family:'Gogono Cocoa Mochi Cyrillic','Gogono Cocoa Mochi','Rajdhani',sans-serif !important;
+            font-size:clamp(12px,1.2vw,17px) !important;
+            font-weight:700 !important;
+            letter-spacing:.8px !important;
+        }
+
+        body.obs-overlay .ref-clan-hud.orange .ref-clan-name{
+            color:#ffd8c6 !important;
+            border:1px solid rgba(255,126,61,.52) !important;
+        }
+
+        body.obs-overlay .ref-clan-hud.cyan .ref-clan-name{
+            color:#d2f9ff !important;
+            border:1px solid rgba(80,231,255,.52) !important;
+        }
+
+        body.obs-overlay .ref-clan-elo{
+            font:900 7px/1 'Orbitron',sans-serif !important;
+            color:#a6b0c0 !important;
+        }
+
+        body.obs-overlay .ref-clan-bottom{
+            grid-column:1 / -1 !important;
+            display:grid !important;
+            grid-template-columns:repeat(3,1fr) !important;
+            gap:5px !important;
+            margin-top:2px !important;
+        }
+
+        body.obs-overlay .ref-clan-bottom span{
+            display:flex !important;
+            flex-direction:column !important;
+            align-items:center !important;
+            justify-content:center !important;
+            height:21px !important;
+            border-radius:5px !important;
+            background:rgba(4,7,12,.75) !important;
+            border:1px solid rgba(255,255,255,.06) !important;
+        }
+
+        body.obs-overlay .ref-clan-bottom b{
+            font:900 7px/1 'Orbitron',sans-serif !important;
+            color:#fff !important;
+        }
+
+        body.obs-overlay .ref-clan-bottom small{
+            margin-top:2px !important;
+            font:800 4px/1 'Rajdhani',sans-serif !important;
+            letter-spacing:.7px !important;
+            color:#7f8ca3 !important;
+        }
+
+        body.obs-overlay .reference-center{
+            min-width:clamp(55px,7vw,90px) !important;
+            display:flex !important;
+            flex-direction:column !important;
+            align-items:center !important;
+            justify-content:flex-start !important;
+            padding-top:23px !important;
+        }
+
+        body.obs-overlay .reference-vs{
+            font:1000 italic clamp(25px,3.4vw,46px)/1 'Orbitron',sans-serif !important;
+            color:#fff !important;
+            text-shadow:0 0 18px rgba(139,92,246,.30) !important;
+        }
+
+        body.obs-overlay .reference-brand{
+            margin-top:3px !important;
+            font:900 6px/1 'Orbitron',sans-serif !important;
+            letter-spacing:2px !important;
+            color:#8293ae !important;
+        }
+
+        body.obs-overlay .reference-score{
+            margin-top:7px !important;
+            padding:6px 10px !important;
+            border-radius:7px !important;
+            background:rgba(4,7,12,.82) !important;
+            border:1px solid rgba(139,92,246,.25) !important;
+            font:900 11px/1 'Orbitron',sans-serif !important;
+            color:#fff !important;
+        }
+
+        body.obs-overlay .reference-score i{
+            font-style:normal !important;
+            color:#8b5cf6 !important;
+            margin:0 3px !important;
+        }
+
+        body.obs-overlay .reference-live{
+            margin-top:4px !important;
+            padding:3px 6px !important;
+            border-radius:999px !important;
+            background:rgba(255,255,255,.03) !important;
+            border:1px solid rgba(255,255,255,.06) !important;
+            font:900 5px/1 'Orbitron',sans-serif !important;
+            color:#7f8ba0 !important;
+            letter-spacing:1px !important;
+        }
+
+        @media(max-width:900px){
+            body.obs-overlay .reference-hud{
+                padding:8px !important;
+                gap:5px !important;
+            }
+            body.obs-overlay .ref-player-hud{
+                height:100px !important;
+            }
+            body.obs-overlay .ref-player-name{
+                font-size:11px !important;
+                padding:5px 7px !important;
+            }
+            body.obs-overlay .ref-player-head{top:5px!important;left:7px!important;right:7px!important}
+            body.obs-overlay .ref-player-rank,
+            body.obs-overlay .ref-player-elo{font-size:5px !important}
+            body.obs-overlay .ref-player-metrics{left:7px!important;right:7px!important;bottom:6px!important;height:24px!important}
+            body.obs-overlay .ref-player-metrics b{font-size:6px!important}
+            body.obs-overlay .ref-player-metrics small{font-size:4px!important}
+            body.obs-overlay .ref-clan-hud{min-height:48px!important;padding:5px 7px!important;gap:5px!important}
+            body.obs-overlay .ref-clan-kicker,.ref-clan-elo{font-size:5px!important}
+            body.obs-overlay .ref-clan-name{font-size:8px!important}
+            body.obs-overlay .ref-clan-bottom span{height:18px!important}
+            body.obs-overlay .ref-clan-bottom b{font-size:5px!important}
+            body.obs-overlay .reference-center{min-width:40px!important;padding-top:16px!important}
+            body.obs-overlay .reference-vs{font-size:20px!important}
+            body.obs-overlay .reference-score{font-size:7px!important;padding:4px 6px!important}
+        }
+
 </style>
 
 <style id="gogono-cyrillic-font">
@@ -7175,56 +7524,117 @@ body.obs-overlay .obs-clan-label{
                             ? `<div class="sig-avatar-wrap"><img class="sig-avatar" src="${url}" alt="">${frame ? `<img class="sig-frame" src="${frame}" alt="">` : ''}</div>`
                             : '';
 
+                                                const playerCard = (side, name, rank, elo, wins, matches, wr, clanName, avatar, frame, win) => `
+                            <div class="ref-player-hud ${side}">
+                                ${avatar ? `<div class="ref-avatar-wrap"><img class="ref-avatar" src="${avatar}" alt=""></div>` : ''}
+                                ${frame ? `<img class="ref-frame" src="${frame}" alt="">` : ''}
+                                <div class="ref-player-head">
+                                    <span class="ref-player-rank">PLAYER TOP #${rank}</span>
+                                    <span class="ref-player-elo">${elo} ELO</span>
+                                </div>
+                                <div class="ref-player-name">${name}</div>
+                                ${win ? '<span class="ref-player-win">WIN</span>' : ''}
+                                <div class="ref-player-metrics">
+                                    <div><b>${wr}%</b><small>WIN</small></div>
+                                    <div><b>${wins}/${matches}</b><small>W / M</small></div>
+                                    <div><b>${Math.max(0, Number(100-wr))}%</b><small>FORM</small></div>
+                                </div>
+                            </div>`;
+
+                        const clanCard = (side, clanName, rank, wins, matches, wr) => `
+                            <div class="ref-clan-hud ${side}">
+                                <div class="ref-clan-top">
+                                    <span class="ref-clan-kicker">КЛАН · TOP #${rank}</span>
+                                    <span class="ref-clan-elo">${wins}/${matches}</span>
+                                </div>
+                                <div class="ref-clan-name">${clanName}</div>
+                                <div class="ref-clan-bottom">
+                                    <span><b>${wins}</b><small>WIN</small></span>
+                                    <span><b>${matches}</b><small>MATCH</small></span>
+                                    <span><b>${wr}%</b><small>WIN RATE</small></span>
+                                </div>
+                            </div>`;
+
+                        const clanStats = (name) => {
+                            const wanted = String(name || '').trim().toLowerCase();
+                            if (!wanted || wanted === 'нет клана' || wanted === '—') return {rank:'—',wins:0,matches:0,wr:0};
+
+                            const data = new Map();
+                            (db?.clans || []).forEach(c => {
+                                const n = String(c?.name || '').trim();
+                                if (n) data.set(n.toLowerCase(), {name:n,wins:0,matches:0,elo:Number(c?.elo||0)});
+                            });
+
+                            [...(db?.clanMatchHistory||[]), ...(db?.matchHistory||[])].forEach(m => {
+                                const c1 = String(m.clan1||'').trim();
+                                const c2 = String(m.clan2||'').trim();
+                                if (!c1 || !c2 || c1 === 'Нет клана' || c2 === 'Нет клана') return;
+                                if (!data.has(c1.toLowerCase())) data.set(c1.toLowerCase(), {name:c1,wins:0,matches:0,elo:0});
+                                if (!data.has(c2.toLowerCase())) data.set(c2.toLowerCase(), {name:c2,wins:0,matches:0,elo:0});
+                                data.get(c1.toLowerCase()).matches++;
+                                data.get(c2.toLowerCase()).matches++;
+                                const winner = String(m.winnerClan||'').trim().toLowerCase();
+                                if (winner === c1.toLowerCase()) data.get(c1.toLowerCase()).wins++;
+                                if (winner === c2.toLowerCase()) data.get(c2.toLowerCase()).wins++;
+                            });
+
+                            const list = [...data.values()].sort((a,b)=>
+                                (b.wins-a.wins)||(b.matches-a.matches)||(b.elo-a.elo)
+                            );
+                            const item = data.get(wanted);
+                            if (!item) return {rank:'—',wins:0,matches:0,wr:0};
+                            return {
+                                rank: list.findIndex(x=>x.name.toLowerCase()===wanted)+1,
+                                wins:item.wins,
+                                matches:item.matches,
+                                wr:item.matches?Math.round(item.wins/item.matches*100):0
+                            };
+                        };
+
+                        const c1 = clanStats(sd.clan1 || p1Obj?.clan || '');
+                        const c2 = clanStats(sd.clan2 || p2Obj?.clan || '');
+
                         obsContainer.innerHTML = `
-                            <div class="freeelo-separated-hud">
-                                <div class="freeelo-side freeelo-left">
-                                    <div class="freeelo-player-hud">
-                                        ${avatarHtml(avatar1, frame1)}
-                                        <div class="freeelo-player-top">
-                                            <span class="freeelo-rank">#${r1.rank}</span>
-                                            <div class="freeelo-player-name">${playerName1}</div>
-                                            ${score1 > score2 ? '<span class="freeelo-win">WIN</span>' : ''}
-                                        </div>
-                                        <div class="freeelo-player-stats">
-                                            <span><b>${r1.elo}</b><small>ELO</small></span>
-                                            <span><b>${r1.wins}/${r1.matches}</b><small>W/M</small></span>
-                                            <span><b>${r1.wr}%</b><small>WR</small></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="freeelo-clan-hud">
-                                        <span class="freeelo-clan-kicker">CLAN</span>
-                                        <b>${clanName1}</b>
-                                        <span class="freeelo-clan-rank">#${clanRank(sd.clan1 || p1Obj?.clan || '')}</span>
-                                    </div>
+                            <div class="reference-hud">
+                                <div class="reference-team left">
+                                    ${playerCard(
+                                        'orange',
+                                        playerName1,
+                                        r1.rank,
+                                        r1.elo,
+                                        r1.wins,
+                                        r1.matches,
+                                        r1.wr,
+                                        clanName1,
+                                        avatar1,
+                                        frame1,
+                                        score1 > score2
+                                    )}
+                                    ${clanCard('orange', clanName1, c1.rank, c1.wins, c1.matches, c1.wr)}
                                 </div>
 
-                                <div class="freeelo-center">
-                                    <div class="freeelo-vs">VS</div>
-                                    <div class="freeelo-brand">FREE ELO</div>
-                                    <div class="freeelo-score">${score1}<i>:</i>${score2}</div>
+                                <div class="reference-center">
+                                    <div class="reference-vs">VS</div>
+                                    <div class="reference-brand">FREE ELO</div>
+                                    <div class="reference-score"><b>${score1}</b><i>:</i><b>${score2}</b></div>
+                                    <div class="reference-live">LIVE MATCH</div>
                                 </div>
 
-                                <div class="freeelo-side freeelo-right">
-                                    <div class="freeelo-player-hud">
-                                        ${avatarHtml(avatar2, frame2)}
-                                        <div class="freeelo-player-top">
-                                            <span class="freeelo-rank">#${r2.rank}</span>
-                                            <div class="freeelo-player-name">${playerName2}</div>
-                                            ${score2 > score1 ? '<span class="freeelo-win">WIN</span>' : ''}
-                                        </div>
-                                        <div class="freeelo-player-stats">
-                                            <span><b>${r2.elo}</b><small>ELO</small></span>
-                                            <span><b>${r2.wins}/${r2.matches}</b><small>W/M</small></span>
-                                            <span><b>${r2.wr}%</b><small>WR</small></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="freeelo-clan-hud">
-                                        <span class="freeelo-clan-kicker">CLAN</span>
-                                        <b>${clanName2}</b>
-                                        <span class="freeelo-clan-rank">#${clanRank(sd.clan2 || p2Obj?.clan || '')}</span>
-                                    </div>
+                                <div class="reference-team right">
+                                    ${playerCard(
+                                        'cyan',
+                                        playerName2,
+                                        r2.rank,
+                                        r2.elo,
+                                        r2.wins,
+                                        r2.matches,
+                                        r2.wr,
+                                        clanName2,
+                                        avatar2,
+                                        frame2,
+                                        score2 > score1
+                                    )}
+                                    ${clanCard('cyan', clanName2, c2.rank, c2.wins, c2.matches, c2.wr)}
                                 </div>
                             </div>
                         `;
