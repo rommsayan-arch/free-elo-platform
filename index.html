@@ -75,6 +75,8 @@
 
         .role-badge { background-color: #ff3333; color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
         .role-badge.creator { background: linear-gradient(45deg, #ff5500, #ff0055); box-shadow: 0 0 8px rgba(255,85,0,0.6); }
+        .role-badge.creator::before { content:'★'; margin-right:4px; }
+        .creator-crown { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; margin-left:3px; border-radius:50%; background:linear-gradient(135deg,#ffd54a,#ff7a00); color:#111; font-size:11px; box-shadow:0 0 10px rgba(255,170,0,.75); vertical-align:middle; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .auth-card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 35px 30px; width: 400px; text-align: center; }
@@ -3717,21 +3719,52 @@ body.obs-overlay .obs-clan-label{
             if (user) rememberDeviceSession(user);
         }
 
+        function normalizeCloudData(data) {
+            if (!data || typeof data !== 'object') return null;
+            data.players = Array.isArray(data.players) ? data.players : [];
+            data.streamers = Array.isArray(data.streamers) ? data.streamers : [];
+            data.streamDataMap = data.streamDataMap && typeof data.streamDataMap === 'object' ? data.streamDataMap : {};
+            data.matchHistory = Array.isArray(data.matchHistory) ? data.matchHistory : [];
+            data.clanMatchHistory = Array.isArray(data.clanMatchHistory) ? data.clanMatchHistory : [];
+            data.news = Array.isArray(data.news) ? data.news : [];
+            if (!Number.isFinite(Number(data.currentSeason)) || Number(data.currentSeason) < 1) data.currentSeason = 1;
+            if (!data.seasonStartedAt) data.seasonStartedAt = new Date().toISOString();
+            return data;
+        }
+
+        function saveLocalDbBackup() {
+            try {
+                localStorage.setItem('fe_db_backup_v4', JSON.stringify(db));
+            } catch (_) {}
+        }
+
+        function loadLocalDbBackup() {
+            try {
+                const raw = localStorage.getItem('fe_db_backup_v4');
+                return raw ? normalizeCloudData(JSON.parse(raw)) : null;
+            } catch (_) { return null; }
+        }
+
+        function mergePlayerLists(primary, secondary) {
+            const out = [];
+            const seen = new Set();
+            [...(primary || []), ...(secondary || [])].forEach(p => {
+                if (!p) return;
+                const key = p.id != null ? 'id:' + p.id : 'name:' + String(p.name || '').trim().toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                out.push(p);
+            });
+            return out;
+        }
+
         async function loadDataFromCloud() {
-            // Не даём сайту зависать на бесконечном ожидании Supabase.
             if (activeController) activeController.abort();
             activeController = new AbortController();
-            const controller = activeController;
-            const timer = setTimeout(() => controller.abort(), 5000);
-
-            // Мгновенный локальный кэш — интерфейс не пустеет, пока сеть отвечает.
-            try {
-                const cached = localStorage.getItem('fe_db_cache');
-                if (cached) {
-                    const localDb = JSON.parse(cached);
-                    if (localDb && typeof localDb === 'object') db = localDb;
-                }
-            } catch (_) {}
+            const timeout = setTimeout(() => activeController?.abort(), 6000);
+            const previous = normalizeCloudData(db) || db;
+            const backup = loadLocalDbBackup();
+            let loaded = false;
 
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?select=*`, {
@@ -3740,67 +3773,42 @@ body.obs-overlay .obs-clan-label{
                         'Authorization': `Bearer ${SUPABASE_KEY}`,
                         'Accept': 'application/json'
                     },
-                    signal: controller.signal
+                    signal: activeController.signal,
+                    cache: 'no-store'
                 });
                 const raw = await response.text();
                 if (!response.ok) throw new Error(`Supabase ${response.status}: ${raw}`);
                 const rows = raw ? JSON.parse(raw) : [];
-                if (rows.length > 0 && rows[0].content) db = rows[0].content;
+                if (rows.length > 0 && rows[0].content) {
+                    const cloud = normalizeCloudData(rows[0].content);
+                    // Никогда не заменяем богатый список игроков пустым/урезанным ответом.
+                    const richest = [cloud, backup, previous].filter(Boolean).sort((a,b) =>
+                        (b.players?.length || 0) - (a.players?.length || 0)
+                    )[0];
+                    db = cloud;
+                    if ((cloud.players?.length || 0) < (richest.players?.length || 0)) {
+                        db.players = mergePlayerLists(cloud.players, richest.players);
+                    }
+                    // Остальные данные берём из облака, а отсутствующие массивы — из локального снимка.
+                    if (!db.shopItems?.length && richest.shopItems?.length) db.shopItems = richest.shopItems;
+                    if (!db.clans?.length && richest.clans?.length) db.clans = richest.clans;
+                    if (!db.streamers?.length && richest.streamers?.length) db.streamers = richest.streamers;
+                    if (!Object.keys(db.streamDataMap || {}).length && Object.keys(richest.streamDataMap || {}).length) db.streamDataMap = richest.streamDataMap;
+                    loaded = true;
+                }
             } catch (e) {
-                if (e.name !== 'AbortError') console.warn('Облако недоступно, работаем из локального кэша:', e.message);
+                console.warn('Supabase недоступен, использую сохранённые данные:', e?.message || e);
+                if (backup && (backup.players?.length || 0) >= (previous?.players?.length || 0)) db = backup;
             } finally {
-                clearTimeout(timer);
+                clearTimeout(timeout);
             }
-
-            // Нормализация структуры БД после старых версий.
-            if (!db || typeof db !== 'object') db = {};
-            if (!Array.isArray(db.players)) db.players = [];
-            if (!Array.isArray(db.streamers)) db.streamers = [];
-            if (!db.streamDataMap || typeof db.streamDataMap !== 'object') db.streamDataMap = {};
-            if (!Array.isArray(db.matchHistory)) db.matchHistory = [];
-            if (!Array.isArray(db.clanMatchHistory)) db.clanMatchHistory = [];
-            if (!Array.isArray(db.news)) db.news = [];
-            if (!Number.isFinite(Number(db.currentSeason)) || Number(db.currentSeason) < 1) db.currentSeason = 1;
-            if (!db.seasonStartedAt) db.seasonStartedAt = new Date().toISOString();
 
             ensureCreatorRights();
-            ensureRestoredStreamerOverlay();
+            saveLocalDbBackup();
 
-            // Обычные игроки не хранят клан в профиле.
-            let playersClanChanged = false;
-            (db.players || []).forEach(p => {
-                if ((p.role || 'player') === 'player' && p.clan) { p.clan = ''; playersClanChanged = true; }
-            });
-            if (playersClanChanged) saveDataToCloud();
-
+            // Не меняем данные игроков при обычной загрузке: это больше не может случайно стереть их кланы/профили.
             ensureAnimeShopItems();
-            try { localStorage.setItem('fe_db_cache', JSON.stringify(db)); } catch (_) {}
-        }
-
-        function ensureRestoredStreamerOverlay() {
-            if (!db) return;
-            if (!Array.isArray(db.streamers)) db.streamers = [];
-            if (!db.streamDataMap || typeof db.streamDataMap !== 'object') db.streamDataMap = {};
-
-            // Восстанавливаем основной стримерский оверлей, если он был случайно удалён.
-            const creator = (db.players || []).find(p =>
-                String(p.email || '').toLowerCase() === 'rommsayan@gmail.com' ||
-                String(p.name || '').toLowerCase() === 'sayan'
-            );
-            const ownerName = creator?.name || 'sayan';
-            const existingStreamer = db.streamers.find(s => String(s.name || '').toLowerCase() === ownerName.toLowerCase());
-            if (!existingStreamer) {
-                db.streamers.push({ id: creator?.id || 1, name: ownerName, url: 'https://twitch.tv/', priority: 10 });
-            } else {
-                if (!existingStreamer.url) existingStreamer.url = 'https://twitch.tv/';
-                if (!existingStreamer.priority) existingStreamer.priority = 10;
-            }
-            if (!db.streamDataMap[ownerName]) {
-                db.streamDataMap[ownerName] = {
-                    player1: ownerName, clan1: 'NUN', score1: 0,
-                    player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0
-                };
-            }
+            return loaded;
         }
 
         function ensureCreatorRights() {
@@ -3813,31 +3821,8 @@ body.obs-overlay .obs-clan-label{
             });
         }
 
-        // Быстрое сохранение: сначала локально, затем отправляем последнюю версию в облако.
-        // Кнопки больше не ждут ответ Supabase.
-        let cloudSaveTimer = null;
-        let cloudSaveRunning = false;
-        let cloudSavePending = false;
-
-        function saveDataToCloud() {
+        async function saveDataToCloud() {
             ensureCreatorRights();
-            try { localStorage.setItem('fe_db_cache', JSON.stringify(db)); } catch (_) {}
-            cloudSavePending = true;
-            clearTimeout(cloudSaveTimer);
-            cloudSaveTimer = setTimeout(flushCloudSave, 250);
-            return Promise.resolve(true);
-        }
-
-        async function flushCloudSave() {
-            if (cloudSaveRunning || !cloudSavePending) return;
-            cloudSaveRunning = true;
-            cloudSavePending = false;
-            let snapshot = null;
-            try { snapshot = JSON.stringify(db); } catch (e) { console.error('Ошибка подготовки сохранения:', e); }
-            if (!snapshot) { cloudSaveRunning = false; return; }
-
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 5000);
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`, {
                     method: 'PATCH',
@@ -3847,23 +3832,15 @@ body.obs-overlay .obs-clan-label{
                         'Authorization': `Bearer ${SUPABASE_KEY}`,
                         'Prefer': 'return=minimal'
                     },
-                    body: JSON.stringify({ content: JSON.parse(snapshot) }),
-                    signal: controller.signal
+                    body: JSON.stringify({ content: db })
                 });
-                if (!response.ok) {
-                    const raw = await response.text();
-                    throw new Error(`Supabase ${response.status}: ${raw}`);
-                }
+                const raw = await response.text();
+                if (!response.ok) throw new Error(`Supabase ${response.status}: ${raw}`);
+                saveLocalDbBackup();
+                return true;
             } catch (e) {
-                console.warn('Сохранение в облако отложено:', e.name === 'AbortError' ? 'таймаут 5 сек' : e.message);
-                // Локальный кэш уже сохранён, поэтому покупка/оверлей не пропадут.
-            } finally {
-                clearTimeout(timer);
-                cloudSaveRunning = false;
-                if (cloudSavePending) {
-                    clearTimeout(cloudSaveTimer);
-                    cloudSaveTimer = setTimeout(flushCloudSave, 250);
-                }
+                console.error("Ошибка сохранения:", e);
+                return false;
             }
         }
 
@@ -3872,6 +3849,20 @@ body.obs-overlay .obs-clan-label{
             let user = db.players.find(p => p.id == currentUserId) || null;
             if (user && user.email?.toLowerCase() === 'rommsayan@gmail.com') user.role = 'creator';
             return user;
+        }
+
+        function recoverSavedSession() {
+            if (!Array.isArray(db?.players)) return null;
+            let user = currentUserId ? db.players.find(p => String(p.id) === String(currentUserId)) : null;
+            if (!user && cachedSession?.email) {
+                user = db.players.find(p => String(p.email || '').toLowerCase() === String(cachedSession.email).toLowerCase());
+                if (user) currentUserId = user.id;
+            }
+            if (user) {
+                if (String(user.email || '').toLowerCase() === 'rommsayan@gmail.com') user.role = 'creator';
+                localStorage.setItem('fe_current_user_id', String(user.id));
+            }
+            return user || null;
         }
 
         function getGuestPlayerByName(name) {
@@ -4163,9 +4154,9 @@ body.obs-overlay .obs-clan-label{
         }
 
         function initApp() {
-            ensureCreatorRights(); ensureRestoredStreamerOverlay(); ensureAnimeShopItems();
+            ensureCreatorRights(); ensureAnimeShopItems();
             loadAnimeImages().catch(()=>{});
-            let currentUser=getCurrentUser();
+            let currentUser=recoverSavedSession() || getCurrentUser();
             updateHeaderProfile(currentUser);
             const guestName=document.getElementById('userName'); const badge=document.getElementById('roleBadge');
             if(!currentUser){
@@ -4176,7 +4167,7 @@ body.obs-overlay .obs-clan-label{
                 const creatorBtn=document.getElementById('creatorLoginBtn'); if(creatorBtn) creatorBtn.style.display='inline-block';
             } else {
                 if(guestName) guestName.textContent=currentUser.name||'';
-                if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge';}
+                if(badge){badge.textContent=(currentUser.role||'player').toUpperCase(); badge.className=currentUser.role==='creator'?'role-badge creator':'role-badge'; if(currentUser.role==='creator' && !badge.querySelector('.creator-crown')) badge.innerHTML='<span class="creator-crown">★</span> CREATOR';}
                 const lockBtn=document.getElementById('secureLoginBtn'); if(lockBtn) lockBtn.innerHTML=currentUser?.role ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
                 const adminNav=document.getElementById('nav-admin'); if(adminNav) adminNav.style.display=isCreator()?'block':'none';
                 const clansNav=document.getElementById('nav-clans'); if(clansNav) clansNav.style.display='block';
@@ -4541,7 +4532,7 @@ body.obs-overlay .obs-clan-label{
                 score2: s2El ? (parseInt(s2El.value) || 0) : 0
             };
 
-            saveData();
+            await saveData();
             renderStreamers();
             renderLeaderboard();
             renderTop100();
@@ -5266,7 +5257,7 @@ body.obs-overlay .obs-clan-label{
                 p.activeFrameId=item.id;
             }
 
-            saveDataToCloud();
+            await saveDataToCloud();
             updateHeaderProfile(getCurrentUser());
             renderShop(); renderInventory(); renderLeaderboard(); renderTop100();
             alert(`✓ ${item.name} куплено и сразу надето на ${p.name}.`);
@@ -5315,7 +5306,7 @@ body.obs-overlay .obs-clan-label{
             const item=(p.inventory||[]).find(x=>x.id==itemId); if(!item)return;
             if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;} else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
             else return;
-            saveDataToCloud();
+            await saveDataToCloud();
             if (currentUserId == p.id) updateHeaderProfile(p);
             inventoryTargetPlayerId=p.id;
             shopTargetPlayerId=p.id;
