@@ -2483,6 +2483,47 @@
             body.obs-overlay .hud-clan{font-size:clamp(9px,1.8vw,12px) !important;min-height:24px !important;padding:5px 8px !important;}
         }
 
+
+        body.obs-overlay #obsOverlayRoot{
+            display:block !important;
+            position:fixed !important;
+            inset:0 !important;
+            width:100vw !important;
+            height:100vh !important;
+            overflow:hidden !important;
+        }
+        body.obs-overlay .hud-stage{
+            position:absolute !important;
+            inset:0 !important;
+            display:grid !important;
+            grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) !important;
+            align-items:center !important;
+            gap:12px !important;
+            padding:24px !important;
+            box-sizing:border-box !important;
+        }
+        body.obs-overlay .hud-card{
+            position:relative !important;
+            width:min(360px,100%) !important;
+            height:min(150px,24vh) !important;
+            margin:0 auto !important;
+            overflow:hidden !important;
+        }
+        body.obs-overlay .hud-player-name{
+            top:9px !important;
+            bottom:auto !important;
+            position:absolute !important;
+            left:50% !important;
+            transform:translateX(-50%) !important;
+        }
+        body.obs-overlay .hud-clan{
+            bottom:9px !important;
+            top:auto !important;
+            position:absolute !important;
+            left:50% !important;
+            transform:translateX(-50%) !important;
+        }
+
 </style>
 
 <style id="gogono-cyrillic-font">
@@ -6294,146 +6335,187 @@ body.obs-overlay .obs-clan-label{
 
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const obsMode = urlParams.get('obs');
-            const targetStreamer = urlParams.get('streamer');
+            const rawObsMode = (urlParams.get('obs') || '').toLowerCase();
+            const obsMode = rawObsMode === 'clans' ? 'clans' : 'anime';
+            const targetStreamer = (urlParams.get('streamer') || '').trim();
 
-            if (obsMode) {
+            if (rawObsMode) {
                 document.body.classList.add('obs-overlay');
-                document.getElementById('mainSidebar').style.display = 'none';
-                document.getElementById('mainContainer').style.display = 'none';
-                document.getElementById('authModal').style.display = 'none';
-                
-                const obsContainer = document.getElementById('obsOverlayContainer');
-                if (obsContainer) {
-                    obsContainer.style.display = 'block';
-                    obsContainer.id = 'obsOverlayRoot';
+
+                const sidebar = document.getElementById('mainSidebar');
+                const main = document.getElementById('mainContainer');
+                const auth = document.getElementById('authModal');
+                if (sidebar) sidebar.style.display = 'none';
+                if (main) main.style.display = 'none';
+                if (auth) auth.style.display = 'none';
+
+                let obsContainer = document.getElementById('obsOverlayContainer');
+                if (!obsContainer) {
+                    obsContainer = document.createElement('div');
+                    obsContainer.id = 'obsOverlayContainer';
+                    document.body.appendChild(obsContainer);
                 }
+                obsContainer.id = 'obsOverlayRoot';
+                obsContainer.style.display = 'block';
 
-                async function updateObsContent() {
-                    await loadDataFromCloud();
-                    // Нормализуем активные аватарки/рамки после загрузки из облака.
-                    (db?.players || []).forEach(p => {
-                        p.inventory = Array.isArray(p.inventory) ? p.inventory : [];
-                        const a = resolveEquippedAvatar(p);
-                        if (a) p.avatar = a;
-                        const f = resolveEquippedFrame(p);
-                        if (f?.img) p.frame = f.img;
-                    });
-                    let map = db?.streamDataMap || {};
-                    let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
+                const paintFallback = () => {
+                    const safe = (s, fallback) => escapeHistoryText(String(s || fallback));
+                    const localMap = db?.streamDataMap || {};
+                    let sd = targetStreamer
+                        ? localMap[targetStreamer] || localMap[targetStreamer.toLowerCase()] || null
+                        : null;
 
-                    let p1Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player1?.toLowerCase());
-                    let p2Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player2?.toLowerCase());
-
-                    if (obsContainer) {
-                        if (obsMode === 'anime') {
-                            const resolveObsAvatar = (player) => {
-                                if (!player) return '';
-                                const equipped = resolveEquippedAvatar(player);
-                                if (equipped) return String(equipped);
-                                const raw = String(player.avatar || '').trim();
-                                if (!raw) return '';
-                                const low = raw.toLowerCase();
-                                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return '';
-                                return raw;
-                            };
-
-                            const resolveObsFrame = (player) => {
-                                const frame = resolveEquippedFrame(player);
-                                return frame ? getFrameEffectClass(frame) : '';
-                            };
-
-                            if (p1Obj && !resolveEquippedAvatar(p1Obj) && p1Obj.avatar && !String(p1Obj.avatar).includes('dicebear.com')) p1Obj.avatar = String(p1Obj.avatar);
-                            if (p2Obj && !resolveEquippedAvatar(p2Obj) && p2Obj.avatar && !String(p2Obj.avatar).includes('dicebear.com')) p2Obj.avatar = String(p2Obj.avatar);
-                            const avatarUrl1 = resolveObsAvatar(p1Obj) || ((p1Obj?.avatar && !String(p1Obj.avatar).includes('dicebear.com')) ? String(p1Obj.avatar) : '');
-                            const avatarUrl2 = resolveObsAvatar(p2Obj) || ((p2Obj?.avatar && !String(p2Obj.avatar).includes('dicebear.com')) ? String(p2Obj.avatar) : '');
-                            const hasAvatar1 = !!avatarUrl1;
-                            const hasAvatar2 = !!avatarUrl2;
-
-                            const playerName1 = String(sd.player1 || p1Obj?.name || 'PLAYER 1').trim();
-                            const playerName2 = String(sd.player2 || p2Obj?.name || 'PLAYER 2').trim();
-                            const clanName1 = String(sd.clan1 || p1Obj?.clan || '').trim();
-                            const clanName2 = String(sd.clan2 || p2Obj?.clan || '').trim();
-
-                            const safeName1 = escapeHistoryText(playerName1 || 'PLAYER 1');
-                            const safeName2 = escapeHistoryText(playerName2 || 'PLAYER 2');
-                            const safeClan1 = escapeHistoryText(clanName1 || '—');
-                            const safeClan2 = escapeHistoryText(clanName2 || '—');
-
-                            const score1Num = Number(sd.score1 ?? 0) || 0;
-                            const score2Num = Number(sd.score2 ?? 0) || 0;
-                            const p1Wins = score1Num > score2Num;
-                            const p2Wins = score2Num > score1Num;
-
-                            obsContainer.innerHTML = `
-                                <div class="hud-stage">
-                                    <div class="hud-team hud-team-left">
-                                        <div class="hud-card">
-                                            ${avatar1}
-                                            ${p1Wins ? '<div class="hud-win">WIN</div>' : ''}
-                                            <div class="hud-player-name">${safeName1}</div>
-                                            <div class="hud-clan">${safeClan1}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="hud-center">
-                                        <div class="hud-vs">VS</div>
-                                        <div class="hud-brand">FREE ELO</div>
-                                    </div>
-
-                                    <div class="hud-team hud-team-right">
-                                        <div class="hud-card">
-                                            ${avatar2}
-                                            ${p2Wins ? '<div class="hud-win">WIN</div>' : ''}
-                                            <div class="hud-player-name">${safeName2}</div>
-                                            <div class="hud-clan">${safeClan2}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        } else if (obsMode === 'clans') {
-                            const clanLeft = escapeHistoryText(String(sd.clan1 || p1Obj?.clan || '—').trim());
-                            const clanRight = escapeHistoryText(String(sd.clan2 || p2Obj?.clan || '—').trim());
-                            const scoreLeft = Number(sd.score1 ?? 0) || 0;
-                            const scoreRight = Number(sd.score2 ?? 0) || 0;
-
-                            obsContainer.innerHTML = `
-                                <div class="hud-stage">
-                                    <div class="hud-team hud-team-left">
-                                        <div class="hud-card clan-only-card">
-                                            ${scoreLeft > scoreRight ? '<div class="hud-win">WIN</div>' : ''}
-                                            <div class="hud-player-name">${clanLeft}</div>
-                                            <div class="hud-clan">CLAN</div>
-                                        </div>
-                                    </div>
-                                    <div class="hud-center">
-                                        <div class="hud-vs">VS</div>
-                                        <div class="hud-brand">FREE ELO</div>
-                                    </div>
-                                    <div class="hud-team hud-team-right">
-                                        <div class="hud-card clan-only-card">
-                                            ${scoreRight > scoreLeft ? '<div class="hud-win">WIN</div>' : ''}
-                                            <div class="hud-player-name">${clanRight}</div>
-                                            <div class="hud-clan">CLAN</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }
+                    if (!sd) {
+                        const firstKey = Object.keys(localMap)[0];
+                        sd = firstKey ? localMap[firstKey] : null;
                     }
-                }
+
+                    sd = sd || {
+                        player1:'PLAYER 1',
+                        clan1:'CLAN 1',
+                        score1:0,
+                        player2:'PLAYER 2',
+                        clan2:'CLAN 2',
+                        score2:0
+                    };
+
+                    const score1 = Number(sd.score1 || 0);
+                    const score2 = Number(sd.score2 || 0);
+
+                    obsContainer.innerHTML = `
+                        <div class="hud-stage">
+                            <div class="hud-team hud-team-left">
+                                <div class="hud-card">
+                                    <div class="hud-player-name">${safe(sd.player1,'PLAYER 1')}</div>
+                                    <div class="hud-clan">${safe(sd.clan1,'—')}</div>
+                                    ${score1 > score2 ? '<div class="hud-win">WIN</div>' : ''}
+                                </div>
+                            </div>
+                            <div class="hud-center">
+                                <div class="hud-vs">VS</div>
+                                <div class="hud-brand">FREE ELO</div>
+                            </div>
+                            <div class="hud-team hud-team-right">
+                                <div class="hud-card">
+                                    <div class="hud-player-name">${safe(sd.player2,'PLAYER 2')}</div>
+                                    <div class="hud-clan">${safe(sd.clan2,'—')}</div>
+                                    ${score2 > score1 ? '<div class="hud-win">WIN</div>' : ''}
+                                </div>
+                            </div>
+                        </div>`;
+                };
+
+                const updateObsContent = async () => {
+                    try {
+                        // Render immediately from current/local data so the HUD is never blank.
+                        paintFallback();
+
+                        // Then refresh cloud data and repaint with the latest streamer values.
+                        await loadDataFromCloud();
+
+                        if (db?.players) {
+                            db.players.forEach(p => {
+                                p.inventory = Array.isArray(p.inventory) ? p.inventory : [];
+                                const a = resolveEquippedAvatar(p);
+                                if (a) p.avatar = a;
+                                const f = resolveEquippedFrame(p);
+                                if (f?.img) p.frame = f.img;
+                            });
+                        }
+
+                        const map = db?.streamDataMap || {};
+                        let sd = targetStreamer
+                            ? map[targetStreamer] || map[targetStreamer.toLowerCase()]
+                            : null;
+
+                        if (!sd) {
+                            const key = Object.keys(map)[0];
+                            sd = key ? map[key] : null;
+                        }
+
+                        sd = sd || {
+                            player1:'PLAYER 1', clan1:'CLAN 1', score1:0,
+                            player2:'PLAYER 2', clan2:'CLAN 2', score2:0
+                        };
+
+                        const p1Obj = (db?.players || []).find(p =>
+                            String(p.name || '').toLowerCase() === String(sd.player1 || '').toLowerCase()
+                        );
+                        const p2Obj = (db?.players || []).find(p =>
+                            String(p.name || '').toLowerCase() === String(sd.player2 || '').toLowerCase()
+                        );
+
+                        const name1 = escapeHistoryText(String(sd.player1 || p1Obj?.name || 'PLAYER 1').trim());
+                        const name2 = escapeHistoryText(String(sd.player2 || p2Obj?.name || 'PLAYER 2').trim());
+                        const clan1 = escapeHistoryText(String(sd.clan1 || p1Obj?.clan || '—').trim());
+                        const clan2 = escapeHistoryText(String(sd.clan2 || p2Obj?.clan || '—').trim());
+                        const score1 = Number(sd.score1 || 0);
+                        const score2 = Number(sd.score2 || 0);
+
+                        const resolveAvatar = (p) => {
+                            if (!p) return '';
+                            const eq = resolveEquippedAvatar(p);
+                            if (eq) return String(eq);
+                            const raw = String(p.avatar || '').trim();
+                            if (!raw || /dicebear\.com\/.*(?:bottts|initials)/i.test(raw)) return '';
+                            return raw;
+                        };
+                        const resolveFrame = (p) => {
+                            if (!p) return '';
+                            const f = resolveEquippedFrame(p);
+                            return f?.img || '';
+                        };
+
+                        const a1 = resolveAvatar(p1Obj);
+                        const a2 = resolveAvatar(p2Obj);
+                        const f1 = resolveFrame(p1Obj);
+                        const f2 = resolveFrame(p2Obj);
+
+                        obsContainer.innerHTML = `
+                            <div class="hud-stage">
+                                <div class="hud-team hud-team-left">
+                                    <div class="hud-card">
+                                        ${a1 ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${a1}" alt="">${f1 ? `<img class="obs-avatar-frame" src="${f1}" alt="">` : ''}</div>` : ''}
+                                        ${score1 > score2 ? '<div class="hud-win">WIN</div>' : ''}
+                                        <div class="hud-player-name">${name1}</div>
+                                        <div class="hud-clan">${clan1}</div>
+                                    </div>
+                                </div>
+                                <div class="hud-center">
+                                    <div class="hud-vs">VS</div>
+                                    <div class="hud-brand">FREE ELO</div>
+                                </div>
+                                <div class="hud-team hud-team-right">
+                                    <div class="hud-card">
+                                        ${a2 ? `<div class="obs-avatar-wrap"><img class="obs-avatar" src="${a2}" alt="">${f2 ? `<img class="obs-avatar-frame" src="${f2}" alt="">` : ''}</div>` : ''}
+                                        ${score2 > score1 ? '<div class="hud-win">WIN</div>' : ''}
+                                        <div class="hud-player-name">${name2}</div>
+                                        <div class="hud-clan">${clan2}</div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    } catch (err) {
+                        console.error('OBS HUD update failed:', err);
+                        paintFallback();
+                    }
+                };
+
                 await updateObsContent();
-                setInterval(updateObsContent, 2000);
+                setInterval(updateObsContent, 500);
                 return;
             }
 
             await loadDataFromCloud();
-            // Автоматически восстанавливаем последний аккаунт на этом устройстве.
             if (!currentUserId && cachedSession?.id) currentUserId = cachedSession.id;
-            if (currentUserId && getCurrentUser()) { initApp(); } else { currentUserId=null; initApp(); }
+            if (currentUserId && getCurrentUser()) {
+                initApp();
+            } else {
+                currentUserId = null;
+                initApp();
+            }
 
             setInterval(async () => {
-                let prevDataStr = JSON.stringify(db);
+                const prevDataStr = JSON.stringify(db);
                 await loadDataFromCloud();
                 if (JSON.stringify(db) !== prevDataStr) initApp();
             }, 4000);
