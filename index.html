@@ -4537,6 +4537,13 @@ body.obs-overlay .obs-clan-label{
             });
             db.clanMatchHistory = db.clanMatchHistory.slice(0, 1000);
 
+            // Запоминаем результат для OBS HUD кланов.
+            if (!db.streamDataMap) db.streamDataMap = {};
+            if (!db.streamDataMap[streamerName]) db.streamDataMap[streamerName] = {};
+            db.streamDataMap[streamerName].winnerClan = winnerClan;
+            db.streamDataMap[streamerName].winnerType = 'clan';
+            db.streamDataMap[streamerName].winnerAt = new Date().toISOString();
+
             await saveData();
             renderClans();
             if (typeof renderClanLeaderboard === 'function') renderClanLeaderboard();
@@ -4589,6 +4596,13 @@ body.obs-overlay .obs-clan-label{
                 eloChangeLoser: player1.id === loser.id ? player1.elo - before1 : player2.elo - before2
             });
             db.matchHistory = db.matchHistory.slice(0, 1000);
+
+            // Запоминаем результат для OBS HUD.
+            if (!db.streamDataMap) db.streamDataMap = {};
+            if (!db.streamDataMap[streamerName]) db.streamDataMap[streamerName] = {};
+            db.streamDataMap[streamerName].winnerPlayer = winner.name;
+            db.streamDataMap[streamerName].winnerType = 'player';
+            db.streamDataMap[streamerName].winnerAt = new Date().toISOString();
 
             await saveData();
             renderHistoryCells();
@@ -5622,10 +5636,8 @@ body.obs-overlay .obs-clan-label{
                                 return frame ? getFrameEffectClass(frame) : '';
                             };
 
-                            if (p1Obj && !resolveEquippedAvatar(p1Obj) && p1Obj.avatar && !String(p1Obj.avatar).includes('dicebear.com')) p1Obj.avatar = String(p1Obj.avatar);
-                            if (p2Obj && !resolveEquippedAvatar(p2Obj) && p2Obj.avatar && !String(p2Obj.avatar).includes('dicebear.com')) p2Obj.avatar = String(p2Obj.avatar);
-                            const avatarUrl1 = resolveObsAvatar(p1Obj) || ((p1Obj?.avatar && !String(p1Obj.avatar).includes('dicebear.com')) ? String(p1Obj.avatar) : '');
-                            const avatarUrl2 = resolveObsAvatar(p2Obj) || ((p2Obj?.avatar && !String(p2Obj.avatar).includes('dicebear.com')) ? String(p2Obj.avatar) : '');
+                            const avatarUrl1 = resolveObsAvatar(p1Obj);
+                            const avatarUrl2 = resolveObsAvatar(p2Obj);
                             const hasAvatar1 = !!avatarUrl1;
                             const hasAvatar2 = !!avatarUrl2;
 
@@ -5636,7 +5648,6 @@ body.obs-overlay .obs-clan-label{
 
                             const frameClass1 = resolveObsFrame(p1Obj);
                             const frameClass2 = resolveObsFrame(p2Obj);
-
                             const avatar1 = hasAvatar1
                                 ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl1)} alt="" onerror="this.remove();this.closest('.obs-player-card')?.classList.add('obs-name-only');"></div>`
                                 : '';
@@ -5644,40 +5655,192 @@ body.obs-overlay .obs-clan-label{
                                 ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl2)} alt="" onerror="this.remove();this.closest('.obs-player-card')?.classList.add('obs-name-only');"></div>`
                                 : '';
 
+                            // Место игрока по ELO. Создатель/стримерские роли на рейтинг не влияют.
+                            const playerRanking = [...(db?.players || [])]
+                                .filter(p => p && p.name)
+                                .sort((a,b) => (Number(b.elo||0) - Number(a.elo||0)) || String(a.name).localeCompare(String(b.name), 'ru'));
+                            const rankOf = (name) => {
+                                const idx = playerRanking.findIndex(p => String(p.name).toLowerCase() === String(name).toLowerCase());
+                                return idx >= 0 ? idx + 1 : '—';
+                            };
+                            const p1Rank = rankOf(sd.player1);
+                            const p2Rank = rankOf(sd.player2);
+
+                            const score1 = Number(sd.score1 ?? 0);
+                            const score2 = Number(sd.score2 ?? 0);
+                            const explicitWinner = String(sd.winnerPlayer || '').toLowerCase();
+                            const scoreWinner = score1 === score2 ? '' : (score1 > score2 ? String(sd.player1||'') : String(sd.player2||''));
+                            const winnerName = explicitWinner || scoreWinner.toLowerCase();
+                            const winner1 = winnerName && winnerName === String(sd.player1||'').toLowerCase();
+                            const winner2 = winnerName && winnerName === String(sd.player2||'').toLowerCase();
+                            const liveResult = !winnerName;
+
+                            const safeWinnerLabel = (name) => escapeHistoryText(name || 'ПОБЕДИТЕЛЬ');
+                            const p1Status = winner1 ? 'WIN' : (liveResult ? 'LIVE' : 'LOSS');
+                            const p2Status = winner2 ? 'WIN' : (liveResult ? 'LIVE' : 'LOSS');
+
                             obsContainer.innerHTML = `
-                                <div class="obs-vs">
-                                    <div class="obs-char left">
-                                        <div class="obs-player-card ${hasAvatar1 ? '' : 'obs-name-only'}">
-                                            ${avatar1}
-                                            <div class="obs-name">${safeName1}</div>
-                                            <div class="obs-clan-label">${safeClan1}</div>
+                                <div class="free-hud free-player-hud">
+                                    <div class="hud-topline">
+                                        <div class="hud-event">
+                                            <span class="hud-dot"></span>
+                                            <span>FREE ELO</span>
+                                            <b>PLAYER BATTLE</b>
                                         </div>
+                                        <div class="hud-round">LIVE MATCH <i class="fas fa-bolt"></i></div>
                                     </div>
-                                    <div class="obs-vs-text">VS</div>
-                                    <div class="obs-char right">
-                                        <div class="obs-player-card ${hasAvatar2 ? '' : 'obs-name-only'}">
-                                            ${avatar2}
-                                            <div class="obs-name">${safeName2}</div>
-                                            <div class="obs-clan-label">${safeClan2}</div>
+
+                                    <div class="hud-player-grid">
+                                        <div class="hud-player-side hud-left ${winner1 ? 'is-winner' : ''}">
+                                            <div class="hud-rank">#${p1Rank}</div>
+                                            <div class="hud-player-card">
+                                                ${avatar1}
+                                                <div class="hud-card-shade"></div>
+                                                <div class="hud-player-content">
+                                                    <div class="hud-status ${winner1 ? 'win' : (liveResult ? 'live' : 'loss')}">${p1Status}</div>
+                                                    <div class="hud-name">${safeName1}</div>
+                                                    <div class="hud-clan">${safeClan1}</div>
+                                                </div>
+                                                <div class="hud-meta">
+                                                    <span><small>ELO</small><b>${Number(p1Obj?.elo ?? 0)}</b></span>
+                                                    <span><small>WIN RATE</small><b>${p1Obj?.matches ? Math.round((Number(p1Obj.wins||0)/Number(p1Obj.matches||1))*100) : 0}%</b></span>
+                                                </div>
+                                            </div>
+                                            <div class="hud-place">RANK <b>#${p1Rank}</b></div>
+                                        </div>
+
+                                        <div class="hud-center">
+                                            <div class="hud-vs-ring"><span>VS</span></div>
+                                            <div class="hud-score">${score1}<i>:</i>${score2}</div>
+                                            <div class="hud-winner-caption">${winnerName ? `WINNER · ${safeWinnerLabel(winnerName)}` : 'MATCH IN PROGRESS'}</div>
+                                        </div>
+
+                                        <div class="hud-player-side hud-right ${winner2 ? 'is-winner' : ''}">
+                                            <div class="hud-rank">#${p2Rank}</div>
+                                            <div class="hud-player-card">
+                                                ${avatar2}
+                                                <div class="hud-card-shade"></div>
+                                                <div class="hud-player-content">
+                                                    <div class="hud-status ${winner2 ? 'win' : (liveResult ? 'live' : 'loss')}">${p2Status}</div>
+                                                    <div class="hud-name">${safeName2}</div>
+                                                    <div class="hud-clan">${safeClan2}</div>
+                                                </div>
+                                                <div class="hud-meta">
+                                                    <span><small>ELO</small><b>${Number(p2Obj?.elo ?? 0)}</b></span>
+                                                    <span><small>WIN RATE</small><b>${p2Obj?.matches ? Math.round((Number(p2Obj.wins||0)/Number(p2Obj.matches||1))*100) : 0}%</b></span>
+                                                </div>
+                                            </div>
+                                            <div class="hud-place">RANK <b>#${p2Rank}</b></div>
                                         </div>
                                     </div>
                                 </div>
                             `;
                         } else if (obsMode === 'clans') {
+                            // Рейтинг кланов строится так же, как на странице лидерборда.
+                            const clanStats = new Map();
+                            (db?.clans || []).forEach(c => {
+                                const name = String(c.name || '').trim();
+                                if (name && name !== 'Нет клана') {
+                                    clanStats.set(name.toLowerCase(), {
+                                        name, tag: c.tag || '', elo: Number(c.elo || 0), games: 0, wins: 0
+                                    });
+                                }
+                            });
+                            const clanRows = [
+                                ...(db?.clanMatchHistory || []),
+                                ...(getMatchHistory() || [])
+                            ];
+                            const seenClanRows = new Set();
+                            clanRows.forEach(m => {
+                                const a = String(m.clan1 || '').trim();
+                                const b = String(m.clan2 || '').trim();
+                                if (!a || !b || a === 'Нет клана' || b === 'Нет клана') return;
+                                const key = `${String(m.id ?? '')}|${a}|${b}|${String(m.date || '')}`;
+                                if (seenClanRows.has(key)) return;
+                                seenClanRows.add(key);
+                                [a,b].forEach(n => {
+                                    const k = n.toLowerCase();
+                                    if (!clanStats.has(k)) clanStats.set(k, {name:n, tag:'', elo:0, games:0, wins:0});
+                                });
+                                const ca = clanStats.get(a.toLowerCase());
+                                const cb = clanStats.get(b.toLowerCase());
+                                ca.games++; cb.games++;
+                                const winner = String(m.winnerClan || (m.winnerId == m.player1Id ? a : m.winnerId == m.player2Id ? b : '')).trim();
+                                if (winner) {
+                                    if (winner.toLowerCase() === a.toLowerCase()) { ca.wins++; ca.elo += 26; cb.elo = Math.max(0, cb.elo - 32); }
+                                    if (winner.toLowerCase() === b.toLowerCase()) { cb.wins++; cb.elo += 26; ca.elo = Math.max(0, ca.elo - 32); }
+                                }
+                            });
+                            const clanRanking = [...clanStats.values()]
+                                .filter(c => c.name && c.name !== 'Нет клана')
+                                .sort((a,b) => (b.elo-a.elo) || (b.wins-a.wins) || (b.games-a.games) || String(a.name).localeCompare(String(b.name), 'ru'));
+                            const clanRankOf = (name) => {
+                                const idx = clanRanking.findIndex(c => c.name.toLowerCase() === String(name||'').toLowerCase());
+                                return idx >= 0 ? idx + 1 : '—';
+                            };
+                            const c1Name = String(sd.clan1 || 'NUN');
+                            const c2Name = String(sd.clan2 || 'WAKANDA');
+                            const c1Rank = clanRankOf(c1Name);
+                            const c2Rank = clanRankOf(c2Name);
+                            const c1 = clanStats.get(c1Name.toLowerCase()) || {elo:0,wins:0,games:0,tag:''};
+                            const c2 = clanStats.get(c2Name.toLowerCase()) || {elo:0,wins:0,games:0,tag:''};
 
-                            /* Обновленный красивый HUD Кланов */
+                            const score1 = Number(sd.score1 ?? 0);
+                            const score2 = Number(sd.score2 ?? 0);
+                            const explicitWinner = String(sd.winnerClan || '').toLowerCase();
+                            const scoreWinner = score1 === score2 ? '' : (score1 > score2 ? c1Name : c2Name);
+                            const winnerClan = explicitWinner || scoreWinner.toLowerCase();
+                            const winnerC1 = winnerClan && winnerClan === c1Name.toLowerCase();
+                            const winnerC2 = winnerClan && winnerClan === c2Name.toLowerCase();
+                            const liveClan = !winnerClan;
+
                             obsContainer.innerHTML = `
-                                <div class="clan-hud-container">
-                                    <div class="clan-hud-side">
-                                        <span class="clan-hud-tag">${sd.clan1 || 'NUN'}</span>
+                                <div class="free-hud free-clan-hud">
+                                    <div class="hud-topline">
+                                        <div class="hud-event">
+                                            <span class="hud-dot"></span>
+                                            <span>FREE ELO</span>
+                                            <b>CLAN WAR</b>
+                                        </div>
+                                        <div class="hud-round">CLAN RANKED <i class="fas fa-shield-halved"></i></div>
                                     </div>
-                                    <div class="clan-hud-score-box">
-                                        <span class="clan-score-num" style="color:#00ff66;">${sd.score1 ?? 0}</span>
-                                        <span class="clan-score-divider">:</span>
-                                        <span class="clan-score-num" style="color:#ff3333;">${sd.score2 ?? 0}</span>
-                                    </div>
-                                    <div class="clan-hud-side enemy">
-                                        <span class="clan-hud-tag" style="border-color:#00bfff;background:rgba(0,191,255,.2);">${sd.clan2 || 'WAKANDA'}</span>
+
+                                    <div class="hud-clan-grid">
+                                        <div class="hud-clan-side hud-left ${winnerC1 ? 'is-winner' : ''}">
+                                            <div class="hud-rank">#${c1Rank}</div>
+                                            <div class="hud-clan-card">
+                                                <div class="hud-clan-tag">${escapeHistoryText(c1.tag || c1Name.slice(0,4).toUpperCase())}</div>
+                                                <div class="hud-status ${winnerC1 ? 'win' : (liveClan ? 'live' : 'loss')}">${winnerC1 ? 'WIN' : (liveClan ? 'LIVE' : 'LOSS')}</div>
+                                                <div class="hud-clan-name">${escapeHistoryText(c1Name)}</div>
+                                                <div class="hud-clan-stats">
+                                                    <span><small>ELO</small><b>${c1.elo}</b></span>
+                                                    <span><small>WINS</small><b>${c1.wins}</b></span>
+                                                    <span><small>GAMES</small><b>${c1.games}</b></span>
+                                                </div>
+                                            </div>
+                                            <div class="hud-place">CLAN RANK <b>#${c1Rank}</b></div>
+                                        </div>
+
+                                        <div class="hud-center">
+                                            <div class="hud-vs-ring clan-ring"><span>VS</span></div>
+                                            <div class="hud-score">${score1}<i>:</i>${score2}</div>
+                                            <div class="hud-winner-caption">${winnerClan ? `WINNER · ${escapeHistoryText(winnerClan)}` : 'CLAN WAR IN PROGRESS'}</div>
+                                        </div>
+
+                                        <div class="hud-clan-side hud-right ${winnerC2 ? 'is-winner' : ''}">
+                                            <div class="hud-rank">#${c2Rank}</div>
+                                            <div class="hud-clan-card">
+                                                <div class="hud-clan-tag">${escapeHistoryText(c2.tag || c2Name.slice(0,4).toUpperCase())}</div>
+                                                <div class="hud-status ${winnerC2 ? 'win' : (liveClan ? 'live' : 'loss')}">${winnerC2 ? 'WIN' : (liveClan ? 'LIVE' : 'LOSS')}</div>
+                                                <div class="hud-clan-name">${escapeHistoryText(c2Name)}</div>
+                                                <div class="hud-clan-stats">
+                                                    <span><small>ELO</small><b>${c2.elo}</b></span>
+                                                    <span><small>WINS</small><b>${c2.wins}</b></span>
+                                                    <span><small>GAMES</small><b>${c2.games}</b></span>
+                                                </div>
+                                            </div>
+                                            <div class="hud-place">CLAN RANK <b>#${c2Rank}</b></div>
+                                        </div>
                                     </div>
                                 </div>
                             `;
@@ -5714,7 +5877,315 @@ body.obs-overlay .obs-clan-label{
 .clan-history-players b{color:var(--accent)}
 .clan-history-result{text-align:center;font-size:10px;font-weight:800;color:#8896ad}
 @media(max-width:650px){.clan-history-name{font-size:11px}.clan-history-vs{font-size:10px}.clan-history-players{font-size:8px}}
-</style></body>
+</style>
+<style id="free-elo-premium-obs-hud">
+/* =========================================================
+   FREE ELO — PREMIUM OBS HUD
+   Transparent canvas / no anime characters / esports broadcast look
+   ========================================================= */
+body.obs-overlay{
+    background:transparent!important;
+    overflow:hidden!important;
+}
+body.obs-overlay #obsOverlayRoot{
+    background:transparent!important;
+}
+
+/* Outer HUD */
+.free-hud{
+    --hud-purple:#9b6cff;
+    --hud-cyan:#26e6ff;
+    --hud-pink:#ff4eb8;
+    --hud-green:#5cffb1;
+    --hud-red:#ff5c7a;
+    position:fixed;
+    left:50%;
+    top:5.5%;
+    transform:translateX(-50%);
+    width:min(1180px,94vw);
+    color:#fff;
+    font-family:'Rajdhani',sans-serif;
+    pointer-events:none;
+    filter:drop-shadow(0 18px 40px rgba(0,0,0,.42));
+}
+.free-hud::before{
+    content:"";
+    position:absolute;
+    inset:-18px -35px;
+    z-index:-1;
+    background:
+        radial-gradient(circle at 18% 50%,rgba(155,108,255,.14),transparent 28%),
+        radial-gradient(circle at 82% 50%,rgba(38,230,255,.12),transparent 28%);
+    filter:blur(25px);
+}
+
+/* Top title strip */
+.hud-topline{
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 15px;
+    margin:0 auto 8px;
+    width:calc(100% - 90px);
+    background:linear-gradient(90deg,rgba(9,11,20,.94),rgba(18,15,31,.94),rgba(8,15,23,.94));
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:10px;
+    box-shadow:0 0 24px rgba(155,108,255,.10),inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(16px);
+}
+.hud-event,.hud-round{
+    display:flex;align-items:center;gap:8px;
+    font-size:11px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;
+}
+.hud-event b{color:var(--hud-cyan);font-size:9px;letter-spacing:1px}
+.hud-round{color:#8794ac;font-size:9px}
+.hud-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--hud-green);
+    box-shadow:0 0 12px var(--hud-green);
+    animation:hudBlink 1.2s ease-in-out infinite;
+}
+@keyframes hudBlink{50%{opacity:.35;transform:scale(.72)}}
+
+/* Player layout */
+.hud-player-grid,.hud-clan-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 160px minmax(0,1fr);
+    gap:16px;
+    align-items:start;
+}
+.hud-player-side,.hud-clan-side{
+    position:relative;
+    min-width:0;
+}
+.hud-player-card,.hud-clan-card{
+    position:relative;
+    height:172px;
+    overflow:hidden;
+    background:linear-gradient(135deg,rgba(13,14,24,.95),rgba(22,17,37,.92));
+    border:1px solid rgba(155,108,255,.55);
+    border-radius:14px;
+    box-shadow:
+        0 16px 42px rgba(0,0,0,.36),
+        inset 0 1px 0 rgba(255,255,255,.08),
+        inset 0 0 40px rgba(155,108,255,.045);
+    backdrop-filter:blur(14px);
+}
+.hud-player-side.hud-left .hud-player-card,
+.hud-clan-side.hud-left .hud-clan-card{
+    border-color:rgba(155,108,255,.62);
+}
+.hud-player-side.hud-right .hud-player-card,
+.hud-clan-side.hud-right .hud-clan-card{
+    border-color:rgba(38,230,255,.62);
+    background:linear-gradient(225deg,rgba(8,18,27,.96),rgba(13,16,28,.94));
+}
+.hud-player-side.hud-left::before,.hud-player-side.hud-right::before,
+.hud-clan-side.hud-left::before,.hud-clan-side.hud-right::before{
+    content:"";
+    position:absolute;top:0;width:45%;height:2px;z-index:4;
+    background:linear-gradient(90deg,transparent,#9b6cff,#ff4eb8);
+    box-shadow:0 0 14px rgba(155,108,255,.7);
+}
+.hud-player-side.hud-left::before,.hud-clan-side.hud-left::before{left:10px}
+.hud-player-side.hud-right::before,.hud-clan-side.hud-right::before{
+    right:10px;
+    background:linear-gradient(90deg,#26e6ff,#5ca8ff,transparent);
+    box-shadow:0 0 14px rgba(38,230,255,.7);
+}
+.hud-rank{
+    position:absolute;
+    top:-1px;
+    left:14px;
+    z-index:8;
+    padding:4px 9px;
+    border-radius:0 0 8px 8px;
+    background:rgba(5,7,13,.9);
+    border:1px solid rgba(255,255,255,.08);
+    border-top:0;
+    color:#b9c3d7;
+    font:900 10px 'Orbitron',sans-serif;
+    letter-spacing:1px;
+}
+.hud-player-side.hud-right .hud-rank,.hud-clan-side.hud-right .hud-rank{left:auto;right:14px}
+.hud-avatar-wrap{
+    position:absolute;inset:0;overflow:hidden;z-index:0;
+}
+.hud-player-card .obs-avatar{
+    width:100%!important;height:100%!important;
+    object-fit:cover!important;
+    opacity:.24!important;
+    filter:saturate(1.1) contrast(1.06)!important;
+    transform:scale(1.04)!important;
+}
+.hud-player-card .obs-avatar-frame{
+    opacity:.45!important;
+}
+.hud-card-shade{
+    position:absolute;inset:0;z-index:1;
+    background:
+      linear-gradient(90deg,rgba(8,9,15,.96) 0%,rgba(8,9,15,.70) 42%,rgba(8,9,15,.18) 100%),
+      linear-gradient(0deg,rgba(8,9,15,.86),transparent 48%);
+}
+.hud-right .hud-card-shade{
+    background:
+      linear-gradient(270deg,rgba(8,9,15,.96) 0%,rgba(8,9,15,.70) 42%,rgba(8,9,15,.18) 100%),
+      linear-gradient(0deg,rgba(8,9,15,.86),transparent 48%);
+}
+.hud-player-content{
+    position:absolute;inset:0;z-index:4;
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+    padding:22px 22px 46px;
+}
+.hud-right .hud-player-content{align-items:flex-end;text-align:right}
+.hud-status{
+    font:900 8px 'Orbitron',sans-serif;
+    letter-spacing:2px;
+    padding:5px 8px;
+    border-radius:5px;
+    margin-bottom:7px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.10);
+    color:#b9c3d7;
+}
+.hud-status.win{
+    color:#07150e;
+    background:linear-gradient(135deg,#5cffb1,#b7ff3c);
+    border-color:#5cffb1;
+    box-shadow:0 0 20px rgba(92,255,177,.28);
+}
+.hud-status.loss{color:#ff7d96;border-color:rgba(255,92,122,.3);background:rgba(255,92,122,.08)}
+.hud-status.live{color:#26e6ff;border-color:rgba(38,230,255,.3);background:rgba(38,230,255,.07)}
+.hud-name{
+    max-width:100%;
+    font:900 28px/1 'Orbitron',sans-serif;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-shadow:0 4px 18px #000;
+}
+.hud-clan{
+    margin-top:7px;
+    color:#aeb9cc;
+    font:700 12px 'Rajdhani',sans-serif;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+.hud-meta{
+    position:absolute;left:0;right:0;bottom:0;z-index:5;
+    height:38px;
+    display:flex;align-items:center;
+    border-top:1px solid rgba(255,255,255,.07);
+    background:rgba(5,7,13,.66);
+}
+.hud-meta span{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+    border-right:1px solid rgba(255,255,255,.06);
+}
+.hud-meta span:last-child{border-right:0}
+.hud-meta small{color:#718098;font:800 7px 'Orbitron',sans-serif;letter-spacing:1px}
+.hud-meta b{font:900 12px 'Rajdhani',sans-serif;color:#fff}
+.hud-place{
+    text-align:center;margin-top:7px;
+    color:#6f7d95;font:800 8px 'Orbitron',sans-serif;letter-spacing:1.4px;
+}
+.hud-place b{color:#fff;margin-left:5px}
+
+/* Center */
+.hud-center{
+    padding-top:42px;
+    display:flex;flex-direction:column;align-items:center;
+}
+.hud-vs-ring{
+    width:76px;height:76px;border-radius:50%;
+    display:grid;place-items:center;
+    position:relative;
+    background:radial-gradient(circle,#1a1730 0%,#090b13 68%);
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 0 28px rgba(155,108,255,.22),inset 0 0 24px rgba(38,230,255,.06);
+}
+.hud-vs-ring::before,.hud-vs-ring::after{
+    content:"";position:absolute;border-radius:50%;
+    border:1px solid rgba(155,108,255,.35);
+}
+.hud-vs-ring::before{inset:-6px;border-right-color:transparent;transform:rotate(28deg)}
+.hud-vs-ring::after{inset:-12px;border-left-color:transparent;border-bottom-color:rgba(38,230,255,.4);transform:rotate(-22deg)}
+.hud-vs-ring span{
+    font:900 21px 'Orbitron',sans-serif;font-style:italic;
+    background:linear-gradient(90deg,#fff,#a78bfa,#26e6ff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hud-score{
+    margin-top:13px;
+    font:900 30px/1 'Orbitron',sans-serif;
+    letter-spacing:4px;
+    text-shadow:0 0 22px rgba(155,108,255,.35);
+}
+.hud-score i{font-style:normal;color:#59657c;margin:0 4px}
+.hud-winner-caption{
+    width:160px;margin-top:10px;
+    text-align:center;color:#8f9bb0;
+    font:800 7px/1.3 'Orbitron',sans-serif;
+    letter-spacing:1px;text-transform:uppercase;
+}
+.is-winner .hud-player-card,.is-winner .hud-clan-card{
+    border-color:#5cffb1!important;
+    box-shadow:0 0 30px rgba(92,255,177,.16),inset 0 0 40px rgba(92,255,177,.05),0 16px 42px rgba(0,0,0,.38)!important;
+}
+
+/* Clan HUD */
+.free-clan-hud .hud-clan-grid{grid-template-columns:minmax(0,1fr) 180px minmax(0,1fr)}
+.hud-clan-card{
+    height:154px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    padding:16px;
+}
+.hud-clan-tag{
+    position:absolute;top:12px;
+    color:#8f9bb0;font:900 9px 'Orbitron',sans-serif;letter-spacing:2px;
+}
+.hud-clan-name{
+    margin-top:2px;
+    max-width:90%;
+    font:900 27px/1 'Orbitron',sans-serif;
+    letter-spacing:1px;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-shadow:0 4px 16px #000;
+}
+.hud-clan-stats{
+    width:86%;display:flex;margin-top:18px;
+    border-top:1px solid rgba(255,255,255,.07);padding-top:10px;
+}
+.hud-clan-stats span{flex:1;text-align:center;border-right:1px solid rgba(255,255,255,.06)}
+.hud-clan-stats span:last-child{border-right:0}
+.hud-clan-stats small{display:block;color:#68758d;font:800 7px 'Orbitron',sans-serif;letter-spacing:1px}
+.hud-clan-stats b{font:900 13px 'Rajdhani',sans-serif}
+.hud-clan-card .hud-status{position:absolute;top:31px;right:14px}
+.hud-right .hud-clan-card .hud-status{left:14px;right:auto}
+.clan-ring{border-color:rgba(38,230,255,.22)}
+
+/* Small screens */
+@media(max-width:900px){
+    .free-hud{top:3%;width:96vw}
+    .hud-topline{width:100%;height:30px}
+    .hud-player-grid,.hud-clan-grid{grid-template-columns:minmax(0,1fr) 85px minmax(0,1fr);gap:7px}
+    .free-clan-hud .hud-clan-grid{grid-template-columns:minmax(0,1fr) 95px minmax(0,1fr)}
+    .hud-player-card{height:145px}
+    .hud-clan-card{height:135px}
+    .hud-name,.hud-clan-name{font-size:16px}
+    .hud-center{padding-top:38px}
+    .hud-vs-ring{width:58px;height:58px}
+    .hud-vs-ring span{font-size:15px}
+    .hud-score{font-size:20px}
+    .hud-winner-caption{width:90px;font-size:6px}
+    .hud-meta{height:32px}
+    .hud-meta small{display:none}
+    .hud-meta b{font-size:10px}
+}
+</style>
+
+</body>
 </html>
 
 <style>.stats-card{display:none!important}.profile-widget{display:none!important}.page-matches>.card[style*='МОЙ ИНВЕНТАРЬ']{display:none!important}#registerFormBlock,#tabRegisterBtn{display:none!important}</style>
