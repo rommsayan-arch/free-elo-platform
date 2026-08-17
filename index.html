@@ -4482,9 +4482,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return p?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(streamerName)}`;
         }
 
+        // Управление стримерами доступно ТОЛЬКО создателю.
+        // Сам стример и обычные игроки видят только статус и кнопку просмотра эфира.
         function streamerCanManage(streamerName) {
-            const u = getCurrentUser();
-            return !!u && (u.role === 'creator' || (u.role === 'streamer' && String(u.name || '').toLowerCase() === String(streamerName || '').toLowerCase()));
+            return !!getCurrentUser() && isCreator();
         }
 
         function renderStreamers() {
@@ -4543,8 +4544,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                             <div style="font-size:12px;color:#dfe4ed;margin-top:4px;">Нажми, чтобы открыть личную комнату, эфир и OBS.</div>
                         </div>
                         <div style="display:flex;gap:8px;margin-top:auto;">
-                            <button class="btn btn-primary" style="flex:1;" onclick="event.stopPropagation();openStreamerRoom(decodeURIComponent('${key}'))"><i class="fas fa-door-open"></i> Открыть комнату</button>
-                            ${canManage ? `<button class="btn btn-secondary" title="OBS" onclick="event.stopPropagation();openStreamerRoom(decodeURIComponent('${key}'), true)"><i class="fas fa-sliders"></i></button>` : ''}
+                            ${isAdminOrCreator ? `<button class="btn btn-primary" style="flex:1;" onclick="event.stopPropagation();openStreamerRoom(decodeURIComponent('${key}'))"><i class="fas fa-door-open"></i> Открыть комнату</button><button class="btn btn-secondary" title="OBS" onclick="event.stopPropagation();openStreamerRoom(decodeURIComponent('${key}'), true)"><i class="fas fa-sliders"></i></button>` : `<a class="btn btn-primary" style="flex:1;text-decoration:none;${live ? '' : 'opacity:.55;pointer-events:none;'}" ${live && s.url ? `href="${s.url}" target="_blank" rel="noopener"` : ''} onclick="event.stopPropagation()"><i class="fas ${live ? 'fa-play' : 'fa-circle-pause'}"></i> ${live ? 'Смотреть стрим' : 'Трансляция офлайн'}</a>`}
                         </div>
                         ${isAdminOrCreator ? `<button class="btn btn-danger" style="width:100%;" onclick="event.stopPropagation();removeStreamerByName(decodeURIComponent('${key}'))"><i class="fas fa-trash"></i> Удалить стримера</button>` : ''}
                     </div>
@@ -4587,12 +4587,25 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const nameEl = document.getElementById('streamerMenuName');
             const btn = document.getElementById('streamerMenuLiveBtn');
             const hint = document.getElementById('streamerMenuLiveHint');
+            const obsBtn = menu?.querySelector('.streamer-menu-btn.obs');
+            const exitBtn = menu?.querySelector('.streamer-menu-btn.exit');
+            const creatorMode = isCreator();
             if (nameEl) nameEl.textContent = streamer.name;
             if (btn) {
-                btn.className = `streamer-menu-btn ${streamer.isLive ? 'exit' : 'start'}`;
-                btn.innerHTML = streamer.isLive ? '<i class="fas fa-stop"></i> Завершить эфир' : '<i class="fas fa-circle"></i> Начать эфир';
+                btn.style.display = creatorMode ? '' : 'none';
+                if (creatorMode) {
+                    btn.className = `streamer-menu-btn ${streamer.isLive ? 'exit' : 'start'}`;
+                    btn.innerHTML = streamer.isLive ? '<i class="fas fa-stop"></i> Завершить эфир' : '<i class="fas fa-circle"></i> Начать эфир';
+                }
             }
-            if (hint) hint.textContent = streamer.isLive ? 'Сейчас эфир идёт. Нажми ещё раз, чтобы завершить.' : 'LIVE станет виден на карточке стримера.';
+            if (obsBtn) obsBtn.style.display = creatorMode ? '' : 'none';
+            if (exitBtn) exitBtn.style.display = creatorMode ? '' : 'none';
+            if (hint) {
+                hint.style.display = '';
+                hint.innerHTML = streamer.isLive
+                    ? '<span style="color:#00ff88;font-weight:900;">● СТРИМЕР СЕЙЧАС В ЭФИРЕ</span>'
+                    : '<span style="color:#8d9ab3;font-weight:900;">○ СТРИМЕР СЕЙЧАС НЕ В ЭФИРЕ</span>';
+            }
             menu?.classList.add('open');
             menu?.setAttribute('aria-hidden','false');
         }
@@ -4652,7 +4665,9 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const baseUrl = window.location.origin + window.location.pathname;
             const linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(streamerName)}`;
             const linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(streamerName)}`;
-            return `<div class="streamer-room-grid"><div class="streamer-room-panel"><h3><i class="fas fa-broadcast-tower" style="color:#22d3ee;"></i> Комната ${streamerName}</h3><p class="room-note">Личная комната стримера. Здесь меняются только его эфир и его OBS.</p><div style="padding:15px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,.10),rgba(34,211,238,.06));border:1px solid rgba(139,92,246,.18);"><div style="font-size:10px;color:#7f8ba3;text-transform:uppercase;letter-spacing:1px;">Статус</div><div style="font-size:24px;font-weight:1000;margin-top:5px;color:${s.isLive ? '#00ff88' : '#8d9ab3'};">${s.isLive ? '● LIVE' : '○ OFFLINE'}</div></div></div><div class="streamer-room-panel"><h3><i class="fas fa-link" style="color:#a78bfa;"></i> OBS-ссылки</h3><div class="room-link-label">HUD ИГРОКОВ</div><div class="room-link-row"><input value="${linkAnime}" readonly id="roomLinkAnime"><button class="btn btn-primary" onclick="copyLinkText('roomLinkAnime')"><i class="fas fa-copy"></i></button></div><div class="room-link-label" style="margin-top:10px;">HUD КЛАНОВ</div><div class="room-link-row"><input value="${linkC}" readonly id="roomLinkClans"><button class="btn btn-primary" onclick="copyLinkText('roomLinkClans')"><i class="fas fa-copy"></i></button></div></div></div>${canManage ? `<div id="streamerRoomObsMount" style="margin-top:16px;"></div>` : ''}`;
+            const statusPanel = `<div class="streamer-room-grid"><div class="streamer-room-panel"><h3><i class="fas fa-broadcast-tower" style="color:#22d3ee;"></i> Комната ${escapeHtml(streamerName)}</h3><p class="room-note">Здесь отображается только состояние трансляции.</p><div style="padding:15px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,.10),rgba(34,211,238,.06));border:1px solid rgba(139,92,246,.18);"><div style="font-size:10px;color:#7f8ba3;text-transform:uppercase;letter-spacing:1px;">Статус</div><div style="font-size:24px;font-weight:1000;margin-top:5px;color:${s.isLive ? '#00ff88' : '#8d9ab3'};">${s.isLive ? '● LIVE' : '○ OFFLINE'}</div></div></div>`;
+            const creatorPanel = `<div class="streamer-room-panel"><h3><i class="fas fa-link" style="color:#a78bfa;"></i> OBS-ссылки</h3><div class="room-link-label">HUD ИГРОКОВ</div><div class="room-link-row"><input value="${linkAnime}" readonly id="roomLinkAnime"><button class="btn btn-primary" onclick="copyLinkText('roomLinkAnime')"><i class="fas fa-copy"></i></button></div><div class="room-link-label" style="margin-top:10px;">HUD КЛАНОВ</div><div class="room-link-row"><input value="${linkC}" readonly id="roomLinkClans"><button class="btn btn-primary" onclick="copyLinkText('roomLinkClans')"><i class="fas fa-copy"></i></button></div></div></div>`;
+            return statusPanel + (canManage ? creatorPanel + `<div id="streamerRoomObsMount" style="margin-top:16px;"></div>` : '');
         }
 
         function tpPlayersFor(name) {
