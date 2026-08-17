@@ -4516,7 +4516,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             if (!Array.isArray(db.streamers)) db.streamers = [];
 
             let currentUser = getCurrentUser();
-            const isAdminOrCreator = isCreator();
+            const isAdminOrCreator = isCreator(); // Только создатель видит управление комнатами и удаление стримеров.
             const isStreamerUser = currentUser && currentUser.role === 'streamer';
 
             let streamersToShow = [...db.streamers];
@@ -4674,6 +4674,13 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         }
 
         function openStreamerRoom(streamerName, openObs = false) {
+            const current = getCurrentUser();
+            const target = String(streamerName || '').trim().toLowerCase();
+            const own = String(current?.name || '').trim().toLowerCase();
+            if (current?.role === 'streamer' && !isCreator() && target !== own) {
+                alert('Для стримера доступна только собственная панель. Для просмотра других трансляций используйте «Смотреть стрим».');
+                return;
+            }
             const s = ensureStreamerRoomRecord(streamerName);
             if (!s) return;
             const overlay = document.getElementById('streamerRoomOverlay');
@@ -4809,7 +4816,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const type1=roomPlayerType(name,sd.player1||name), type2=roomPlayerType(name,sd.player2||'PLAYER2');
             body.innerHTML=`<div class="obs-v2-head"><div><div class="obs-v2-title"><i class="fas fa-layer-group" style="color:#a78bfa;"></i> МОЙ OVERLAY <small>${escapeHtml(name)}</small></div></div></div>
                 <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>НИК КЛАНА — ЛЕВЫЙ</label><input id="roomC1ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC1ScoreMirror" class="obs-v2-input" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>НИК КЛАНА — ПРАВЫЙ</label><input id="roomC2ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC2ScoreMirror" class="obs-v2-input" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="applyScoreboardChanges('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
-                <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayerBottom" class="obs-v2-input" placeholder="Добавить ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayerFromBottom('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">Здесь создаются ТП-игроки только для этого стримера. При выборе «ТП игроки» в карточке показывается именно этот список.</div></div>
+                ${isCreator() ? `<div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayerBottom" class="obs-v2-input" placeholder="Добавить ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayerFromBottom('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">Здесь создаются ТП-игроки только для этого стримера. При выборе «ТП игроки» в карточке показывается именно этот список.</div></div>` : ``}
                 <div class="obs-section"><div class="obs-section-title">🟦 HUD ИГРОКОВ — ЧТО ПОКАЗЫВАТЬ В OBS</div><div class="obs-side-grid">
                     <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">НИК В HUD (OBS)</div><input id="roomDisplayName1" class="obs-v2-input" value="${escapeHtml(sd.displayName1 ?? sd.player1 ?? name)}" placeholder="Напиши ник для OBS"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"></div>
                     <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">НИК В HUD (OBS)</div><input id="roomDisplayName2" class="obs-v2-input" value="${escapeHtml(sd.displayName2 ?? sd.player2 ?? 'PLAYER2')}" placeholder="Напиши ник для OBS"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"></div>
