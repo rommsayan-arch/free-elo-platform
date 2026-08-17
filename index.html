@@ -4484,10 +4484,13 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return p?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(streamerName)}`;
         }
 
-        // Управление стримерами доступно ТОЛЬКО создателю.
-        // Сам стример и обычные игроки видят только статус и кнопку просмотра эфира.
+        // Создатель может управлять любым стримером, а стример — только своим аккаунтом.
         function streamerCanManage(streamerName) {
-            return !!getCurrentUser() && isCreator();
+            const user = getCurrentUser();
+            if (!user) return false;
+            if (isCreator()) return true;
+            return String(user.role || '') === 'streamer'
+                && String(user.name || '').trim().toLowerCase() === String(streamerName || '').trim().toLowerCase();
         }
 
         function renderStreamers() {
@@ -4588,11 +4591,9 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 switchPage('matches');
                 return;
             }
-            switchPage('streamers');
-            setTimeout(()=>{
-                renderStreamers();
-                openStreamerRoom(user.name);
-            },0);
+            // При клике по своему аккаунту стримеру нужна именно панель управления,
+            // а не публичная карточка/комната стримера.
+            openTopStreamerRoom();
         }
 
         function openTopStreamerRoom() {
@@ -6831,7 +6832,7 @@ body.obs-overlay #obsOverlayRoot{
       <button class="streamer-menu-close obs-v2-close" onclick="closeStreamerMenu()">×</button>
     </div>
     <button id="streamerMenuLiveBtn" class="streamer-menu-btn start" onclick="toggleTopStreamerLive()"><i class="fas fa-circle"></i> Начать стрим</button>
-    <button class="streamer-menu-btn obs" onclick="openTopStreamerObs()"><i class="fas fa-sliders"></i> OBS студия для стримера</button>
+    <button class="streamer-menu-btn obs" onclick="openTopStreamerObs()"><i class="fas fa-sliders"></i> Управление моим OBS overlay</button>
     <button class="streamer-menu-btn exit" onclick="logoutStreamerAccount()"><i class="fas fa-right-from-bracket"></i> Выйти с аккаунта</button>
   </div>
 </div>
