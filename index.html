@@ -3216,7 +3216,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         <img id="userFrame" class="avatar-frame" src="" alt="Frame">
                     </div>
                     <div class="header-user-text">
-                        <span id="userName">Гость</span>
+                        <span id="userName" onclick="event.stopPropagation();openTopStreamerRoom()" style="cursor:pointer;">Гость</span>
                         <span id="roleBadge" class="role-badge">ГОСТЬ</span>
                     </div>
                 </div>
@@ -4550,6 +4550,33 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                     </div>
                 `;
             });
+        }
+
+        function openTopStreamerRoom() {
+            const user = getCurrentUser();
+            const name = String(user?.name || document.getElementById('userName')?.textContent || '').trim();
+            if (!name || name === 'Гость') {
+                alert('Сначала войдите в аккаунт стримера.');
+                return;
+            }
+
+            // Верхний ник открывает именно личную комнату этого стримера.
+            let streamer = getStreamerByName(name);
+            if (!streamer && user?.role === 'streamer') {
+                if (!Array.isArray(db.streamers)) db.streamers = [];
+                streamer = { id: user.id || Date.now(), name, url: 'https://twitch.tv/', priority: 1, isLive: false };
+                db.streamers.push(streamer);
+                if (!db.streamDataMap) db.streamDataMap = {};
+                if (!db.streamDataMap[name]) {
+                    db.streamDataMap[name] = { player1:name, clan1:'Нет клана', score1:0, player2:'PLAYER2', clan2:'WAKANDA', score2:0 };
+                }
+            }
+
+            if (!streamer) {
+                alert('Для этого аккаунта ещё не создана комната стримера.');
+                return;
+            }
+            openStreamerRoom(streamer.name);
         }
 
         function openStreamerRoom(streamerName, openObs = false) {
