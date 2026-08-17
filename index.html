@@ -3585,7 +3585,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 { id: 101, name: 'Крутой Робот', type: 'avatar', price: 500, img: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot1' }
             ],
             streamers: [
-                { id: 1, name: 'sayan', url: 'https://twitch.tv/', priority: 10 }
+                { id: 1, name: 'sayan', url: 'https://twitch.tv/', priority: 10, isLive: false }
             ],
             streamDataMap: {
                 "sayan": { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 }
@@ -4463,120 +4463,273 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             });
         }
 
+        function streamerKey(name) {
+            return encodeURIComponent(String(name || ''));
+        }
+
+        function getStreamerByName(streamerName) {
+            return (db?.streamers || []).find(s => String(s.name || '').toLowerCase() === String(streamerName || '').toLowerCase()) || null;
+        }
+
+        function getStreamerPlayer(streamerName, slot) {
+            const sd = (db?.streamDataMap || {})[streamerName] || {};
+            const name = slot === 1 ? (sd.player1 || streamerName) : (sd.player2 || 'PLAYER2');
+            return String(name);
+        }
+
+        function streamerAvatar(streamerName) {
+            const p = (db?.players || []).find(x => String(x.name || '').toLowerCase() === String(streamerName || '').toLowerCase());
+            return p?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(streamerName)}`;
+        }
+
+        function streamerCanManage(streamerName) {
+            const u = getCurrentUser();
+            return !!u && (u.role === 'creator' || (u.role === 'streamer' && String(u.name || '').toLowerCase() === String(streamerName || '').toLowerCase()));
+        }
+
         function renderStreamers() {
             const container = document.getElementById('streamersList');
             if (!container) return;
             container.innerHTML = '';
-            if (!db?.streamers || db.streamers.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted);">Пока нет добавленных стримеров.</p>';
+
+            if (!db) return;
+            if (!Array.isArray(db.streamers)) db.streamers = [];
+
+            let currentUser = getCurrentUser();
+            const isAdminOrCreator = isCreator();
+            const isStreamerUser = currentUser && currentUser.role === 'streamer';
+
+            let streamersToShow = [...db.streamers];
+            if (isStreamerUser && !isAdminOrCreator) {
+                streamersToShow = streamersToShow.filter(s => String(s.name || '').toLowerCase() === String(currentUser.name || '').toLowerCase());
+                if (!streamersToShow.length) {
+                    streamersToShow = [{ id: currentUser.id, name: currentUser.name, url: 'https://twitch.tv/', priority: 1, isLive: false }];
+                }
+            }
+
+            if (!streamersToShow.length) {
+                container.innerHTML = '<p style="color:var(--text-muted);padding:25px;">Пока нет добавленных стримеров.</p>';
                 return;
             }
 
-            let currentUser = getCurrentUser();
-            let isAdminOrCreator = isCreator();
-            let isStreamerUser = currentUser && currentUser.role === 'streamer';
+            streamersToShow.sort((a,b) => (b.priority || 1) - (a.priority || 1)).forEach(s => {
+                const name = String(s.name || 'Стример');
+                const key = streamerKey(name);
+                const live = !!s.isLive;
+                const sd = (db.streamDataMap || {})[name] || {};
+                const avatar = streamerAvatar(name);
+                const clan = sd.clan1 || sd.clan2 || s.clan || 'Нет клана';
+                const canManage = streamerCanManage(name);
 
-            let streamersToShow = db.streamers;
-            if (isStreamerUser && !isAdminOrCreator) {
-                streamersToShow = db.streamers.filter(s => s.name?.toLowerCase() === currentUser.name?.toLowerCase());
-                if (streamersToShow.length === 0) {
-                    streamersToShow = [{ id: currentUser.id, name: currentUser.name, url: 'https://twitch.tv/', priority: 1 }];
+                if (!db.streamDataMap) db.streamDataMap = {};
+                if (!db.streamDataMap[name]) {
+                    db.streamDataMap[name] = {player1:name,clan1:clan,score1:0,player2:'PLAYER2',clan2:'WAKANDA',score2:0};
                 }
-            }
-
-            streamersToShow.sort((a, b) => (b.priority || 1) - (a.priority || 1)).forEach(s => {
-                let map = db.streamDataMap || {};
-                if (!map[s.name]) {
-                    map[s.name] = { player1: s.name, clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 };
-                }
-                let sd = map[s.name];
-                let baseUrl = window.location.origin + window.location.pathname;
-                let linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(s.name)}`;
-                let linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(s.name)}`;
-
-                let showObsControl = isCreator() || (isStreamerUser && currentUser.name?.toLowerCase() === s.name?.toLowerCase());
-                let obsControlSection = '';
-
-                if (showObsControl) {
-                    let playersOptions = '';
-                    (db?.players || []).forEach(p => {
-                        playersOptions += `<option value="${p.id}" data-player-name="${String(p.name || '').toLowerCase()}" data-player-clan="${String(p.clan || '').toLowerCase()}">${p.name} (${p.elo || 0} ELO)</option>`;
-                    });
-
-                    obsControlSection = `
-                        <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                            <h4 style="color: var(--accent); margin-bottom: 10px;"><i class="fas fa-edit"></i> Ссылка на стрим</h4>
-                            <div class="form-group" style="margin-bottom: 10px;">
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="streamUrl_${s.name}" value="${s.url || ''}" placeholder="https://twitch.tv/..." style="font-size: 12px;">
-                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 11px;" onclick="updateStreamerUrl('${s.name}')">Сохранить</button>
-                                </div>
-                            </div>
-
-                            <h4 style="color: var(--accent); margin-bottom: 10px; margin-top: 15px;"><i class="fas fa-desktop"></i> Персональная Стримерская Арена и Оверлей</h4><p style="font-size:11px;color:var(--text-muted);margin:-4px 0 10px;">Сначала выбирай победителя игрока или отдельно победителя клана.</p>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                                <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px;">
-                                    <div style="color: #00ff66; font-weight: bold; font-size: 12px; margin-bottom: 6px;">Игрок 1</div>
-                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p1_${s.name}" value="${sd.player1 || s.name}" placeholder="Ник 1"></div>
-                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c1_${s.name}" value="${sd.clan1 || 'NUN'}" placeholder="Клан 1"></div>
-                                    <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s1_${s.name}" value="${sd.score1 ?? 0}" placeholder="Счет 1"></div>
-                                    <div class="form-group" style="margin-bottom:6px;">
-                                        <input type="search" id="searchP1_${s.name}" placeholder="🔎 Поиск игрока..." oninput="filterStreamerPlayers('${s.name}', 1)" style="font-size:11px; margin-bottom:5px;">
-                                        <select id="mP1_${s.name}" size="1">${playersOptions}</select>
-                                    </div>
-                                    <button class="btn btn-success" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 1)">🏆 Победа Игрока 1</button>
-                                    <button class="btn btn-primary" style="width: 100%; font-size: 11px; padding: 6px; margin-top:6px;" onclick="finishClanMatchForStreamer('${s.name}', 1)">🛡️ Победа Клана 1</button>
-                                </div>
-                                <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px;">
-                                    <div style="color: #ff3333; font-weight: bold; font-size: 12px; margin-bottom: 6px;">Игрок 2</div>
-                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="p2_${s.name}" value="${sd.player2 || 'PLAYER2'}" placeholder="Ник 2"></div>
-                                    <div class="form-group" style="margin-bottom:6px;"><input type="text" id="c2_${s.name}" value="${sd.clan2 || 'WAKANDA'}" placeholder="Клан 2"></div>
-                                    <div class="form-group" style="margin-bottom:6px;"><input type="number" id="s2_${s.name}" value="${sd.score2 ?? 0}" placeholder="Счет 2"></div>
-                                    <div class="form-group" style="margin-bottom:6px;">
-                                        <input type="search" id="searchP2_${s.name}" placeholder="🔎 Поиск игрока..." oninput="filterStreamerPlayers('${s.name}', 2)" style="font-size:11px; margin-bottom:5px;">
-                                        <select id="mP2_${s.name}" size="1">${playersOptions}</select>
-                                    </div>
-                                    <button class="btn btn-danger" style="width: 100%; font-size: 11px; padding: 6px;" onclick="finishMatchForStreamer('${s.name}', 2)">🏆 Победа Игрока 2</button>
-                                    <button class="btn btn-secondary" style="width: 100%; font-size: 11px; padding: 6px; margin-top:6px;" onclick="finishClanMatchForStreamer('${s.name}', 2)">🛡️ Победа Клана 2</button>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="saveStreamerObsData('${s.name}')">💾 Сохранить оверлей</button>
-
-                            <div class="form-group" style="margin-bottom: 8px;">
-                                <label style="color: #ff5500; font-size: 11px; font-weight: bold;">🎮 Ссылка на HUD Игроков (OBS):</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="linkAnime_${s.name}" value="${linkAnime}" readonly style="font-size: 11px; background: #111; color: #ff5500;">
-                                    <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkAnime_${s.name}')"><i class="fas fa-copy"></i></button>
-                                </div>
-                            </div>
-
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label style="color: #ff4757; font-size: 11px; font-weight: bold;">Ссылка на HUD Кланов:</label>
-                                <div style="display: flex; gap: 5px;">
-                                    <input type="text" id="linkC_${s.name}" value="${linkC}" readonly style="font-size: 11px; background: #111; color: #ff4757;">
-                                    <button class="btn btn-primary" style="padding: 6px 10px;" onclick="copyLinkText('linkC_${s.name}')"><i class="fas fa-copy"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                let deleteBtnHtml = isAdminOrCreator ? `<button class="btn btn-danger" style="width: 100%; margin-top: 5px;" onclick="removeStreamerByName('${s.name}')"><i class="fas fa-trash"></i> Удалить стримера</button>` : '';
 
                 container.innerHTML += `
-                    <div class="streamer-card ${(s.priority || 1) > 5 ? 'priority-high' : ''}">
-                        <div class="priority-badge">Приоритет: ${s.priority || 1}</div>
-                        <h3><i class="fas fa-video"></i> ${s.name || ''}</h3>
-                        <p style="color: var(--text-muted); font-size: 13px;">Персональная панель стримера и его матчи.</p>
-                        <a href="${s.url || '#'}" target="_blank" class="btn btn-primary" style="text-align: center; text-decoration: none;">Смотреть трансляцию</a>
-                        ${obsControlSection}
-                        ${deleteBtnHtml}
+                    <div class="streamer-card ${(s.priority || 1) > 5 ? 'priority-high' : ''} ${live ? 'is-live' : ''}" onclick="openStreamerRoom(decodeURIComponent('${key}'))">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                            <div style="display:flex;align-items:center;gap:13px;min-width:0;">
+                                <img class="streamer-avatar-room" src="${avatar}" alt="">
+                                <div style="min-width:0;">
+                                    <h3 style="margin:0 0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><i class="fas fa-video"></i> ${name}</h3>
+                                    <p style="color:var(--text-muted);font-size:11px;">${clan}</p>
+                                </div>
+                            </div>
+                            <span class="streamer-live-dot ${live ? 'live' : ''}"><i class="fas fa-circle"></i>${live ? 'LIVE' : 'OFFLINE'}</span>
+                        </div>
+                        <div style="margin-top:4px;padding:12px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);">
+                            <div style="font-size:10px;color:#77839a;text-transform:uppercase;letter-spacing:1px;">Комната стримера</div>
+                            <div style="font-size:12px;color:#dfe4ed;margin-top:4px;">Нажми, чтобы открыть личную комнату, эфир и OBS.</div>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:auto;">
+                            <button class="btn btn-primary" style="flex:1;" onclick="event.stopPropagation();openStreamerRoom(decodeURIComponent('${key}'))"><i class="fas fa-door-open"></i> Открыть комнату</button>
+                            ${canManage ? `<button class="btn btn-secondary" title="OBS" onclick="event.stopPropagation();openStreamerRoom(decodeURIComponent('${key}'), true)"><i class="fas fa-sliders"></i></button>` : ''}
+                        </div>
+                        ${isAdminOrCreator ? `<button class="btn btn-danger" style="width:100%;" onclick="event.stopPropagation();removeStreamerByName(decodeURIComponent('${key}'))"><i class="fas fa-trash"></i> Удалить стримера</button>` : ''}
                     </div>
                 `;
             });
         }
+
+        function openStreamerRoom(streamerName, openObs = false) {
+            const s = getStreamerByName(streamerName);
+            if (!s) return;
+            const overlay = document.getElementById('streamerRoomOverlay');
+            if (!overlay) return;
+            window.__activeStreamerRoom = s.name;
+            const avatarEl = document.getElementById('streamerRoomAvatar');
+            const titleEl = document.getElementById('streamerRoomTitle');
+            if (avatarEl) avatarEl.src = streamerAvatar(s.name);
+            if (titleEl) titleEl.textContent = s.name;
+
+            const sd = (db.streamDataMap || {})[s.name] || {};
+            const live = !!s.isLive;
+            const status = document.getElementById('streamerRoomStatusText');
+            const dot = document.getElementById('streamerRoomStatusDot');
+            const clanText = document.getElementById('streamerRoomClanText');
+            if (status) status.textContent = live ? 'В ЭФИРЕ' : 'ОФФЛАЙН';
+            if (dot) dot.className = `streamer-live-dot ${live ? 'live' : ''}`;
+            if (clanText) clanText.textContent = `• Клан: ${sd.clan1 || sd.clan2 || s.clan || 'Нет клана'}`;
+
+            const actions = document.getElementById('streamerRoomActions');
+            const body = document.getElementById('streamerRoomBody');
+            const canManage = streamerCanManage(s.name);
+
+            if (actions) {
+                actions.innerHTML = `
+                    ${canManage ? `<button class="btn ${live ? 'btn-danger' : 'btn-success'}" onclick="toggleStreamerLive('${streamerKey(s.name)}')"><i class="fas ${live ? 'fa-stop' : 'fa-circle-play'}"></i> ${live ? 'Завершить стрим' : 'Начать стрим'}</button>` : ''}
+                    ${canManage ? `<button class="btn btn-primary" onclick="openStreamerObsPanel('${streamerKey(s.name)}')"><i class="fas fa-sliders"></i> Управление моим OBS</button>` : ''}
+                    ${s.url ? `<a class="btn btn-secondary" href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none;"><i class="fas fa-external-link-alt"></i> Открыть трансляцию</a>` : ''}
+                `;
+            }
+
+            if (body) body.innerHTML = buildStreamerRoomView(s.name, canManage);
+            overlay.classList.add('open');
+            overlay.setAttribute('aria-hidden','false');
+            if (openObs && canManage) openStreamerObsPanel(streamerKey(s.name));
+        }
+
+        function buildStreamerRoomView(streamerName, canManage) {
+            const s = getStreamerByName(streamerName) || {};
+            const sd = (db.streamDataMap || {})[streamerName] || {};
+            const baseUrl = window.location.origin + window.location.pathname;
+            const linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(streamerName)}`;
+            const linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(streamerName)}`;
+            return `
+                <div class="streamer-room-grid">
+                    <div class="streamer-room-panel">
+                        <h3><i class="fas fa-broadcast-tower" style="color:#22d3ee;"></i> Комната ${streamerName}</h3>
+                        <p class="room-note">Здесь зритель открывает трансляцию, а владелец аккаунта управляет эфиром и своими OBS-ссылками.</p>
+                        <div style="padding:15px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,.10),rgba(34,211,238,.06));border:1px solid rgba(139,92,246,.18);">
+                            <div style="font-size:10px;color:#7f8ba3;text-transform:uppercase;letter-spacing:1px;">Статус</div>
+                            <div style="font-size:24px;font-weight:1000;margin-top:5px;color:${s.isLive ? '#00ff88' : '#8d9ab3'};">${s.isLive ? '● LIVE' : '○ OFFLINE'}</div>
+                            <div style="font-size:11px;color:#8d9ab3;margin-top:4px;">${s.isLive ? 'Стример сейчас в эфире.' : 'Стример сейчас не ведёт эфир.'}</div>
+                        </div>
+                        <div class="streamer-room-actions" style="margin-top:14px;margin-bottom:0;">
+                            ${s.url ? `<a class="btn btn-primary" href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none;"><i class="fas fa-play"></i> Смотреть трансляцию</a>` : ''}
+                        </div>
+                    </div>
+                    <div class="streamer-room-panel">
+                        <h3><i class="fas fa-link" style="color:#a78bfa;"></i> OBS-ссылки</h3>
+                        <p class="room-note">Ссылки персональные для этого стримера. Скопируй нужную ссылку в Browser Source OBS.</p>
+                        <div class="room-link-label">HUD ИГРОКОВ</div>
+                        <div class="room-link-row"><input value="${linkAnime}" readonly id="roomLinkAnime"><button class="btn btn-primary" onclick="copyLinkText('roomLinkAnime')"><i class="fas fa-copy"></i></button></div>
+                        <div class="room-link-label" style="margin-top:10px;">HUD КЛАНОВ</div>
+                        <div class="room-link-row"><input value="${linkC}" readonly id="roomLinkClans"><button class="btn btn-primary" onclick="copyLinkText('roomLinkClans')"><i class="fas fa-copy"></i></button></div>
+                        <div class="room-owner-note">У каждого аккаунта свой параметр <b>streamer</b>, поэтому изменения одного стримера не должны попадать в комнату другого.</div>
+                    </div>
+                </div>
+                ${canManage ? `<div id="streamerRoomObsMount" style="margin-top:16px;"></div>` : ''}
+            `;
+        }
+
+        function openStreamerObsPanel(encodedName) {
+            const name = decodeURIComponent(encodedName);
+            const s = getStreamerByName(name);
+            if (!s) return;
+            const mount = document.getElementById('streamerRoomObsMount');
+            if (!mount) return;
+            const sd = (db.streamDataMap || {})[name] || {};
+            const players = db?.players || [];
+            const baseUrl = window.location.origin + window.location.pathname;
+            const linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(name)}`;
+            const linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(name)}`;
+
+            const options = players.map(p => `<option value="${String(p.id)}">${p.name} (${p.elo || 0} ELO)</option>`).join('');
+            mount.innerHTML = `
+                <div class="streamer-room-panel" style="border-color:rgba(139,92,246,.28);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                        <div><h3><i class="fas fa-sliders" style="color:#a78bfa;"></i> Управление моим OBS</h3><p class="room-note">Каждый ник и каждый клан изменяются отдельно. Сохранение действует только для <b>${name}</b>.</p></div>
+                        <span class="streamer-live-dot ${s.isLive ? 'live' : ''}">${s.isLive ? 'LIVE' : 'OFFLINE'}</span>
+                    </div>
+                    <div class="room-match-grid">
+                        <div class="room-side left">
+                            <div class="room-side-title">ЛЕВАЯ СТОРОНА</div>
+                            <div class="room-field"><label>Ник игрока</label><input id="roomP1" value="${sd.player1 || name}" placeholder="Ник игрока 1"></div>
+                            <div class="room-field"><label>Ник клана</label><input id="roomC1" value="${sd.clan1 || 'NUN'}" placeholder="Клан игрока 1"></div>
+                            <div class="room-field"><label>Счёт</label><input id="roomS1" type="number" value="${sd.score1 ?? 0}"></div>
+                            <select id="roomSelectP1" style="font-size:11px;margin-bottom:9px;">${options}</select>
+                        </div>
+                        <div class="room-side right">
+                            <div class="room-side-title">ПРАВАЯ СТОРОНА</div>
+                            <div class="room-field"><label>Ник игрока</label><input id="roomP2" value="${sd.player2 || 'PLAYER2'}" placeholder="Ник игрока 2"></div>
+                            <div class="room-field"><label>Ник клана</label><input id="roomC2" value="${sd.clan2 || 'WAKANDA'}" placeholder="Клан игрока 2"></div>
+                            <div class="room-field"><label>Счёт</label><input id="roomS2" type="number" value="${sd.score2 ?? 0}"></div>
+                            <select id="roomSelectP2" style="font-size:11px;margin-bottom:9px;">${options}</select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="saveStreamerRoomObs('${streamerKey(name)}')"><i class="fas fa-save"></i> Сохранить ники и кланы</button>
+                    <div style="margin-top:14px;">
+                        <div class="room-link-label">ВАШИ ССЫЛКИ OBS</div>
+                        <div class="room-link-row"><input value="${linkAnime}" readonly id="roomObsAnime"><button class="btn btn-primary" onclick="copyLinkText('roomObsAnime')"><i class="fas fa-copy"></i></button></div>
+                        <div class="room-link-row" style="margin-top:7px;"><input value="${linkC}" readonly id="roomObsClans"><button class="btn btn-primary" onclick="copyLinkText('roomObsClans')"><i class="fas fa-copy"></i></button></div>
+                    </div>
+                </div>
+            `;
+
+            // Selecting a player fills only that side's nickname. Clan remains independently editable.
+            const p1 = document.getElementById('roomSelectP1');
+            const p2 = document.getElementById('roomSelectP2');
+            if (p1) p1.onchange = () => {
+                const player = players.find(x => String(x.id) === String(p1.value));
+                if (player) document.getElementById('roomP1').value = player.name || '';
+            };
+            if (p2) p2.onchange = () => {
+                const player = players.find(x => String(x.id) === String(p2.value));
+                if (player) document.getElementById('roomP2').value = player.name || '';
+            };
+        }
+
+        async function saveStreamerRoomObs(encodedName) {
+            const name = decodeURIComponent(encodedName);
+            if (!streamerCanManage(name)) { alert('Нет доступа к управлению этим стримером.'); return; }
+            if (!db.streamDataMap) db.streamDataMap = {};
+            const p1 = (document.getElementById('roomP1')?.value || '').trim();
+            const p2 = (document.getElementById('roomP2')?.value || '').trim();
+            const c1 = (document.getElementById('roomC1')?.value || '').trim() || 'Нет клана';
+            const c2 = (document.getElementById('roomC2')?.value || '').trim() || 'Нет клана';
+            const s1 = parseInt(document.getElementById('roomS1')?.value || '0',10) || 0;
+            const s2 = parseInt(document.getElementById('roomS2')?.value || '0',10) || 0;
+            if (!p1 || !p2) { alert('Укажи оба ника.'); return; }
+            if (p1.toLowerCase() === p2.toLowerCase()) { alert('Ники игроков должны отличаться.'); return; }
+
+            db.streamDataMap[name] = {player1:p1,clan1:c1,score1:s1,player2:p2,clan2:c2,score2:s2};
+            if (c1 !== 'Нет клана') ensureClanExistsByName(c1);
+            if (c2 !== 'Нет клана') ensureClanExistsByName(c2);
+            await saveData();
+            renderStreamers();
+            openStreamerRoom(name, true);
+            alert('Ники и кланы OBS сохранены.');
+        }
+
+        async function toggleStreamerLive(encodedName) {
+            const name = decodeURIComponent(encodedName);
+            if (!streamerCanManage(name)) { alert('Только владелец стримерского аккаунта или создатель может управлять эфиром.'); return; }
+            const s = getStreamerByName(name);
+            if (!s) return;
+            s.isLive = !s.isLive;
+            s.liveAt = s.isLive ? new Date().toISOString() : null;
+            await saveData();
+            renderStreamers();
+            openStreamerRoom(name);
+        }
+
+        function closeStreamerRoom() {
+            const overlay = document.getElementById('streamerRoomOverlay');
+            if (overlay) {
+                overlay.classList.remove('open');
+                overlay.setAttribute('aria-hidden','true');
+            }
+            window.__activeStreamerRoom = null;
+        }
+
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape') closeStreamerRoom();
+        });
+        document.getElementById('streamerRoomOverlay')?.addEventListener('click', function(e){
+            if (e.target === this) closeStreamerRoom();
+        });
 
         async function updateStreamerUrl(streamerName) {
             const inputEl = document.getElementById(`streamUrl_${streamerName}`);
@@ -6474,6 +6627,24 @@ body.obs-overlay #obsOverlayRoot{
 }
 </style>
 
+
+<div id="streamerRoomOverlay" class="streamer-room-overlay" aria-hidden="true">
+  <div class="streamer-room-card" role="dialog" aria-modal="true" aria-labelledby="streamerRoomTitle">
+    <div class="streamer-room-head">
+      <div class="streamer-room-title">
+        <img id="streamerRoomAvatar" src="" alt="">
+        <div>
+          <h2 id="streamerRoomTitle">Стример</h2>
+          <div class="streamer-room-status"><span id="streamerRoomStatusDot" class="streamer-live-dot"><i class="fas fa-circle"></i><span id="streamerRoomStatusText">ОФФЛАЙН</span></span><span id="streamerRoomClanText"></span></div>
+        </div>
+      </div>
+      <button class="streamer-room-close" onclick="closeStreamerRoom()" title="Закрыть">×</button>
+    </div>
+    <div id="streamerRoomActions" class="streamer-room-actions"></div>
+    <div id="streamerRoomBody"></div>
+  </div>
+</div>
+
 </body>
 </html>
 
@@ -7154,6 +7325,81 @@ body.obs-overlay .obs-avatar-wrap.frame-effect{
     border:0 !important;
     box-shadow:none !important;
 }
+
+/* === STREAMER ROOMS / LIVE STATE / OBS CONTROL === */
+.streamer-card{
+    cursor:pointer;
+    transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+    overflow:hidden;
+}
+.streamer-card:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.45);box-shadow:0 20px 55px rgba(0,0,0,.35),0 0 28px rgba(34,211,238,.10)}
+.streamer-card.is-live{border-color:rgba(0,255,136,.58);box-shadow:0 0 30px rgba(0,255,136,.10),inset 0 0 30px rgba(0,255,136,.025)}
+.streamer-card .streamer-avatar-room{
+    width:76px;height:76px;border-radius:22px;object-fit:cover;
+    border:1px solid rgba(255,255,255,.12);
+    background:#080a10;box-shadow:0 10px 28px rgba(0,0,0,.35);
+}
+.streamer-live-dot{
+    display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border-radius:999px;
+    font-size:10px;font-weight:1000;letter-spacing:1px;text-transform:uppercase;
+    background:rgba(255,255,255,.06);color:#98a3b8;border:1px solid rgba(255,255,255,.08);
+}
+.streamer-live-dot.live{background:rgba(0,255,136,.12);color:#00ff88;border-color:rgba(0,255,136,.38)}
+.streamer-live-dot i{font-size:8px}
+.streamer-room-overlay{
+    position:fixed;inset:0;z-index:1000001;display:none;align-items:center;justify-content:center;
+    padding:24px;background:rgba(1,2,7,.78);backdrop-filter:blur(12px);
+}
+.streamer-room-overlay.open{display:flex}
+.streamer-room-card{
+    position:relative;width:min(1080px,96vw);max-height:90vh;overflow:auto;
+    border:1px solid rgba(139,92,246,.32);border-radius:24px;
+    background:linear-gradient(180deg,#0e1220,#080b13);
+    box-shadow:0 35px 120px rgba(0,0,0,.78),0 0 70px rgba(139,92,246,.10);
+    padding:24px;
+}
+.streamer-room-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}
+.streamer-room-title{display:flex;align-items:center;gap:14px;min-width:0}
+.streamer-room-title img{width:64px;height:64px;border-radius:18px;object-fit:cover;border:1px solid rgba(255,255,255,.12)}
+.streamer-room-title h2{font-size:25px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.streamer-room-close{width:42px;height:42px;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:#171b28;color:#fff;cursor:pointer;font-size:22px}
+.streamer-room-status{display:flex;align-items:center;gap:9px;margin-top:5px;color:#8d9ab3;font-size:12px}
+.streamer-room-status .live-text{color:#00ff88;font-weight:900}
+.streamer-room-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.streamer-room-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:16px}
+.streamer-room-panel{
+    background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.075);
+    border-radius:17px;padding:17px;
+}
+.streamer-room-panel h3{font-size:14px;margin-bottom:5px}
+.streamer-room-panel p.room-note{color:#7f8ba3;font-size:11px;line-height:1.5;margin-bottom:13px}
+.room-match-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.room-side{background:#0a0d16;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px}
+.room-side.left{border-color:rgba(255,101,0,.24)}
+.room-side.right{border-color:rgba(0,191,255,.24)}
+.room-side-title{font-size:11px;font-weight:1000;margin-bottom:10px}
+.room-side.left .room-side-title{color:#ff8b50}
+.room-side.right .room-side-title{color:#46d7ff}
+.room-field{margin-bottom:9px}
+.room-field label{display:block;color:#7f8ba3;font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.room-field input{font-size:12px;padding:9px 10px}
+.room-links{display:flex;flex-direction:column;gap:9px}
+.room-link-row{display:flex;gap:7px}
+.room-link-row input{font-size:10px;flex:1;background:#070910;color:#aeb8cc}
+.room-link-row button{min-width:40px;padding:7px 10px}
+.room-link-label{font-size:10px;font-weight:900;color:#aeb8cc;margin-bottom:5px}
+.room-owner-note{padding:10px 12px;border-radius:11px;background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.18);color:#aeb8cc;font-size:10px;line-height:1.5;margin-top:12px}
+@media(max-width:850px){
+    .streamer-room-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+    .streamer-room-overlay{padding:8px}
+    .streamer-room-card{padding:15px;border-radius:18px}
+    .room-match-grid{grid-template-columns:1fr}
+    .streamer-room-title img{width:52px;height:52px}
+    .streamer-room-title h2{font-size:20px}
+}
+
 </style>
 
 <script id="FREE-ELO-REMOVE-FRAMES-FROM-SITE">
