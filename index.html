@@ -6863,3 +6863,48 @@ body.obs-overlay .obs-avatar-frame{
 }
 </style>
 
+
+<style id="FREE-ELO-NO-FRAMES-AT-ALL">
+/* =========================================================
+   NO FRAMES MODE
+   Убираем ВСЕ рамки вокруг ELO-карточек.
+   HUD, размеры, позиции, имена, ELO и VS не меняются.
+   ========================================================= */
+
+/* Скрыть изображения/оверлеи рамок предметов. */
+body.obs-overlay .obs-avatar-frame,
+body.obs-overlay .obs-avatar-wrap.frame-effect::before,
+body.obs-overlay .obs-avatar-wrap.frame-effect::after{
+    display:none !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+}
+
+/* Полностью убрать декоративные псевдо-рамки с карточки. */
+body.obs-overlay .obs-player-card::before,
+body.obs-overlay .obs-player-card::after{
+    content:none !important;
+    display:none !important;
+    border:0 !important;
+    box-shadow:none !important;
+    background:none !important;
+    clip-path:none !important;
+}
+
+/* Убрать рамки именно вокруг аватаров. */
+body.obs-overlay .obs-avatar-wrap,
+body.obs-overlay .obs-avatar-wrap.frame-effect{
+    border:0 !important;
+    outline:0 !important;
+    box-shadow:none !important;
+    filter:none !important;
+}
+
+/* Убрать любые фоновые эффекты рамки, но оставить сам аватар. */
+body.obs-overlay .obs-avatar-wrap.frame-effect{
+    background:none !important;
+}
+
+/* Не меняем геометрию HUD — только визуально отключаем frame effect. */
+</style>
+
