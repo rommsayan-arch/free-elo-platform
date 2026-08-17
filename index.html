@@ -4485,12 +4485,26 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         }
 
         // Создатель может управлять любым стримером, а стример — только своим аккаунтом.
+        // В старых аккаунтах роль иногда могла отсутствовать/отличаться, поэтому
+        // для СВОЕГО имени дополнительно проверяем, что аккаунт действительно
+        // зарегистрирован в списке стримеров. Это не даёт обычному игроку доступ
+        // к чужому управлению.
         function streamerCanManage(streamerName) {
             const user = getCurrentUser();
             if (!user) return false;
             if (isCreator()) return true;
-            return String(user.role || '') === 'streamer'
-                && String(user.name || '').trim().toLowerCase() === String(streamerName || '').trim().toLowerCase();
+
+            const userName = String(user.name || '').trim().toLowerCase();
+            const targetName = String(streamerName || '').trim().toLowerCase();
+            if (!userName || !targetName || userName !== targetName) return false;
+
+            const role = String(user.role || '').trim().toLowerCase();
+            if (role === 'streamer') return true;
+
+            // Совместимость со старыми аккаунтами стримеров.
+            return Array.isArray(db?.streamers) && db.streamers.some(s =>
+                String(s?.name || '').trim().toLowerCase() === userName
+            );
         }
 
         function renderStreamers() {
