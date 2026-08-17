@@ -3417,7 +3417,6 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 <div class="shop-tabs">
                     <button class="tab-btn active" onclick="filterShop('all', this)">Все</button>
                     <button class="tab-btn" onclick="filterShop('avatar', this)">Аватарки</button>
-                    <button class="tab-btn" onclick="filterShop('frame', this)">Рамки</button>
                     <button class="tab-btn" onclick="filterShop('decor', this)">Украшения</button>
                 </div>
                 <div class="shop-grid" id="shopGrid"></div>
@@ -6907,4 +6906,110 @@ body.obs-overlay .obs-avatar-wrap.frame-effect{
 
 /* Не меняем геометрию HUD — только визуально отключаем frame effect. */
 </style>
+
+
+<style id="FREE-ELO-FRAMES-COMPLETELY-DISABLED">
+.avatar-frame,.obs-avatar-frame,
+.avatar-wrapper.frame-effect::before,.avatar-wrapper.frame-effect::after,
+.obs-avatar-wrap.frame-effect::before,.obs-avatar-wrap.frame-effect::after{
+    display:none !important;
+    content:none !important;
+    border:0 !important;
+    box-shadow:none !important;
+}
+</style>
+
+<script id="FREE-ELO-REMOVE-FRAMES-FROM-SITE">
+(function(){
+    const FRAME_IDS = new Set([9100,9101,9102,9103,9104,9105,9106]);
+
+    function isFrame(item){
+        if(!item) return false;
+        const id = Number(item.id);
+        const type = String(item.type || '').toLowerCase();
+        const name = String(item.name || '').toLowerCase();
+        return type === 'frame' ||
+               FRAME_IDS.has(id) ||
+               name.includes('горящий алмаз') ||
+               name.includes('молния') ||
+               name.includes('гроза') ||
+               name.includes('ледяная аура') ||
+               name.includes('неоновый вихрь') ||
+               name.includes('ядовитая энергия') ||
+               name.includes('золотой феникс');
+    }
+
+    function removeFramesEverywhere(){
+        if(typeof db === 'object' && db){
+            if(Array.isArray(db.shopItems)){
+                db.shopItems = db.shopItems.filter(x => !isFrame(x));
+            }
+            if(Array.isArray(db.players)){
+                db.players.forEach(p => {
+                    if(Array.isArray(p.inventory)){
+                        p.inventory = p.inventory.filter(x => !isFrame(x));
+                    }
+                    /* No equipped frame on any account. */
+                    if('activeFrameId' in p) p.activeFrameId = null;
+                    if('frame' in p) p.frame = '';
+                });
+            }
+        }
+
+        /* Hide any frame tab/card that old render functions may recreate. */
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if((btn.textContent || '').trim().toLowerCase() === 'рамки'){
+                btn.remove();
+            }
+        });
+
+        document.querySelectorAll('.shop-item,.inventory-item').forEach(el => {
+            const txt = (el.textContent || '').toLowerCase();
+            if(txt.includes('горящий алмаз') ||
+               txt.includes('молния') ||
+               txt.includes('гроза') ||
+               txt.includes('ледяная аура') ||
+               txt.includes('неоновый вихрь') ||
+               txt.includes('ядовитая энергия') ||
+               txt.includes('золотой феникс')){
+                el.remove();
+            }
+        });
+
+        /* Remove frame visuals from the header/HUD. */
+        document.querySelectorAll(
+            '.avatar-frame,.obs-avatar-frame,.frame-effect,.frame-fire,.frame-lightning,' +
+            '.frame-thunder,.frame-ice,.frame-neon,.frame-poison,.frame-phoenix'
+        ).forEach(el => {
+            el.classList.remove(
+                'frame-effect','frame-fire','frame-lightning','frame-thunder',
+                'frame-ice','frame-neon','frame-poison','frame-phoenix'
+            );
+            if(el.classList.contains('avatar-frame') || el.classList.contains('obs-avatar-frame')){
+                el.remove();
+            }
+        });
+    }
+
+    /* Make old frame initializers harmless. */
+    window.removeAllFramesFromSite = removeFramesEverywhere;
+
+    const oldInit = window.initApp;
+    if(typeof oldInit === 'function'){
+        window.initApp = function(){
+            const result = oldInit.apply(this, arguments);
+            removeFramesEverywhere();
+            setTimeout(removeFramesEverywhere, 100);
+            setTimeout(removeFramesEverywhere, 500);
+            return result;
+        };
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        removeFramesEverywhere();
+        setTimeout(removeFramesEverywhere, 300);
+        setTimeout(removeFramesEverywhere, 1000);
+    });
+})();
+</script>
 
