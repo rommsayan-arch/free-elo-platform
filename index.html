@@ -3751,12 +3751,14 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             localStorage.setItem('fe_session_v2', JSON.stringify(session));
         }
 
-        // Выход из аккаунта отключён: после входа аккаунт закреплён за этим браузером.
-        // Сессия не удаляется через интерфейс сайта.
+        // Полный выход из текущего аккаунта. Данные аккаунта в облаке не удаляются.
         function clearDeviceSession() {
-            // intentionally disabled
-            const user = getCurrentUser();
-            if (user) rememberDeviceSession(user);
+            currentUserId = null;
+            cachedSession = null;
+            try {
+                localStorage.removeItem('fe_current_user_id');
+                localStorage.removeItem('fe_session_v2');
+            } catch (_) {}
         }
 
 
@@ -4595,7 +4597,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 btn.style.display = canManage ? '' : 'none';
                 if (canManage) {
                     btn.className = `streamer-menu-btn ${streamer.isLive ? 'exit' : 'start'}`;
-                    btn.innerHTML = streamer.isLive ? '<i class="fas fa-stop"></i> Завершить эфир' : '<i class="fas fa-circle"></i> Начать эфир';
+                    btn.innerHTML = streamer.isLive ? '<i class="fas fa-stop"></i> Завершить стрим' : '<i class="fas fa-circle"></i> Начать стрим';
                 }
             }
             if (obsBtn) obsBtn.style.display = canManage ? '' : 'none';
@@ -4608,6 +4610,15 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             }
             menu?.classList.add('open');
             menu?.setAttribute('aria-hidden','false');
+        }
+
+        function logoutStreamerAccount() {
+            closeStreamerMenu();
+            closeStreamerObs();
+            closeStreamerRoom();
+            clearDeviceSession();
+            window.__activeStreamerRoom = null;
+            initApp();
         }
 
         function closeStreamerMenu() {
@@ -6732,10 +6743,9 @@ body.obs-overlay #obsOverlayRoot{
       <div><div class="streamer-menu-kicker"><i class="fas fa-broadcast-tower"></i> Панель стримера</div><div id="streamerMenuName" class="streamer-menu-name">Korean Stream</div></div>
       <button class="streamer-menu-close obs-v2-close" onclick="closeStreamerMenu()">×</button>
     </div>
-    <button id="streamerMenuLiveBtn" class="streamer-menu-btn start" onclick="toggleTopStreamerLive()"><i class="fas fa-circle"></i> Начать эфир</button>
-    <div id="streamerMenuLiveHint" class="streamer-menu-hint">LIVE станет виден на карточке стримера.</div>
-    <button class="streamer-menu-btn obs" onclick="openTopStreamerObs()"><i class="fas fa-sliders"></i> Управление моим OBS overlay</button>
-    <button class="streamer-menu-btn exit" onclick="closeStreamerMenu()"><i class="fas fa-right-from-bracket"></i> Выйти из режима стримера</button>
+    <button id="streamerMenuLiveBtn" class="streamer-menu-btn start" onclick="toggleTopStreamerLive()"><i class="fas fa-circle"></i> Начать стрим</button>
+    <button class="streamer-menu-btn obs" onclick="openTopStreamerObs()"><i class="fas fa-sliders"></i> OBS студия для стримера</button>
+    <button class="streamer-menu-btn exit" onclick="logoutStreamerAccount()"><i class="fas fa-right-from-bracket"></i> Выйти с аккаунта</button>
   </div>
 </div>
 
