@@ -3515,6 +3515,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 <h2 style="color: #ff3333;"><i class="fas fa-user-cog"></i> Управление Игроками и Ролями</h2>
                 <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; margin-top: 15px;">
                     <div class="form-group" style="flex: 1; min-width: 180px;"><label>Игрок</label><select id="adminUserSelect" onchange="loadUserToAdmin()"></select></div>
+                    <div class="form-group" style="width:170px;"><label>Ник</label><input type="text" id="adminNameInput" placeholder="Ник игрока"></div>
                     <div class="form-group" style="width: 140px;"><label>ELO</label><input type="number" id="adminEloInput"></div>
                     <div class="form-group" style="width: 150px;"><label>Матчи</label><input type="number" id="adminMatchesInput"></div>
                     <div class="form-group" style="width: 130px;"><label>Уровень</label><input type="number" id="adminLevelInput"></div>
@@ -7010,6 +7011,124 @@ body.obs-overlay .obs-avatar-wrap.frame-effect{
         setTimeout(removeFramesEverywhere, 300);
         setTimeout(removeFramesEverywhere, 1000);
     });
+})();
+</script>
+
+
+<script id="FREE-ELO-FIX-PERSISTENCE">
+(function(){
+let saveQueue=Promise.resolve();
+
+async function reliableSave(){
+  saveQueue=saveQueue.then(async()=>{
+    ensureCreatorRights();
+    const snapshot=JSON.parse(JSON.stringify(db));
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},
+      body:JSON.stringify({content:snapshot})
+    });
+    const raw=await r.text();
+    if(!r.ok) throw new Error(`Supabase ${r.status}: ${raw}`);
+    return true;
+  });
+  return saveQueue;
+}
+window.saveDataToCloud=reliableSave;
+window.saveData=reliableSave;
+
+window.loadUserToAdmin=function(){
+  const sel=document.getElementById('adminUserSelect');
+  if(!sel)return;
+  const p=(db?.players||[]).find(x=>String(x.id)===String(sel.value));
+  if(!p)return;
+  const n=document.getElementById('adminNameInput');
+  const e=document.getElementById('adminEloInput');
+  const m=document.getElementById('adminMatchesInput');
+  const l=document.getElementById('adminLevelInput');
+  const role=document.getElementById('adminRoleSelect');
+  if(n)n.value=p.name||'';
+  if(e)e.value=Number(p.elo||0);
+  if(m)m.value=Number(p.matches||0);
+  if(l)l.value=Number(p.level||1);
+  if(role)role.value=p.role||'player';
+};
+
+window.applyAdminChanges=async function(){
+  if(!isCreator()){alert('Только создатель может менять данные.');return;}
+  const sel=document.getElementById('adminUserSelect');
+  const p=(db?.players||[]).find(x=>String(x.id)===String(sel?.value));
+  if(!p){alert('Игрок не выбран.');return;}
+
+  const oldName=String(p.name||'').trim();
+  const newName=String(document.getElementById('adminNameInput')?.value||oldName).trim();
+  if(!newName){alert('Ник не может быть пустым.');return;}
+  if((db.players||[]).some(x=>x.id!=p.id&&String(x.name||'').trim().toLowerCase()===newName.toLowerCase())){
+    alert('Такой ник уже существует.');return;
+  }
+
+  p.name=newName;
+  p.elo=Math.max(0,parseInt(document.getElementById('adminEloInput')?.value,10)||0);
+  p.matches=Math.max(0,parseInt(document.getElementById('adminMatchesInput')?.value,10)||0);
+  p.level=Math.max(1,parseInt(document.getElementById('adminLevelInput')?.value,10)||1);
+
+  if(p.email?.toLowerCase()==='rommsayan@gmail.com'||oldName.toLowerCase()==='sayan') p.role='creator';
+  else p.role=document.getElementById('adminRoleSelect')?.value||p.role||'player';
+
+  const st=(db.streamers||[]).find(s=>String(s.name||'').toLowerCase()===oldName.toLowerCase());
+  if(st)st.name=newName;
+
+  if(db.streamDataMap&&oldName!==newName){
+    const key=Object.keys(db.streamDataMap).find(k=>String(k).toLowerCase()===oldName.toLowerCase());
+    if(key){db.streamDataMap[newName]=db.streamDataMap[key];delete db.streamDataMap[key];}
+  }
+  Object.values(db.streamDataMap||{}).forEach(sd=>{
+    if(String(sd.player1||'').toLowerCase()===oldName.toLowerCase())sd.player1=newName;
+    if(String(sd.player2||'').toLowerCase()===oldName.toLowerCase())sd.player2=newName;
+  });
+
+  try{
+    await reliableSave();
+    renderAdminPanel();renderStreamers();renderLeaderboard();renderTop100();
+    updateHeaderProfile(getCurrentUser());
+    alert('✅ Ник и ELO сохранены.');
+  }catch(e){console.error(e);alert('❌ Ошибка сохранения. Изменения не подтверждены.');}
+};
+
+window.saveStreamerObsData=async function(streamerName){
+  if(!db.streamDataMap)db.streamDataMap={};
+  if(!db.players)db.players=[];
+
+  const p1=String(document.getElementById(`p1_${streamerName}`)?.value||'').trim();
+  const p2=String(document.getElementById(`p2_${streamerName}`)?.value||'').trim();
+  const c1=String(document.getElementById(`c1_${streamerName}`)?.value||'Нет клана').trim()||'Нет клана';
+  const c2=String(document.getElementById(`c2_${streamerName}`)?.value||'Нет клана').trim()||'Нет клана';
+  const s1=Math.max(0,parseInt(document.getElementById(`s1_${streamerName}`)?.value||'0',10)||0);
+  const s2=Math.max(0,parseInt(document.getElementById(`s2_${streamerName}`)?.value||'0',10)||0);
+
+  if(!p1||!p2){alert('Введите ник обоих игроков.');return;}
+  if(p1.toLowerCase()===p2.toLowerCase()){alert('Игроки должны иметь разные ники.');return;}
+
+  const find=n=>(db.players||[]).find(x=>String(x.name||'').trim().toLowerCase()===n.toLowerCase());
+  const make=n=>({id:Date.now()+Math.floor(Math.random()*100000),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
+
+  let a=find(p1),b=find(p2);
+  if(!a){a=make(p1);db.players.push(a);}
+  if(!b){b=make(p2);db.players.push(b);}
+  if(c1!=='Нет клана')ensureClanExistsByName(c1);
+  if(c2!=='Нет клана')ensureClanExistsByName(c2);
+
+  const prev=db.streamDataMap[streamerName]||{};
+  db.streamDataMap[streamerName]={...prev,player1:p1,clan1:c1,score1:s1,player2:p2,clan2:c2,score2:s2};
+
+  try{
+    await reliableSave();
+    renderStreamers();renderLeaderboard();renderTop100();renderClans();renderClanLeaderboard();
+    alert('✅ Ник, кланы и счёт сохранены.');
+  }catch(e){console.error(e);alert('❌ Ошибка сохранения HUD.');}
+};
+
+document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserToAdmin(),100));
 })();
 </script>
 
