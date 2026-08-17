@@ -5606,6 +5606,8 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const user = (db?.players || []).find(p => p.id === userId);
             if (!user) return;
 
+            const nameInput = document.getElementById('adminNameInput');
+            if (nameInput) nameInput.value = user.name || '';
             if (document.getElementById('adminEloInput')) document.getElementById('adminEloInput').value = user.elo || 0;
             if (document.getElementById('adminMatchesInput')) document.getElementById('adminMatchesInput').value = user.matches || 0;
             if (document.getElementById('adminLevelInput')) document.getElementById('adminLevelInput').value = user.level || 1;
@@ -5614,25 +5616,97 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         }
 
         async function applyAdminChanges() {
-            if(!isCreator()){alert('Только создатель может менять роли.');return;}
+            if(!isCreator()){alert('Только создатель может менять данные.');return;}
+
             const userSelect = document.getElementById('adminUserSelect');
             if (!userSelect) return;
-            const userId = parseInt(userSelect.value);
-            let user = (db?.players || []).find(p => p.id === userId);
-            if (!user) return;
 
-            user.elo = parseInt(document.getElementById('adminEloInput').value) || 0;
-            user.matches = parseInt(document.getElementById('adminMatchesInput').value) || 0;
-            user.level = parseInt(document.getElementById('adminLevelInput').value) || 1;
-            
-            if (user.name?.toLowerCase() !== 'sayan' && user.email?.toLowerCase() !== 'rommsayan@gmail.com') {
-                user.role = document.getElementById('adminRoleSelect').value;
-            } else {
+            const userId = parseInt(userSelect.value);
+            const user = (db?.players || []).find(p => p.id === userId);
+            if (!user) { alert('Игрок не выбран.'); return; }
+
+            const oldName = String(user.name || '').trim();
+            const nameInput = document.getElementById('adminNameInput');
+            const newName = String(nameInput?.value || oldName).trim();
+
+            if (!newName) { alert('Ник не может быть пустым.'); return; }
+
+            const duplicate = (db.players || []).some(p =>
+                p.id !== user.id &&
+                String(p.name || '').trim().toLowerCase() === newName.toLowerCase()
+            );
+            if (duplicate) { alert('Такой ник уже существует.'); return; }
+
+            /* Сохраняем НИК из поля панели, а не оставляем старый user.name. */
+            user.name = newName;
+
+            user.elo = Math.max(0, parseInt(document.getElementById('adminEloInput')?.value,10) || 0);
+            user.matches = Math.max(0, parseInt(document.getElementById('adminMatchesInput')?.value,10) || 0);
+            user.level = Math.max(1, parseInt(document.getElementById('adminLevelInput')?.value,10) || 1);
+
+            if (oldName.toLowerCase() === 'sayan' ||
+                user.email?.toLowerCase() === 'rommsayan@gmail.com') {
                 user.role = 'creator';
+            } else {
+                user.role = document.getElementById('adminRoleSelect')?.value || user.role || 'player';
             }
 
-            await saveData();
-            alert("Изменения сохранены!");
+            /* Если ник изменён, переносим все ссылки на старый ник. */
+            if (oldName !== newName) {
+                (db.streamers || []).forEach(s => {
+                    if (String(s.name || '').trim().toLowerCase() === oldName.toLowerCase()) {
+                        s.name = newName;
+                    }
+                });
+
+                if (db.streamDataMap) {
+                    Object.keys(db.streamDataMap).forEach(key => {
+                        const sd = db.streamDataMap[key];
+                        if (!sd) return;
+
+                        if (String(sd.player1 || '').trim().toLowerCase() === oldName.toLowerCase()) {
+                            sd.player1 = newName;
+                        }
+                        if (String(sd.player2 || '').trim().toLowerCase() === oldName.toLowerCase()) {
+                            sd.player2 = newName;
+                        }
+
+                        /* На случай старой структуры, где имя было ключом. */
+                        if (key.toLowerCase() === oldName.toLowerCase() && key !== newName) {
+                            db.streamDataMap[newName] = sd;
+                            delete db.streamDataMap[key];
+                        }
+                    });
+                }
+
+                /* Обновляем историю матчей, чтобы старый ник не возвращался. */
+                (db.matchHistory || []).forEach(m => {
+                    if (String(m.player1 || '').toLowerCase() === oldName.toLowerCase()) m.player1 = newName;
+                    if (String(m.player2 || '').toLowerCase() === oldName.toLowerCase()) m.player2 = newName;
+                    if (String(m.winner || '').toLowerCase() === oldName.toLowerCase()) m.winner = newName;
+                    if (String(m.loser || '').toLowerCase() === oldName.toLowerCase()) m.loser = newName;
+                });
+                (db.clanMatchHistory || []).forEach(m => {
+                    if (String(m.player1 || '').toLowerCase() === oldName.toLowerCase()) m.player1 = newName;
+                    if (String(m.player2 || '').toLowerCase() === oldName.toLowerCase()) m.player2 = newName;
+                });
+            }
+
+            try {
+                /* ВАЖНО: вызываем оригинальное сохранение после изменения db. */
+                await saveData();
+
+                /* Не загружаем старое значение обратно — поле получает новое имя из db. */
+                const freshSelect = document.getElementById('adminUserSelect');
+                if (freshSelect) freshSelect.value = String(user.id);
+                const freshName = document.getElementById('adminNameInput');
+                if (freshName) freshName.value = newName;
+
+                alert('Изменения сохранены!');
+            } catch (err) {
+                console.error(err);
+                alert('Ошибка сохранения: ' + (err?.message || err));
+            }
         }
 
         window.onload = async function() {
@@ -7373,6 +7447,22 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserT
     }
     return result;
   };
+})();
+</script>
+
+
+<script id="FREE-ELO-NAME-INPUT-GUARD">
+(function(){
+  let typing=false;
+  document.addEventListener('focusin',e=>{
+    if(e.target && e.target.id==='adminNameInput') typing=true;
+  },true);
+  document.addEventListener('focusout',e=>{
+    if(e.target && e.target.id==='adminNameInput') typing=false;
+  },true);
+  document.addEventListener('input',e=>{
+    if(e.target && e.target.id==='adminNameInput') window.FE_TYPED_ADMIN_NAME=e.target.value;
+  },true);
 })();
 </script>
 
