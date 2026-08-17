@@ -6801,3 +6801,65 @@ body.obs-overlay .obs-player-card:has(.frame-phoenix)::before{
 }
 </style>
 
+
+<style id="FREE-ELO-NO-FULL-FRAMES">
+/* Убираем ПОЛНЫЕ рамки. Оставляем только стилизованные углы/сегменты. */
+body.obs-overlay .obs-player-card:has(.frame-effect)::before{
+    content:"" !important;
+    position:absolute !important;
+    inset:-5px !important;
+    z-index:20 !important;
+    pointer-events:none !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) left top/62px 3px no-repeat,
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) right top/62px 3px no-repeat,
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) left bottom/62px 3px no-repeat,
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) right bottom/62px 3px no-repeat,
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) left top/3px 38px no-repeat,
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) right top/3px 38px no-repeat,
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) left bottom/3px 38px no-repeat,
+      linear-gradient(var(--hud-frame-a,#fff),var(--hud-frame-a,#fff)) right bottom/3px 38px no-repeat !important;
+    box-shadow:none !important;
+    filter:none !important;
+}
+
+/* Второй контур тоже НЕ полный — только короткие акценты. */
+body.obs-overlay .obs-player-card:has(.frame-effect)::after{
+    content:"" !important;
+    position:absolute !important;
+    inset:-9px !important;
+    z-index:19 !important;
+    pointer-events:none !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:
+      linear-gradient(var(--hud-frame-b,#fff),var(--hud-frame-b,#fff)) 25% 0/42px 1px no-repeat,
+      linear-gradient(var(--hud-frame-b,#fff),var(--hud-frame-b,#fff)) 75% 0/42px 1px no-repeat,
+      linear-gradient(var(--hud-frame-b,#fff),var(--hud-frame-b,#fff)) 25% 100%/42px 1px no-repeat,
+      linear-gradient(var(--hud-frame-b,#fff),var(--hud-frame-b,#fff)) 75% 100%/42px 1px no-repeat !important;
+    box-shadow:none !important;
+    clip-path:none !important;
+}
+
+/* Для огненной рамки — больше акцента по углам, но без замкнутой рамки. */
+body.obs-overlay .obs-player-card:has(.frame-fire)::before{
+    box-shadow:none !important;
+    animation:freeEloFireFrame 0.55s ease-in-out infinite alternate !important;
+}
+body.obs-overlay .obs-player-card:has(.frame-fire)::after{
+    box-shadow:none !important;
+}
+
+/* Lightning остаётся угловой, без полного прямоугольника. */
+body.obs-overlay .obs-player-card:has(.frame-lightning)::before{
+    clip-path:none !important;
+}
+
+/* Убираем возможные старые полные SVG/PNG рамки. */
+body.obs-overlay .obs-avatar-frame{
+    display:none !important;
+}
+</style>
+
