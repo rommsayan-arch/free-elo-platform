@@ -6619,295 +6619,319 @@ body.obs-overlay #obsOverlayRoot{
 })();
 </script>
 
+<style id="free-elo-frame-only">
+/* =========================================================
+   FREE ELO — FRAME ONLY
+   HUD layout/cards are intentionally NOT changed.
+   Only the equipped avatar frames are redesigned.
+   ========================================================= */
 
-
-<style id="free-elo-handdrawn-frame-system">
-/* FREE ELO — CUSTOM ANGULAR / HAND-DRAWN ESPORTS FRAMES */
-
-/* HUD player card: remove the boring rectangle. */
-body.obs-overlay .hud-player-card{
-    position:relative!important;
-    overflow:hidden!important;
-    border:0!important;
-    border-radius:0!important;
-    box-shadow:0 18px 42px rgba(0,0,0,.34)!important;
-    isolation:isolate!important;
-    background:linear-gradient(135deg,rgba(9,12,20,.92),rgba(12,15,25,.72))!important;
-}
-body.obs-overlay .hud-player-side.hud-right .hud-player-card{
-    background:linear-gradient(225deg,rgba(7,17,25,.92),rgba(9,13,23,.76))!important;
+/* The frame follows the avatar, not the whole HUD card. */
+.avatar-wrapper.frame-effect,
+.obs-avatar-wrap.frame-effect{
+    position:relative !important;
+    overflow:visible !important;
+    isolation:isolate !important;
+    border-radius:10px !important;
 }
 
-/* Hide the old rectangular image frame; the new frame is CSS. */
-body.obs-overlay .hud-player-card > .obs-avatar-wrap > .obs-avatar-frame{
-    display:none!important;
-}
-body.obs-overlay .hud-player-card > .obs-avatar-wrap.frame-effect::before,
-body.obs-overlay .hud-player-card > .obs-avatar-wrap.frame-effect::after{
-    display:none!important;
+/* Keep the avatar itself exactly where the HUD put it. */
+.obs-avatar-wrap.frame-effect > .obs-avatar,
+.avatar-wrapper.frame-effect > .avatar{
+    position:relative !important;
+    z-index:2 !important;
 }
 
-/* Main broken/angular outline — similar to the hand-drawn wide frame. */
-body.obs-overlay .hud-player-card::before{
-    content:""!important;
-    position:absolute!important;
-    inset:-1px!important;
-    z-index:20!important;
-    pointer-events:none!important;
-    border:2px solid var(--hud-frame-a,#9b6cff)!important;
-    background:transparent!important;
-    clip-path:polygon(
-        0 18px,18px 18px,18px 0,
-        calc(100% - 54px) 0,calc(100% - 54px) 3px,
-        calc(100% - 12px) 3px,calc(100% - 12px) 18px,100% 18px,
-        100% calc(100% - 20px),calc(100% - 18px) calc(100% - 20px),
-        calc(100% - 18px) 100%,54px 100%,54px calc(100% - 3px),
-        12px calc(100% - 3px),12px calc(100% - 20px),0 calc(100% - 20px)
-    )!important;
-    box-shadow:
-        0 0 7px var(--hud-frame-a),
-        0 0 20px var(--hud-frame-glow),
-        inset 0 0 18px var(--hud-frame-inner)!important;
-    animation:hudFrameBreath 1.7s ease-in-out infinite!important;
+/* Hide the old rectangular frame image in OBS.
+   The new frame is drawn around the avatar only. */
+body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame{
+    display:none !important;
 }
 
-/* Thin inner contour. */
-body.obs-overlay .hud-player-card::after{
-    content:""!important;
-    position:absolute!important;
-    inset:5px!important;
-    z-index:21!important;
-    pointer-events:none!important;
-    border:1px solid var(--hud-frame-b,#22d3ee)!important;
-    clip-path:polygon(
-        0 12px,12px 12px,12px 0,
-        calc(100% - 44px) 0,calc(100% - 44px) 2px,
-        calc(100% - 9px) 2px,calc(100% - 9px) 12px,100% 12px,
-        100% calc(100% - 14px),calc(100% - 12px) calc(100% - 14px),
-        calc(100% - 12px) 100%,44px 100%,44px calc(100% - 2px),
-        9px calc(100% - 2px),9px calc(100% - 14px),0 calc(100% - 14px)
-    )!important;
-    box-shadow:0 0 10px var(--hud-frame-glow),inset 0 0 9px var(--hud-frame-inner)!important;
-    opacity:.9!important;
-}
-@keyframes hudFrameBreath{
-    0%,100%{filter:brightness(.95)}
-    50%{filter:brightness(1.22)}
-}
-
-/* Default tech frame. */
-body.obs-overlay .hud-player-card:not(.frame-effect){
-    --hud-frame-a:#9b6cff;
-    --hud-frame-b:#26e6ff;
-    --hud-frame-glow:rgba(139,92,246,.55);
-    --hud-frame-inner:rgba(38,230,255,.08);
-}
-
-/* FIRE — hot asymmetric edge. */
-body.obs-overlay .hud-player-card.frame-fire{
-    --hud-frame-a:#fff1a8;--hud-frame-b:#ff5b00;
-    --hud-frame-glow:rgba(255,69,0,.9);--hud-frame-inner:rgba(255,150,20,.16);
-}
-body.obs-overlay .hud-player-card.frame-fire::before{
-    border-width:3px!important;
-    box-shadow:0 0 6px #fff0a0,0 0 18px #ff6500,0 0 38px rgba(255,35,0,.9),inset 0 0 14px rgba(255,160,40,.7)!important;
-    animation:hudFireFrame .55s ease-in-out infinite alternate!important;
-}
-@keyframes hudFireFrame{
-    from{filter:brightness(1)}
-    to{filter:brightness(1.42)}
-}
-
-/* LIGHTNING — jagged electrical corners. */
-body.obs-overlay .hud-player-card.frame-lightning{
-    --hud-frame-a:#efffff;--hud-frame-b:#238cff;
-    --hud-frame-glow:rgba(40,150,255,.95);--hud-frame-inner:rgba(80,210,255,.14);
-}
-body.obs-overlay .hud-player-card.frame-lightning::before{
-    clip-path:polygon(
-        0 24px,22px 24px,22px 8px,46px 8px,34px 0,
-        calc(100% - 58px) 0,calc(100% - 42px) 9px,calc(100% - 18px) 9px,
-        calc(100% - 18px) 24px,100% 24px,
-        100% calc(100% - 26px),calc(100% - 22px) calc(100% - 26px),
-        calc(100% - 22px) 100%,48px 100%,60px calc(100% - 9px),
-        18px calc(100% - 9px),18px calc(100% - 26px),0 calc(100% - 26px)
-    )!important;
-    animation:hudLightningFlash .72s steps(1,end) infinite!important;
-}
-@keyframes hudLightningFlash{
-    0%,78%,100%{filter:brightness(1)}
-    80%{filter:brightness(2.1)}
-    82%{filter:brightness(.72)}
-    84%{filter:brightness(1.8)}
-}
-
-/* THUNDER — sharp violet shield. */
-body.obs-overlay .hud-player-card.frame-thunder{
-    --hud-frame-a:#f0ddff;--hud-frame-b:#713cff;
-    --hud-frame-glow:rgba(112,45,255,.9);--hud-frame-inner:rgba(145,90,255,.16);
-}
-body.obs-overlay .hud-player-card.frame-thunder::before{
-    clip-path:polygon(
-        0 14px,14px 14px,22px 0,calc(100% - 24px) 0,
-        calc(100% - 14px) 14px,100% 14px,100% calc(100% - 14px),
-        calc(100% - 14px) calc(100% - 14px),calc(100% - 24px) 100%,
-        22px 100%,14px calc(100% - 14px),0 calc(100% - 14px)
-    )!important;
-    animation:hudThunderPulse 1s ease-in-out infinite!important;
-}
-@keyframes hudThunderPulse{
-    0%,100%{filter:brightness(.95)}
-    50%{filter:brightness(1.5)}
-}
-
-/* ICE — crystalline cyan cuts. */
-body.obs-overlay .hud-player-card.frame-ice{
-    --hud-frame-a:#ffffff;--hud-frame-b:#39d7ff;
-    --hud-frame-glow:rgba(50,210,255,.9);--hud-frame-inner:rgba(110,235,255,.14);
-}
-body.obs-overlay .hud-player-card.frame-ice::before{
-    clip-path:polygon(
-        0 16px,12px 16px,24px 0,calc(100% - 24px) 0,
-        calc(100% - 12px) 16px,100% 16px,100% calc(100% - 16px),
-        calc(100% - 12px) calc(100% - 16px),calc(100% - 24px) 100%,
-        24px 100%,12px calc(100% - 16px),0 calc(100% - 16px)
-    )!important;
-    animation:hudIceShimmer 1.8s ease-in-out infinite!important;
-}
-@keyframes hudIceShimmer{
-    0%,100%{filter:brightness(1)}
-    50%{filter:brightness(1.45)}
-}
-
-/* NEON — cyber pink/violet frame with a broken top line. */
-body.obs-overlay .hud-player-card.frame-neon{
-    --hud-frame-a:#ff78dc;--hud-frame-b:#794dff;
-    --hud-frame-glow:rgba(255,80,200,.85);--hud-frame-inner:rgba(121,77,255,.14);
-}
-body.obs-overlay .hud-player-card.frame-neon::before{
-    clip-path:polygon(
-        0 14px,14px 14px,14px 0,72% 0,72% 3px,100% 3px,
-        100% 18px,calc(100% - 15px) 18px,calc(100% - 15px) 100%,
-        28% 100%,28% calc(100% - 3px),0 calc(100% - 3px)
-    )!important;
-    animation:hudNeonPulse 1.1s ease-in-out infinite alternate!important;
-}
-@keyframes hudNeonPulse{
-    from{filter:brightness(.95)}
-    to{filter:brightness(1.45)}
-}
-
-/* POISON — toxic green irregular frame. */
-body.obs-overlay .hud-player-card.frame-poison{
-    --hud-frame-a:#ddff64;--hud-frame-b:#22d36e;
-    --hud-frame-glow:rgba(34,211,110,.9);--hud-frame-inner:rgba(100,255,90,.12);
-}
-body.obs-overlay .hud-player-card.frame-poison::before{
-    clip-path:polygon(
-        0 10px,28px 10px,22px 0,76% 0,84% 8px,100% 8px,
-        100% 86%,88% 86%,94% 100%,22% 100%,28% 91%,0 91%
-    )!important;
-    animation:hudPoisonPulse 1.25s ease-in-out infinite alternate!important;
-}
-@keyframes hudPoisonPulse{
-    from{filter:brightness(.95)}
-    to{filter:brightness(1.35)}
-}
-
-/* PHOENIX — premium gold asymmetric frame. */
-body.obs-overlay .hud-player-card.frame-phoenix{
-    --hud-frame-a:#fff4ae;--hud-frame-b:#ff8a00;
-    --hud-frame-glow:rgba(255,125,0,.95);--hud-frame-inner:rgba(255,180,40,.14);
-}
-body.obs-overlay .hud-player-card.frame-phoenix::before{
-    border-width:3px!important;
-    clip-path:polygon(
-        0 20px,18px 20px,18px 8px,40px 0,82% 0,
-        calc(100% - 20px) 8px,calc(100% - 8px) 8px,calc(100% - 8px) 20px,
-        100% 20px,100% 80%,calc(100% - 12px) 80%,calc(100% - 20px) 100%,
-        18% 100%,26% 91%,0 91%
-    )!important;
-    animation:hudPhoenixPulse .8s ease-in-out infinite alternate!important;
-}
-@keyframes hudPhoenixPulse{
-    from{filter:brightness(1)}
-    to{filter:brightness(1.55)}
-}
-
-/* Winner glow stays green, but keeps the new angular shape. */
-body.obs-overlay .is-winner .hud-player-card::before{
-    box-shadow:0 0 7px #5cffb1,0 0 22px rgba(92,255,177,.75),inset 0 0 14px rgba(92,255,177,.18)!important;
-}
-
-/* Remove the old straight side/top bars. */
-body.obs-overlay .hud-player-side::before{display:none!important;}
-
-/* Clan cards use the same custom angular visual language. */
-body.obs-overlay .hud-clan-card{
-    border:0!important;border-radius:0!important;position:relative!important;overflow:hidden!important;
-}
-body.obs-overlay .hud-clan-card::before{
-    content:""!important;position:absolute!important;inset:0!important;
-    border:2px solid rgba(155,108,255,.75)!important;
-    clip-path:polygon(
-        0 14px,14px 14px,14px 0,calc(100% - 14px) 0,
-        calc(100% - 14px) 14px,100% 14px,100% calc(100% - 14px),
-        calc(100% - 14px) calc(100% - 14px),calc(100% - 14px) 100%,
-        14px 100%,14px calc(100% - 14px),0 calc(100% - 14px)
-    )!important;
-    box-shadow:0 0 16px rgba(155,108,255,.35),inset 0 0 18px rgba(155,108,255,.08)!important;
-    pointer-events:none!important;z-index:10!important;
-}
-body.obs-overlay .hud-clan-side.hud-right .hud-clan-card::before{
-    border-color:rgba(38,230,255,.8)!important;
-    box-shadow:0 0 16px rgba(38,230,255,.38),inset 0 0 18px rgba(38,230,255,.08)!important;
-}
-
-/* Website profile frames get the same non-rectangular language. */
-.avatar-wrapper.frame-effect::before,
-.avatar-wrapper.frame-effect::after{
-    border-radius:0!important;
-    transform:none!important;
-}
+/* Base frame: a clean rounded esports plate. */
+.obs-avatar-wrap.frame-effect::before,
 .avatar-wrapper.frame-effect::before{
-    inset:-5px!important;
-    clip-path:polygon(
-        0 8px,8px 8px,8px 0,calc(100% - 12px) 0,
-        calc(100% - 12px) 5px,100% 5px,100% calc(100% - 8px),
-        calc(100% - 8px) calc(100% - 8px),calc(100% - 8px) 100%,
-        8px 100%,8px calc(100% - 8px),0 calc(100% - 8px)
-    )!important;
+    content:"" !important;
+    position:absolute !important;
+    inset:-5px !important;
+    z-index:8 !important;
+    pointer-events:none !important;
+    border:3px solid var(--fr-a,#fff) !important;
+    border-radius:11px !important;
+    background:transparent !important;
+    box-shadow:
+        0 0 4px var(--fr-a),
+        0 0 14px var(--fr-glow),
+        inset 0 0 7px var(--fr-inner) !important;
+    transform:none !important;
+    animation:frGlow 1.8s ease-in-out infinite alternate !important;
 }
+
+/* Second fine line makes the frame look like a real premium item. */
+.obs-avatar-wrap.frame-effect::after,
 .avatar-wrapper.frame-effect::after{
-    inset:-8px!important;
+    content:"" !important;
+    position:absolute !important;
+    inset:-2px !important;
+    z-index:9 !important;
+    pointer-events:none !important;
+    border:1px solid var(--fr-b,#fff) !important;
+    border-radius:8px !important;
+    box-shadow:0 0 7px var(--fr-glow) !important;
+    transform:none !important;
+}
+
+/* ---------- 9100: ГОРЯЩИЙ АЛМАЗ ----------
+   Similar to the reference: orange/yellow rounded frame,
+   strong glow and small flame tongues under the bottom edge.
+*/
+.obs-avatar-wrap.frame-fire,
+.avatar-wrapper.frame-fire{
+    --fr-a:#fff3a0;
+    --fr-b:#ff6b00;
+    --fr-glow:rgba(255,92,0,.95);
+    --fr-inner:rgba(255,155,20,.20);
+}
+
+.obs-avatar-wrap.frame-fire::before,
+.avatar-wrapper.frame-fire::before{
+    inset:-6px !important;
+    border-width:3px !important;
+    border-radius:12px !important;
+    box-shadow:
+        0 0 5px #fff2a0,
+        0 0 11px #ff9a00,
+        0 0 24px rgba(255,70,0,.95),
+        inset 0 0 10px rgba(255,145,0,.42) !important;
+    animation:fireFramePulse .65s ease-in-out infinite alternate !important;
+}
+
+.obs-avatar-wrap.frame-fire::after,
+.avatar-wrapper.frame-fire::after{
+    inset:-3px !important;
+    border-color:#ffb52e !important;
+    border-radius:9px !important;
+}
+
+/* flame tongues below the card */
+.obs-avatar-wrap.frame-fire{
+    filter:drop-shadow(0 4px 8px rgba(255,75,0,.28));
+}
+.obs-avatar-wrap.frame-fire > .obs-avatar,
+.avatar-wrapper.frame-fire > .avatar{
+    clip-path:inset(0 round 7px);
+}
+
+/* Small flame shapes made from box shadows / gradients. */
+.obs-avatar-wrap.frame-fire::before{
+    background:
+        linear-gradient(150deg,transparent 0 42%,rgba(255,188,55,.95) 43% 46%,transparent 47%) bottom -7px left 10%/18px 18px no-repeat,
+        linear-gradient(35deg,transparent 0 42%,rgba(255,95,0,.95) 43% 48%,transparent 49%) bottom -8px left 29%/22px 20px no-repeat,
+        linear-gradient(155deg,transparent 0 40%,rgba(255,218,105,.95) 41% 46%,transparent 47%) bottom -8px left 50%/17px 19px no-repeat,
+        linear-gradient(25deg,transparent 0 42%,rgba(255,82,0,.95) 43% 48%,transparent 49%) bottom -7px right 18%/20px 18px no-repeat,
+        transparent !important;
+}
+@keyframes fireFramePulse{
+    from{filter:brightness(1)}
+    to{filter:brightness(1.28)}
+}
+
+/* ---------- 9101: МОЛНИЯ ----------
+   Sharp cyan/blue electrical corners, not a full redesign of HUD.
+*/
+.obs-avatar-wrap.frame-lightning,
+.avatar-wrapper.frame-lightning{
+    --fr-a:#e9ffff;
+    --fr-b:#2cbcff;
+    --fr-glow:rgba(36,164,255,.95);
+    --fr-inner:rgba(30,180,255,.18);
+}
+.obs-avatar-wrap.frame-lightning::before,
+.avatar-wrapper.frame-lightning::before{
+    inset:-6px !important;
+    border-width:2px !important;
+    border-radius:8px !important;
     clip-path:polygon(
-        0 6px,6px 6px,6px 0,calc(100% - 9px) 0,
-        calc(100% - 9px) 4px,100% 4px,100% calc(100% - 6px),
-        calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) 100%,
-        6px 100%,6px calc(100% - 6px),0 calc(100% - 6px)
-    )!important;
+        0 13px,10px 13px,6px 3px,30px 3px,
+        27px 0,calc(100% - 30px) 0,calc(100% - 27px) 3px,
+        calc(100% - 6px) 3px,calc(100% - 10px) 13px,100% 13px,
+        100% calc(100% - 12px),calc(100% - 11px) calc(100% - 12px),
+        calc(100% - 7px) 100%,28px 100%,31px calc(100% - 4px),
+        7px calc(100% - 4px),11px calc(100% - 12px),0 calc(100% - 12px)
+    ) !important;
+    animation:lightningFlash .72s steps(1,end) infinite !important;
+}
+.obs-avatar-wrap.frame-lightning::after,
+.avatar-wrapper.frame-lightning::after{
+    inset:-2px !important;
+    border-radius:6px !important;
+    border-color:#4ddcff !important;
+}
+@keyframes lightningFlash{
+    0%,74%,100%{filter:brightness(1)}
+    76%{filter:brightness(2)}
+    78%{filter:brightness(.7)}
+    80%{filter:brightness(1.8)}
 }
 
-/* Frame colors on the site too. */
-.avatar-wrapper.frame-fire::before{border-color:#ff7a00!important}
-.avatar-wrapper.frame-lightning::before{border-color:#efffff!important}
-.avatar-wrapper.frame-thunder::before{border-color:#d2b2ff!important}
-.avatar-wrapper.frame-ice::before{border-color:#e8ffff!important}
-.avatar-wrapper.frame-neon::before{border-color:#ff78dc!important}
-.avatar-wrapper.frame-poison::before{border-color:#ddff64!important}
-.avatar-wrapper.frame-phoenix::before{border-color:#fff0a0!important}
-
-@media(max-width:900px){
-    body.obs-overlay .hud-player-card::before{
-        clip-path:polygon(
-            0 13px,13px 13px,13px 0,calc(100% - 38px) 0,
-            calc(100% - 38px) 3px,calc(100% - 9px) 3px,
-            calc(100% - 9px) 13px,100% 13px,
-            100% calc(100% - 15px),calc(100% - 13px) calc(100% - 15px),
-            calc(100% - 13px) 100%,38px 100%,38px calc(100% - 3px),
-            9px calc(100% - 3px),9px calc(100% - 15px),0 calc(100% - 15px)
-        )!important;
-    }
-    body.obs-overlay .hud-player-card::after{inset:4px!important}
+/* ---------- 9102: ГРОЗА ----------
+   Violet thunder/shock frame with heavy corner cuts.
+*/
+.obs-avatar-wrap.frame-thunder,
+.avatar-wrapper.frame-thunder{
+    --fr-a:#f2dcff;
+    --fr-b:#8750ff;
+    --fr-glow:rgba(126,61,255,.95);
+    --fr-inner:rgba(130,70,255,.18);
 }
+.obs-avatar-wrap.frame-thunder::before,
+.avatar-wrapper.frame-thunder::before{
+    inset:-6px !important;
+    border-width:3px !important;
+    border-radius:8px !important;
+    clip-path:polygon(
+        0 10px,14px 10px,20px 0,calc(100% - 20px) 0,
+        calc(100% - 14px) 10px,100% 10px,100% calc(100% - 10px),
+        calc(100% - 14px) calc(100% - 10px),calc(100% - 20px) 100%,
+        20px 100%,14px calc(100% - 10px),0 calc(100% - 10px)
+    ) !important;
+    animation:thunderPulse 1s ease-in-out infinite alternate !important;
+}
+.obs-avatar-wrap.frame-thunder::after,
+.avatar-wrapper.frame-thunder::after{
+    border-color:#b996ff !important;
+}
+@keyframes thunderPulse{
+    from{filter:brightness(.96)}
+    to{filter:brightness(1.38)}
+}
+
+/* ---------- 9103: ЛЕДЯНАЯ АУРА ----------
+   Thin white/cyan crystal corners.
+*/
+.obs-avatar-wrap.frame-ice,
+.avatar-wrapper.frame-ice{
+    --fr-a:#ffffff;
+    --fr-b:#6be8ff;
+    --fr-glow:rgba(80,220,255,.92);
+    --fr-inner:rgba(140,245,255,.16);
+}
+.obs-avatar-wrap.frame-ice::before,
+.avatar-wrapper.frame-ice::before{
+    inset:-6px !important;
+    border-width:2px !important;
+    border-radius:9px !important;
+    clip-path:polygon(
+        0 12px,12px 12px,24px 0,calc(100% - 24px) 0,
+        calc(100% - 12px) 12px,100% 12px,100% calc(100% - 12px),
+        calc(100% - 12px) calc(100% - 12px),calc(100% - 24px) 100%,
+        24px 100%,12px calc(100% - 12px),0 calc(100% - 12px)
+    ) !important;
+}
+.obs-avatar-wrap.frame-ice::after,
+.avatar-wrapper.frame-ice::after{
+    border-color:#dfffff !important;
+    box-shadow:0 0 10px rgba(100,230,255,.7) !important;
+}
+
+/* ---------- 9104: НЕОНОВЫЙ ВИХРЬ ----------
+   Pink/violet cyber frame with broken top/bottom lines.
+*/
+.obs-avatar-wrap.frame-neon,
+.avatar-wrapper.frame-neon{
+    --fr-a:#ff8ce5;
+    --fr-b:#7655ff;
+    --fr-glow:rgba(255,70,210,.9);
+    --fr-inner:rgba(125,70,255,.16);
+}
+.obs-avatar-wrap.frame-neon::before,
+.avatar-wrapper.frame-neon::before{
+    inset:-6px !important;
+    border-width:2px !important;
+    border-radius:9px !important;
+    clip-path:polygon(
+        0 12px,12px 12px,12px 0,72% 0,72% 3px,
+        100% 3px,100% 14px,calc(100% - 12px) 14px,
+        calc(100% - 12px) calc(100% - 100% + 15px),
+        28% calc(100% - 15px),28% 100%,0 100%
+    ) !important;
+    animation:neonPulse 1.1s ease-in-out infinite alternate !important;
+}
+.obs-avatar-wrap.frame-neon::after,
+.avatar-wrapper.frame-neon::after{
+    border-color:#ff71d9 !important;
+}
+@keyframes neonPulse{
+    from{filter:brightness(.95)}
+    to{filter:brightness(1.38)}
+}
+
+/* ---------- 9105: ЯДОВИТАЯ ЭНЕРГИЯ ----------
+   Acid green, asymmetrical corners.
+*/
+.obs-avatar-wrap.frame-poison,
+.avatar-wrapper.frame-poison{
+    --fr-a:#eaff75;
+    --fr-b:#20dc73;
+    --fr-glow:rgba(35,220,105,.9);
+    --fr-inner:rgba(130,255,70,.15);
+}
+.obs-avatar-wrap.frame-poison::before,
+.avatar-wrapper.frame-poison::before{
+    inset:-6px !important;
+    border-width:3px !important;
+    border-radius:7px !important;
+    clip-path:polygon(
+        0 9px,24px 9px,18px 0,76% 0,85% 8px,100% 8px,
+        100% 86%,89% 86%,94% 100%,22% 100%,28% 91%,0 91%
+    ) !important;
+}
+.obs-avatar-wrap.frame-poison::after,
+.avatar-wrapper.frame-poison::after{
+    border-color:#9dff4d !important;
+}
+
+/* ---------- 9106: ЗОЛОТОЙ ФЕНИКС ----------
+   Premium gold frame, similar construction to the fire frame
+   but cleaner and more regal.
+*/
+.obs-avatar-wrap.frame-phoenix,
+.avatar-wrapper.frame-phoenix{
+    --fr-a:#fff6bd;
+    --fr-b:#ff9a17;
+    --fr-glow:rgba(255,150,25,.92);
+    --fr-inner:rgba(255,205,80,.18);
+}
+.obs-avatar-wrap.frame-phoenix::before,
+.avatar-wrapper.frame-phoenix::before{
+    inset:-6px !important;
+    border-width:3px !important;
+    border-radius:10px !important;
+    clip-path:polygon(
+        0 15px,15px 15px,25px 0,78% 0,
+        calc(100% - 22px) 8px,100% 8px,100% 84%,
+        calc(100% - 12px) 84%,calc(100% - 20px) 100%,
+        18% 100%,26% 91%,0 91%
+    ) !important;
+}
+.obs-avatar-wrap.frame-phoenix::after,
+.avatar-wrapper.frame-phoenix::after{
+    border-color:#ffd76a !important;
+}
+
+/* Common breathing glow. */
+@keyframes frGlow{
+    from{filter:brightness(.98)}
+    to{filter:brightness(1.12)}
+}
+
+/* Shop preview: show the same shape language, but do not affect HUD. */
+.shop-frame-preview.frame-fire{filter:drop-shadow(0 0 8px rgba(255,90,0,.9))}
+.shop-frame-preview.frame-lightning{filter:drop-shadow(0 0 8px rgba(40,180,255,.85))}
+.shop-frame-preview.frame-thunder{filter:drop-shadow(0 0 8px rgba(125,70,255,.85))}
+.shop-frame-preview.frame-ice{filter:drop-shadow(0 0 8px rgba(80,220,255,.8))}
+.shop-frame-preview.frame-neon{filter:drop-shadow(0 0 8px rgba(255,70,210,.85))}
+.shop-frame-preview.frame-poison{filter:drop-shadow(0 0 8px rgba(50,220,100,.8))}
+.shop-frame-preview.frame-phoenix{filter:drop-shadow(0 0 8px rgba(255,150,20,.9))}
 </style>
+
