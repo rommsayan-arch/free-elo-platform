@@ -3890,6 +3890,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         }
 
         async function loadDataFromCloud() {
+            if (window.__FE_SAVE_IN_PROGRESS) return;
             if (activeController) activeController.abort();
             activeController = new AbortController();
 
@@ -3958,6 +3959,8 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
 
         async function saveDataToCloud() {
             ensureCreatorRights();
+            window.__FE_SAVE_IN_PROGRESS = true;
+            const snapshot = JSON.parse(JSON.stringify(db));
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`, {
                     method: 'PATCH',
@@ -3967,14 +3970,31 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         'Authorization': `Bearer ${SUPABASE_KEY}`,
                         'Prefer': 'return=minimal'
                     },
-                    body: JSON.stringify({ content: db })
+                    body: JSON.stringify({ content: snapshot })
                 });
                 const raw = await response.text();
                 if (!response.ok) throw new Error(`Supabase ${response.status}: ${raw}`);
+
+                const verify = await fetch(`${SUPABASE_URL}/rest/v1/app_data?select=content&id=eq.1`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Accept': 'application/json'
+                    },
+                    cache: 'no-store'
+                });
+                if (!verify.ok) throw new Error(`Supabase verify ${verify.status}`);
+                const rows = await verify.json();
+                if (JSON.stringify(rows?.[0]?.content) !== JSON.stringify(snapshot)) {
+                    throw new Error('Сохранённые данные не совпадают с текущими.');
+                }
+                window.__FE_LAST_SAVE_AT = Date.now();
                 return true;
             } catch (e) {
                 console.error("Ошибка сохранения:", e);
                 return false;
+            } finally {
+                window.__FE_SAVE_IN_PROGRESS = false;
             }
         }
 
@@ -4042,8 +4062,9 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                     rememberDeviceSession(db.players[index]);
                 }
             }
-            await saveDataToCloud();
-            initApp();
+            const saved = await saveDataToCloud();
+            if (saved) initApp();
+            return saved;
         }
 
         function switchAuthMode(mode) {
@@ -4660,7 +4681,11 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 score2: s2El ? (parseInt(s2El.value) || 0) : 0
             };
 
-            await saveData();
+            const savedOverlay = await saveData();
+            if (!savedOverlay) {
+                alert('❌ Не удалось сохранить ник/счёт в облако.');
+                return;
+            }
             renderStreamers();
             renderLeaderboard();
             renderTop100();
@@ -6122,14 +6147,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             if (!currentUserId && cachedSession?.id) currentUserId = cachedSession.id;
             if (currentUserId && getCurrentUser()) { initApp(); } else { currentUserId=null; initApp(); }
 
-            setInterval(async () => {
-                let prevDataStr = JSON.stringify(db);
-                await loadDataFromCloud();
-                if (reconcileCreatorStreamerRename()) {
-                    await saveDataToCloud();
-                }
-                if (JSON.stringify(db) !== prevDataStr) initApp();
-            }, 4000);
+            // НЕТ автоперезагрузки базы на обычной странице:
+            // она перетирала только что изменённые ник/счёт старым snapshot.
+            // OBS ниже продолжает обновляться отдельно.
+
         };
     </script>
 <style>
@@ -7430,7 +7451,7 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserT
   }
 
   /* All common save entry points use ONE queue. */
-  window.saveDataToCloud=authoritativeSave;
+  window.__unused_saveDataToCloud=authoritativeSave;
   window.saveData=async function(){
     if(db?.players) db.players=db.players.map(p=>sanitizeAndValidateUser(p));
     const curr=getCurrentUser();
@@ -7581,7 +7602,7 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserT
   window.FE_LAST_WRITE_AT=0;
 
   const originalAuthoritative=authoritativeSave;
-  window.saveDataToCloud=async function(){
+  window.__unused_saveDataToCloud2=async function(){
     const result=await originalAuthoritative();
     window.FE_LAST_WRITE_AT=Date.now();
     return result;
@@ -7601,7 +7622,7 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserT
 (function(){
   const originalLoad=window.loadDataFromCloud;
   if(typeof originalLoad!=='function')return;
-  window.loadDataFromCloud=async function(){
+  window.__unused_loadDataFromCloud=async function(){
     if(window.FE_CLOUD_WRITE)return;
     /* Immediately after our save, don't read an older replica into db. */
     if(window.FE_LAST_WRITE_AT && Date.now()-window.FE_LAST_WRITE_AT<1500)return;
