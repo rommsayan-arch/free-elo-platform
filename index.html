@@ -3759,6 +3759,136 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             if (user) rememberDeviceSession(user);
         }
 
+
+        /* =========================================================
+           CREATOR STREAMER NAME PERSISTENCE
+           The site polls Supabase every few seconds. A full reload of
+           db could otherwise put the old streamer name back into the UI.
+           Keep the creator's intentional rename in localStorage and
+           reconcile it with the cloud copy on every reload.
+           ========================================================= */
+        function rememberCreatorStreamerRename(oldName, newName, playerId) {
+            try {
+                localStorage.setItem('fe_creator_streamer_rename_v1', JSON.stringify({
+                    oldName: String(oldName || ''),
+                    newName: String(newName || ''),
+                    playerId: playerId ?? null,
+                    updatedAt: Date.now()
+                }));
+            } catch (_) {}
+        }
+
+        function getCreatorStreamerRename() {
+            try {
+                return JSON.parse(localStorage.getItem('fe_creator_streamer_rename_v1') || 'null');
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function clearCreatorStreamerRename() {
+            try { localStorage.removeItem('fe_creator_streamer_rename_v1'); } catch (_) {}
+        }
+
+        function reconcileCreatorStreamerRename() {
+            const intent = getCreatorStreamerRename();
+            if (!intent || !intent.newName) return false;
+            if (!db || !Array.isArray(db.players)) return false;
+
+            const player = intent.playerId != null
+                ? db.players.find(p => String(p.id) === String(intent.playerId))
+                : db.players.find(p => p.email?.toLowerCase() === 'rommsayan@gmail.com');
+
+            /* Only use this protection for the creator account. */
+            const creator = player || db.players.find(p => p.email?.toLowerCase() === 'rommsayan@gmail.com');
+            if (!creator) return false;
+
+            const desired = String(intent.newName).trim();
+            if (!desired) return false;
+
+            let changed = false;
+            const oldNames = new Set([
+                String(intent.oldName || '').trim().toLowerCase(),
+                'sayan'
+            ]);
+
+            if (String(creator.name || '').trim() !== desired) {
+                creator.name = desired;
+                changed = true;
+            }
+            creator.role = 'creator';
+
+            /* The streamer card is a separate object in the database.
+               Keep it synchronized with the creator/player name. */
+            if (!Array.isArray(db.streamers)) db.streamers = [];
+            let streamer = db.streamers.find(s =>
+                String(s.name || '').trim().toLowerCase() === desired.toLowerCase()
+            );
+
+            if (!streamer) {
+                streamer = db.streamers.find(s =>
+                    oldNames.has(String(s.name || '').trim().toLowerCase())
+                );
+            }
+
+            if (streamer) {
+                if (String(streamer.name || '').trim() !== desired) {
+                    streamer.name = desired;
+                    changed = true;
+                }
+            } else {
+                db.streamers.push({
+                    id: creator.id || Date.now(),
+                    name: desired,
+                    clan: creator.clan || 'Нет клана',
+                    url: 'https://twitch.tv/',
+                    priority: 10
+                });
+                changed = true;
+            }
+
+            if (!db.streamDataMap) db.streamDataMap = {};
+
+            /* Move the old streamer overlay key to the new key. */
+            const keys = Object.keys(db.streamDataMap);
+            const oldKey = keys.find(k =>
+                oldNames.has(String(k).trim().toLowerCase())
+            );
+
+            if (oldKey && oldKey !== desired) {
+                if (!db.streamDataMap[desired]) {
+                    db.streamDataMap[desired] = db.streamDataMap[oldKey];
+                }
+                delete db.streamDataMap[oldKey];
+                changed = true;
+            }
+
+            /* Update player references inside every overlay. */
+            Object.values(db.streamDataMap).forEach(sd => {
+                if (!sd) return;
+                if (oldNames.has(String(sd.player1 || '').trim().toLowerCase())) {
+                    sd.player1 = desired;
+                    changed = true;
+                }
+                if (oldNames.has(String(sd.player2 || '').trim().toLowerCase())) {
+                    sd.player2 = desired;
+                    changed = true;
+                }
+            });
+
+            /* Keep the current browser session pointed at the same account. */
+            try {
+                const session = JSON.parse(localStorage.getItem('fe_session_v2') || 'null');
+                if (session && String(session.id) === String(creator.id)) {
+                    session.name = desired;
+                    session.role = 'creator';
+                    localStorage.setItem('fe_session_v2', JSON.stringify(session));
+                }
+            } catch (_) {}
+
+            return changed;
+        }
+
         async function loadDataFromCloud() {
             if (activeController) activeController.abort();
             activeController = new AbortController();
@@ -3792,7 +3922,15 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             } catch (e) {
                 if (e.name !== 'AbortError') console.error("Ошибка загрузки:", e);
             }
+            const creatorRenameChanged = reconcileCreatorStreamerRename();
             ensureCreatorRights();
+
+            /* Persist the reconciled canonical streamer name back to cloud.
+               This prevents the 4-second/2-second polling from restoring
+               the old name on the next cycle. */
+            if (creatorRenameChanged) {
+                await saveDataToCloud();
+            }
 
             // Миграция: все обычные игроки принудительно остаются без клана.
             // Кланы, выбранные стримером для конкретного матча, не записываются в профили.
@@ -5987,6 +6125,9 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             setInterval(async () => {
                 let prevDataStr = JSON.stringify(db);
                 await loadDataFromCloud();
+                if (reconcileCreatorStreamerRename()) {
+                    await saveDataToCloud();
+                }
                 if (JSON.stringify(db) !== prevDataStr) initApp();
             }, 4000);
         };
@@ -7141,7 +7282,17 @@ window.applyAdminChanges=async function(){
     alert('Такой ник уже существует.');return;
   }
 
+  const oldNameBeforeChange = oldName;
   p.name=newName;
+
+  /* Remember the intentional creator/streamer rename outside the cloud
+     object too. The polling loop can no longer resurrect "Sayan". */
+  if(p.email?.toLowerCase()==='rommsayan@gmail.com' ||
+     oldNameBeforeChange.toLowerCase()==='sayan' ||
+     (db.streamers||[]).some(s=>String(s.name||'').toLowerCase()===oldNameBeforeChange.toLowerCase())){
+    rememberCreatorStreamerRename(oldNameBeforeChange,newName,p.id);
+  }
+
   p.elo=Math.max(0,parseInt(document.getElementById('adminEloInput')?.value,10)||0);
   p.matches=Math.max(0,parseInt(document.getElementById('adminMatchesInput')?.value,10)||0);
   p.level=Math.max(1,parseInt(document.getElementById('adminLevelInput')?.value,10)||1);
@@ -7149,8 +7300,17 @@ window.applyAdminChanges=async function(){
   if(p.email?.toLowerCase()==='rommsayan@gmail.com'||oldName.toLowerCase()==='sayan') p.role='creator';
   else p.role=document.getElementById('adminRoleSelect')?.value||p.role||'player';
 
-  const st=(db.streamers||[]).find(s=>String(s.name||'').toLowerCase()===oldName.toLowerCase());
-  if(st)st.name=newName;
+  let st=(db.streamers||[]).find(s=>String(s.name||'').toLowerCase()===oldName.toLowerCase());
+  if(st) st.name=newName;
+  else if(p.email?.toLowerCase()==='rommsayan@gmail.com'){
+    (db.streamers||[]).push({
+      id:p.id || Date.now(),
+      name:newName,
+      clan:p.clan || 'Нет клана',
+      url:'https://twitch.tv/',
+      priority:10
+    });
+  }
 
   if(db.streamDataMap&&oldName!==newName){
     const key=Object.keys(db.streamDataMap).find(k=>String(k).toLowerCase()===oldName.toLowerCase());
@@ -7207,262 +7367,8 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserT
 </script>
 
 
-<script id="FREE-ELO-FIX-SCORE-DRAFT">
-(function(){
-  window.FE_SCORE_DRAFT = window.FE_SCORE_DRAFT || {};
-
-  function rememberScore(streamerName, side){
-    const el=document.getElementById(`${side}_${streamerName}`);
-    if(el) window.FE_SCORE_DRAFT[`${streamerName}:${side}`]=el.value;
-  }
-
-  function restoreScores(streamerName){
-    ['s1','s2'].forEach(side=>{
-      const el=document.getElementById(`${side}_${streamerName}`);
-      const key=`${streamerName}:${side}`;
-      if(el && Object.prototype.hasOwnProperty.call(window.FE_SCORE_DRAFT,key)){
-        el.value=window.FE_SCORE_DRAFT[key];
-      }
-    });
-  }
-
-  window.feRememberScores=function(streamerName){
-    rememberScore(streamerName,'s1');
-    rememberScore(streamerName,'s2');
-  };
-
-  window.feRestoreScores=restoreScores;
-
-  /* Capture typing immediately, before any other UI code can redraw. */
-  document.addEventListener('input',function(e){
-    const id=e.target && e.target.id;
-    if(!id)return;
-    const m=id.match(/^([s][12])_(.+)$/);
-    if(!m)return;
-    window.FE_SCORE_DRAFT[`${m[2]}:${m[1]}`]=e.target.value;
-  },true);
-
-  const oldSave=window.saveStreamerObsData;
-  window.saveStreamerObsData=async function(streamerName){
-    /* Read the actual current input first. */
-    feRememberScores(streamerName);
-
-    const s1Key=`${streamerName}:s1`;
-    const s2Key=`${streamerName}:s2`;
-
-    /* Temporarily put the draft values back into the DOM so the existing
-       save routine cannot accidentally read the old 4:3 values. */
-    const s1=document.getElementById(`s1_${streamerName}`);
-    const s2=document.getElementById(`s2_${streamerName}`);
-    if(s1 && Object.prototype.hasOwnProperty.call(FE_SCORE_DRAFT,s1Key)) s1.value=FE_SCORE_DRAFT[s1Key];
-    if(s2 && Object.prototype.hasOwnProperty.call(FE_SCORE_DRAFT,s2Key)) s2.value=FE_SCORE_DRAFT[s2Key];
-
-    try{
-      const result=await oldSave.call(this,streamerName);
-
-      /* Keep the newly saved score visible after renderStreamers(). */
-      setTimeout(()=>restoreScores(streamerName),0);
-      setTimeout(()=>restoreScores(streamerName),150);
-      setTimeout(()=>restoreScores(streamerName),500);
-      return result;
-    }catch(err){
-      /* Do not lose the user's typed score if cloud save fails. */
-      setTimeout(()=>restoreScores(streamerName),0);
-      throw err;
-    }
-  };
-
-  /* If the panel is re-rendered for another reason, restore the last draft. */
-  const oldRender=window.renderStreamers;
-  if(typeof oldRender==='function'){
-    window.renderStreamers=function(){
-      const result=oldRender.apply(this,arguments);
-      Object.keys(FE_SCORE_DRAFT).forEach(key=>{
-        const pos=key.lastIndexOf(':');
-        if(pos<0)return;
-        restoreScores(key.slice(0,pos));
-      });
-      return result;
-    };
-  }
-})();
-</script>
 
 
-<script id="FREE-ELO-FIX-NAMES-AND-CREATOR">
-(function(){
-  window.FE_NAME_DRAFT=window.FE_NAME_DRAFT||{};
-
-  function rememberNameFields(streamerName){
-    ['p1','p2'].forEach(side=>{
-      const el=document.getElementById(`${side}_${streamerName}`);
-      if(el) FE_NAME_DRAFT[`${streamerName}:${side}`]=el.value;
-    });
-  }
-
-  function restoreNameFields(streamerName){
-    ['p1','p2'].forEach(side=>{
-      const key=`${streamerName}:${side}`;
-      const el=document.getElementById(`${side}_${streamerName}`);
-      if(el && Object.prototype.hasOwnProperty.call(FE_NAME_DRAFT,key)){
-        el.value=FE_NAME_DRAFT[key];
-      }
-    });
-  }
-
-  document.addEventListener('input',function(e){
-    const id=e.target?.id;
-    if(!id)return;
-    let m=id.match(/^p([12])_(.+)$/);
-    if(m) FE_NAME_DRAFT[`${m[2]}:p${m[1]}`]=e.target.value;
-  },true);
-
-  /* Replace the current OBS save wrapper so names are read from the
-     latest typed values, not from the previous render. */
-  const previousSave=window.saveStreamerObsData;
-  window.saveStreamerObsData=async function(streamerName){
-    rememberNameFields(streamerName);
-
-    ['p1','p2'].forEach(side=>{
-      const key=`${streamerName}:${side}`;
-      const el=document.getElementById(`${side}_${streamerName}`);
-      if(el && Object.prototype.hasOwnProperty.call(FE_NAME_DRAFT,key)){
-        el.value=FE_NAME_DRAFT[key];
-      }
-    });
-
-    try{
-      const result=await previousSave.call(this,streamerName);
-      setTimeout(()=>restoreNameFields(streamerName),0);
-      setTimeout(()=>restoreNameFields(streamerName),150);
-      setTimeout(()=>restoreNameFields(streamerName),500);
-      return result;
-    }catch(e){
-      setTimeout(()=>restoreNameFields(streamerName),0);
-      throw e;
-    }
-  };
-
-  /* Creator panel: keep the selected player and the typed nickname
-     across renderAdminPanel(), and save the nickname only from the
-     current input. */
-  window.FE_ADMIN_DRAFT=window.FE_ADMIN_DRAFT||{};
-
-  document.addEventListener('input',function(e){
-    if(e.target?.id==='adminNameInput'){
-      FE_ADMIN_DRAFT.name=e.target.value;
-    }
-  },true);
-
-  document.addEventListener('change',function(e){
-    if(e.target?.id==='adminUserSelect'){
-      FE_ADMIN_DRAFT.id=e.target.value;
-      const p=(db?.players||[]).find(x=>String(x.id)===String(e.target.value));
-      if(p){
-        FE_ADMIN_DRAFT.name=p.name||'';
-        setTimeout(()=>{
-          const n=document.getElementById('adminNameInput');
-          if(n)n.value=FE_ADMIN_DRAFT.name;
-        },0);
-      }
-    }
-  },true);
-
-  const previousApply=window.applyAdminChanges;
-  window.applyAdminChanges=async function(){
-    const sel=document.getElementById('adminUserSelect');
-    if(sel) FE_ADMIN_DRAFT.id=sel.value;
-
-    const name=document.getElementById('adminNameInput');
-    if(name) FE_ADMIN_DRAFT.name=name.value;
-
-    /* Make absolutely sure the selected player's object contains the
-       latest typed name before the existing save function runs. */
-    const p=(db?.players||[]).find(x=>String(x.id)===String(FE_ADMIN_DRAFT.id));
-    if(p && String(FE_ADMIN_DRAFT.name||'').trim()){
-      const old=p.name;
-      const newName=String(FE_ADMIN_DRAFT.name).trim();
-
-      if(old!==newName){
-        const duplicate=(db.players||[]).some(x=>x.id!=p.id &&
-          String(x.name||'').trim().toLowerCase()===newName.toLowerCase());
-        if(duplicate){ alert('Такой ник уже существует.'); return; }
-
-        p.name=newName;
-
-        /* Update every HUD record that references the old player name. */
-        Object.values(db.streamDataMap||{}).forEach(sd=>{
-          if(String(sd.player1||'').toLowerCase()===String(old).toLowerCase()) sd.player1=newName;
-          if(String(sd.player2||'').toLowerCase()===String(old).toLowerCase()) sd.player2=newName;
-        });
-
-        /* Also update streamer identity if this player is a streamer. */
-        (db.streamers||[]).forEach(s=>{
-          if(String(s.name||'').toLowerCase()===String(old).toLowerCase()) s.name=newName;
-        });
-      }
-    }
-
-    try{
-      const result=await previousApply.call(this);
-
-      /* renderAdminPanel may recreate the input. Restore the same player
-         and the new nickname after every redraw. */
-      setTimeout(()=>{
-        const s=document.getElementById('adminUserSelect');
-        if(s && FE_ADMIN_DRAFT.id){
-          s.value=FE_ADMIN_DRAFT.id;
-        }
-        const n=document.getElementById('adminNameInput');
-        if(n && FE_ADMIN_DRAFT.name!==undefined){
-          n.value=FE_ADMIN_DRAFT.name;
-        }
-      },0);
-      setTimeout(()=>{
-        const s=document.getElementById('adminUserSelect');
-        if(s && FE_ADMIN_DRAFT.id)s.value=FE_ADMIN_DRAFT.id;
-        const n=document.getElementById('adminNameInput');
-        if(n && FE_ADMIN_DRAFT.name!==undefined)n.value=FE_ADMIN_DRAFT.name;
-      },300);
-
-      return result;
-    }catch(e){
-      console.error(e);
-      throw e;
-    }
-  };
-
-  /* When selecting a player, always load the current name from db,
-     never an old HTML value. */
-  const previousLoad=window.loadUserToAdmin;
-  window.loadUserToAdmin=function(){
-    const result=previousLoad.apply(this,arguments);
-    const sel=document.getElementById('adminUserSelect');
-    const p=(db?.players||[]).find(x=>String(x.id)===String(sel?.value));
-    if(p){
-      FE_ADMIN_DRAFT.id=String(p.id);
-      FE_ADMIN_DRAFT.name=p.name||'';
-      const n=document.getElementById('adminNameInput');
-      if(n)n.value=p.name||'';
-    }
-    return result;
-  };
-})();
-</script>
 
 
-<script id="FREE-ELO-NAME-INPUT-GUARD">
-(function(){
-  let typing=false;
-  document.addEventListener('focusin',e=>{
-    if(e.target && e.target.id==='adminNameInput') typing=true;
-  },true);
-  document.addEventListener('focusout',e=>{
-    if(e.target && e.target.id==='adminNameInput') typing=false;
-  },true);
-  document.addEventListener('input',e=>{
-    if(e.target && e.target.id==='adminNameInput') window.FE_TYPED_ADMIN_NAME=e.target.value;
-  },true);
-})();
-</script>
 
