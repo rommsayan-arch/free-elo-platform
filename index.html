@@ -3203,11 +3203,11 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
     <div class="main-container" id="mainContainer">
         <header class="site-header">
             <div class="header-left">
-                <div class="mini-brand">FREE <span>ELO</span></div>
+                <div class="mini-brand" onclick="switchPage('matches')" style="cursor:pointer;">FREE <span>ELO</span></div>
                 <div class="header-title" id="pageTitle">МАТЧИ И СТАТИСТИКА</div>
             </div>
-            <div class="user-profile" onclick="openTopStreamerRoom()" style="cursor:pointer;">
-                <button id="secureLoginBtn" class="lock-btn" title="Вход для стримера / создателя" onclick="openSecureLogin()">
+            <div class="user-profile" onclick="openOwnStreamerPage()" style="cursor:pointer;">
+                <button id="secureLoginBtn" class="lock-btn" title="Вход для стримера / создателя" onclick="event.stopPropagation();openSecureLogin()">
                     <i class="fas fa-lock"></i>
                 </button>
                 <div class="header-user">
@@ -4581,6 +4581,20 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return ensureStreamerRoomRecord(name);
         }
 
+        function openOwnStreamerPage(){
+            const user=getCurrentUser();
+            if(!user){ openSecureLogin(); return; }
+            if(String(user.role||'')!=='streamer' && String(user.role||'')!=='creator'){
+                switchPage('matches');
+                return;
+            }
+            switchPage('streamers');
+            setTimeout(()=>{
+                renderStreamers();
+                openStreamerRoom(user.name);
+            },0);
+        }
+
         function openTopStreamerRoom() {
             const streamer = currentTopStreamer();
             if (!streamer) { alert('Сначала войдите в аккаунт стримера.'); return; }
@@ -4727,6 +4741,11 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 el.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>`<option value="${escapeHtml(n)}" ${n===current?'selected':''}>${escapeHtml(n)}</option>`).join('');
             });
             const g1=document.getElementById('eloGrantPlayer'); if(g1) g1.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+            const regularSelect=document.getElementById('eloRegularPlayer');
+            if(regularSelect){
+                const regularPlayers=(db.players||[]).filter(p=>String(p.role||'player')==='player').sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ru'));
+                regularSelect.innerHTML='<option value="">Выбрать обычного игрока</option>'+regularPlayers.map(p=>`<option value="${escapeHtml(p.name||'')}">${escapeHtml(p.name||'')} — ${Number(p.elo)||0} ELO</option>`).join('');
+            }
         }
 
         function selectTpForSide(slot,name) {
@@ -4750,7 +4769,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 </div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
                 <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>НИК КЛАНА — ЛЕВЫЙ</label><input id="roomC1ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC1ScoreMirror" class="obs-v2-input" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>НИК КЛАНА — ПРАВЫЙ</label><input id="roomC2ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC2ScoreMirror" class="obs-v2-input" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="applyScoreboardChanges('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
                 <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ДЛЯ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayer" class="obs-v2-input" placeholder="Добавь ник ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayer('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">В списках ТП показываются только ники, которые ты добавил здесь. Обычные игроки платформы сюда не попадают.</div></div>
-                <div class="obs-section elo-grant"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><div class="obs-section-title" style="margin-bottom:0;">🟨 ВЫДАТЬ ELO ИГРОКАМ</div><span style="font-size:8px;font-weight:1000;color:#ffc338;border:1px solid rgba(255,184,0,.35);padding:4px 7px;border-radius:999px;">ТП</span></div><div class="tp-add-row" style="margin-top:8px;"><input id="tpGrantNewPlayer" class="obs-v2-input" placeholder="Добавить ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayerFromGrant('${streamerKey(name)}')">＋</button></div><div class="elo-grid" style="margin-top:7px;"><div class="elo-box"><label>ТП-ИГРОК</label><select id="eloGrantPlayer"></select></div><div class="elo-box"><label>ELO</label><input id="eloGrantAmount" type="number" value="10" min="1"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="grantStreamerElo('${streamerKey(name)}')">🏆 Выдать ELO</button></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
+                <div class="obs-section elo-grant"><div class="obs-section-title">🟨 ВЫДАТЬ ELO ИГРОКАМ</div><div class="elo-grid" style="margin-top:8px;"><div class="elo-box"><label>ОБЫЧНЫЕ ИГРОКИ ПЛАТФОРМЫ</label><select id="eloRegularPlayer" class="obs-v2-input"></select><label style="margin-top:7px;">КОЛИЧЕСТВО ELO</label><input id="eloRegularAmount" class="obs-v2-input" type="number" value="10" min="1"><div class="obs-v2-actions"><button class="obs-orange" onclick="grantRegularPlayerElo('${streamerKey(name)}')">🏆 Выдать обычному игроку</button></div></div><div class="elo-box"><label>ТП-ИГРОКИ</label><select id="eloGrantPlayer" class="obs-v2-input"></select><label style="margin-top:7px;">КОЛИЧЕСТВО ELO</label><input id="eloGrantAmount" class="obs-v2-input" type="number" value="10" min="1"><div class="obs-v2-actions"><button class="obs-orange" onclick="grantStreamerElo('${streamerKey(name)}')">🏆 Выдать ТП-игроку</button></div></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
             renderTpChips(name); renderObsTpSelectors(name); renderEloGrantHistory(name);
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
         }
@@ -4809,6 +4828,22 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             await saveData(); renderStreamers(); openStreamerObsPanel(encodedName);
         }
 
+        async function grantRegularPlayerElo(encodedName){
+            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name))return;
+            const player=(document.getElementById('eloRegularPlayer')?.value||'').trim();
+            const amount=parseInt(document.getElementById('eloRegularAmount')?.value||'0',10)||0;
+            if(!player||amount<=0){alert('Выбери обычного игрока и укажи ELO.');return;}
+            const target=(db.players||[]).find(p=>String(p.name||'').toLowerCase()===player.toLowerCase() && String(p.role||'player')==='player');
+            if(!target){alert('Обычный игрок не найден.');return;}
+            target.elo=(Number(target.elo)||0)+amount;
+            target.level=Math.max(1,Math.floor(target.elo/300)+1);
+            target.matches=Number(target.matches)||0;
+            if(!db.streamerEloGrants)db.streamerEloGrants={}; if(!Array.isArray(db.streamerEloGrants[name]))db.streamerEloGrants[name]=[];
+            db.streamerEloGrants[name].unshift({player,amount,type:'player',at:new Date().toISOString()}); db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,20);
+            await saveData(); renderEloGrantHistory(name); renderObsTpSelectors(name);
+            alert(`Обычному игроку ${player} выдано +${amount} ELO.`);
+        }
+
         async function grantStreamerElo(encodedName){
             const name=decodeURIComponent(encodedName); if(!streamerCanManage(name))return;
             const player=(document.getElementById('eloGrantPlayer')?.value||'').trim(); const amount=parseInt(document.getElementById('eloGrantAmount')?.value||'0',10)||0;
@@ -4820,13 +4855,13 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const exactTpKey=Object.keys(db.streamerTpElo[name]).find(k=>k.toLowerCase()===player.toLowerCase()) || player;
             db.streamerTpElo[name][exactTpKey]=(Number(db.streamerTpElo[name][exactTpKey])||0)+amount;
             if(!db.streamerEloGrants)db.streamerEloGrants={}; if(!Array.isArray(db.streamerEloGrants[name]))db.streamerEloGrants[name]=[];
-            db.streamerEloGrants[name].unshift({player,amount,at:new Date().toISOString()}); db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,20);
-            await saveData(); renderEloGrantHistory(name); renderObsTpSelectors(name); alert(`Игроку ${player} выдано +${amount} ELO.`);
+            db.streamerEloGrants[name].unshift({player,amount,type:'tp',at:new Date().toISOString()}); db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,20);
+            await saveData(); renderEloGrantHistory(name); renderObsTpSelectors(name); alert(`ТП-игроку ${player} выдано +${amount} ELO.`);
         }
 
         function renderEloGrantHistory(name){
             const box=document.getElementById('eloGrantHistory'); if(!box)return; const list=(db.streamerEloGrants||{})[name]||[];
-            box.innerHTML=list.length?'Последние выдачи: '+list.slice(0,5).map(x=>`${escapeHtml(x.player)} +${x.amount}`).join(' • '):'Пока ELO никому не выдано.';
+            box.innerHTML=list.length?'Последние выдачи: '+list.slice(0,5).map(x=>`${escapeHtml(x.player)} +${x.amount}${x.type==='tp'?' (ТП)':''}`).join(' • '):'Пока ELO никому не выдано.';
         }
 
         async function toggleStreamerLive(encodedName) {
