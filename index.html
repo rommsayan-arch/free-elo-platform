@@ -4742,71 +4742,102 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return list.some(x=>String(x).toLowerCase()===String(player||'').toLowerCase()) ? 'tp' : 'normal';
         }
 
-        function renderObsTpSelectors(name) {
-            const list=tpPlayersFor(name), sd=(db.streamDataMap||{})[name]||{};
-            ['1','2'].forEach(slot=>{
-                const el=document.getElementById(`tpSelect${slot}`); if(!el) return;
-                const current=slot==='1'?(sd.player1||name):(sd.player2||'');
-                el.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>`<option value="${escapeHtml(n)}" ${n.toLowerCase()===current.toLowerCase()?'selected':''}>${escapeHtml(n)}</option>`).join('');
-                toggleRoomPlayerType(Number(slot));
-            });
-        }
-
-        function toggleRoomPlayerType(slot) {
-            const type=document.getElementById(`roomType${slot}`)?.value || 'normal';
-            const wrap=document.getElementById(`roomTpWrap${slot}`);
-            if(wrap) wrap.style.display=type==='tp' ? 'block' : 'none';
-        }
-
-        function selectTpForSide(slot,name) {
-            const v=document.getElementById(`tpSelect${slot}`)?.value || '';
-            if(v){
-                const inp=document.getElementById(`roomP${slot}`); if(inp) inp.value=v;
-                const type=document.getElementById(`roomType${slot}`); if(type) type.value='tp';
-                toggleRoomPlayerType(slot);
+        function renderPlayerOptionsForSide(slot, name) {
+            const typeEl=document.getElementById(`roomType${slot}`);
+            const select=document.getElementById(`roomPlayerSelect${slot}`);
+            const current=(document.getElementById(`roomP${slot}`)?.value||'').trim();
+            if(!typeEl || !select) return;
+            const type=typeEl.value||'normal';
+            let names=[];
+            if(type==='tp') {
+                names=tpPlayersFor(name).slice();
+            } else {
+                names=(db.players||[])
+                    .filter(p=>p && (p.role||'player')==='player')
+                    .map(p=>String(p.name||'').trim())
+                    .filter(Boolean);
             }
+            const unique=[];
+            const seen=new Set();
+            names.forEach(n=>{ const k=n.toLowerCase(); if(!seen.has(k)){seen.add(k);unique.push(n);} });
+            select.innerHTML='<option value="">Выбрать игрока</option>'+unique.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+            const found=unique.find(n=>n.toLowerCase()===current.toLowerCase());
+            if(found) select.value=found;
+            else if(unique.length===1) select.value=unique[0];
         }
 
-        async function addTpPlayerFromSide(slot, encodedName) {
+        function syncPlayerSelectToInput(slot) {
+            const select=document.getElementById(`roomPlayerSelect${slot}`);
+            const input=document.getElementById(`roomP${slot}`);
+            if(select && input) input.value=select.value||'';
+        }
+
+        function toggleRoomPlayerType(slot, encodedName) {
+            const type=document.getElementById(`roomType${slot}`)?.value || 'normal';
+            const name=encodedName ? decodeURIComponent(encodedName) : window.__activeStreamerObsName;
+            renderPlayerOptionsForSide(slot,name);
+            syncPlayerSelectToInput(slot);
+        }
+
+        function selectPlayerForSide(slot) {
+            syncPlayerSelectToInput(slot);
+            updateBottomEloPreview();
+        }
+
+        function renderObsTpSelectors(name) {
+            renderPlayerOptionsForSide(1,name);
+            renderPlayerOptionsForSide(2,name);
+        }
+
+        async function addTpPlayerFromBottom(encodedName) {
             const name=decodeURIComponent(encodedName);
-            const input=document.getElementById(`tpNewPlayer${slot}`);
+            const input=document.getElementById('tpNewPlayerBottom');
             const nick=(input?.value||'').trim();
             if(!nick) return;
             const list=tpPlayersFor(name);
-            if(!list.some(x=>x.toLowerCase()===nick.toLowerCase())) {
-                list.push(nick);
-                if(!db.streamerTpElo) db.streamerTpElo={};
-                if(!db.streamerTpElo[name]) db.streamerTpElo[name]={};
-                if(typeof db.streamerTpElo[name][nick] !== 'number') db.streamerTpElo[name][nick]=0;
-            }
+            if(list.some(x=>x.toLowerCase()===nick.toLowerCase())) { alert('Такой ТП-игрок уже есть.'); return; }
+            list.push(nick);
+            if(!db.streamerTpElo) db.streamerTpElo={};
+            if(!db.streamerTpElo[name]) db.streamerTpElo[name]={};
+            if(typeof db.streamerTpElo[name][nick] !== 'number') db.streamerTpElo[name][nick]=0;
             if(input) input.value='';
-            const select=document.getElementById(`tpSelect${slot}`); if(select) select.value=nick;
-            const playerInput=document.getElementById(`roomP${slot}`); if(playerInput) playerInput.value=nick;
-            const type=document.getElementById(`roomType${slot}`); if(type) type.value='tp';
             await saveData();
-            renderTpChips(name); renderObsTpSelectors(name);
-            const select2=document.getElementById(`tpSelect${slot}`); if(select2) select2.value=nick;
-            toggleRoomPlayerType(slot);
+            renderTpChips(name);
+            renderObsTpSelectors(name);
+            alert(`ТП-игрок ${nick} добавлен.`);
+        }
+
+        function selectTpForSide(slot,name){
+            const select=document.getElementById(`roomPlayerSelect${slot}`);
+            if(select) syncPlayerSelectToInput(slot);
         }
 
         function openStreamerObsPanel(encodedName) {
             const name = decodeURIComponent(encodedName), s = ensureStreamerRoomRecord(name);
             if (!s || !streamerCanManage(name)) return;
+            window.__activeStreamerObsName=name;
             closeStreamerRoom(); closeStreamerMenu();
             const overlay=document.getElementById('streamerObsOverlay'), body=document.getElementById('streamerObsBody');
             const sd=(db.streamDataMap||{})[name]||{};
             const baseUrl=window.location.origin+window.location.pathname;
             const linkAnime=baseUrl+`?obs=anime&streamer=${encodeURIComponent(name)}`;
             const linkC=baseUrl+`?obs=clans&streamer=${encodeURIComponent(name)}`;
+            const type1=roomPlayerType(name,sd.player1||name), type2=roomPlayerType(name,sd.player2||'PLAYER2');
             body.innerHTML=`<div class="obs-v2-head"><div><div class="obs-v2-title"><i class="fas fa-layer-group" style="color:#a78bfa;"></i> МОЙ OVERLAY <small>${escapeHtml(name)}</small></div></div></div>
-                <div class="obs-section"><div class="obs-section-title">🟦 VS КАРТОЧКИ ИГРОКОВ — ОБЫЧНЫЕ / ТП</div><div class="obs-side-grid">
-                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType1" class="obs-v2-select" onchange="toggleRoomPlayerType(1)"><option value="normal" ${roomPlayerType(name,sd.player1||name)==='normal'?'selected':''}>Обычный игрок</option><option value="tp" ${roomPlayerType(name,sd.player1||name)==='tp'?'selected':''}>ТП-игрок</option></select><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP1" class="obs-v2-input" value="${escapeHtml(sd.player1||name)}"><div id="roomTpWrap1"><div class="obs-v2-label">ВЫБРАТЬ ТП-ИГРОКА</div><select id="tpSelect1" class="obs-v2-select" onchange="selectTpForSide(1,'${streamerKey(name)}')"></select><div class="tp-add-row tp-add-inline"><input id="tpNewPlayer1" class="obs-v2-input" placeholder="Создать ТП-игрока"><button class="obs-apply" onclick="addTpPlayerFromSide(1,'${streamerKey(name)}')">＋</button></div></div><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS1" class="obs-v2-input" type="number" value="${sd.score1??0}"><button class="side-win-btn side-win-left" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый игрок −32 ELO</small></button></div>
-                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType2" class="obs-v2-select" onchange="toggleRoomPlayerType(2)"><option value="normal" ${roomPlayerType(name,sd.player2||'PLAYER2')==='normal'?'selected':''}>Обычный игрок</option><option value="tp" ${roomPlayerType(name,sd.player2||'PLAYER2')==='tp'?'selected':''}>ТП-игрок</option></select><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP2" class="obs-v2-input" value="${escapeHtml(sd.player2||'PLAYER2')}"><div id="roomTpWrap2"><div class="obs-v2-label">ВЫБРАТЬ ТП-ИГРОКА</div><select id="tpSelect2" class="obs-v2-select" onchange="selectTpForSide(2,'${streamerKey(name)}')"></select><div class="tp-add-row tp-add-inline"><input id="tpNewPlayer2" class="obs-v2-input" placeholder="Создать ТП-игрока"><button class="obs-apply" onclick="addTpPlayerFromSide(2,'${streamerKey(name)}')">＋</button></div></div><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS2" class="obs-v2-input" type="number" value="${sd.score2??0}"><button class="side-win-btn side-win-right" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый игрок −32 ELO</small></button></div>
+                <div class="obs-section"><div class="obs-section-title">🟦 VS КАРТОЧКИ ИГРОКОВ</div><div class="obs-side-grid">
+                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType1" class="obs-v2-select" onchange="toggleRoomPlayerType(1,'${streamerKey(name)}')"><option value="normal" ${type1==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type1==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА</div><select id="roomPlayerSelect1" class="obs-v2-select" onchange="selectPlayerForSide(1)"></select><input id="roomP1" type="hidden" value="${escapeHtml(sd.player1||name)}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS1" class="obs-v2-input" type="number" value="${sd.score1??0}"></div>
+                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType2" class="obs-v2-select" onchange="toggleRoomPlayerType(2,'${streamerKey(name)}')"><option value="normal" ${type2==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type2==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА</div><select id="roomPlayerSelect2" class="obs-v2-select" onchange="selectPlayerForSide(2)"></select><input id="roomP2" type="hidden" value="${escapeHtml(sd.player2||'PLAYER2')}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS2" class="obs-v2-input" type="number" value="${sd.score2??0}"></div>
                 </div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
                 <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>НИК КЛАНА — ЛЕВЫЙ</label><input id="roomC1ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC1ScoreMirror" class="obs-v2-input" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>НИК КЛАНА — ПРАВЫЙ</label><input id="roomC2ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC2ScoreMirror" class="obs-v2-input" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="applyScoreboardChanges('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
-                <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ЭТОГО СТРИМЕРА</div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">ТП-игроков можно создавать прямо в карточке левого или правого игрока. Обычные игроки остаются обычными.</div></div>`;
-            renderTpChips(name); renderObsTpSelectors(name); renderEloGrantHistory(name);
+                <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayerBottom" class="obs-v2-input" placeholder="Добавить ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayerFromBottom('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">Здесь создаются ТП-игроки только для этого стримера. При выборе «ТП игроки» в карточке показывается именно этот список.</div></div>
+                <div class="obs-section elo-grant"><div class="obs-section-title" style="color:#ffc338;">🟨 ВЫДАЧА ELO — РЕЗУЛЬТАТ МАТЧА</div><div class="elo-box" style="margin-top:8px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −32 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −32 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
+            renderTpChips(name); renderObsTpSelectors(name); updateBottomEloPreview();
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
+        }
+
+        function updateBottomEloPreview(){
+            const p1=document.getElementById('roomP1')?.value||'—', p2=document.getElementById('roomP2')?.value||'—';
+            const a=document.getElementById('eloBottomP1'), b=document.getElementById('eloBottomP2'); if(a)a.textContent=p1;if(b)b.textContent=p2;
         }
 
         async function applyScoreboardChanges(encodedName){
