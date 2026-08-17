@@ -4742,52 +4742,25 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return list.some(x=>String(x).toLowerCase()===String(player||'').toLowerCase()) ? 'tp' : 'normal';
         }
 
-        function renderPlayerOptionsForSide(slot, name) {
-            const typeEl=document.getElementById(`roomType${slot}`);
-            const select=document.getElementById(`roomPlayerSelect${slot}`);
-            const current=(document.getElementById(`roomP${slot}`)?.value||'').trim();
+        function renderEloPlayerOptions(slot, name) {
+            const typeEl=document.getElementById(`eloType${slot}`), select=document.getElementById(`eloPlayerSelect${slot}`);
+            const current=(document.getElementById(`eloP${slot}`)?.value||'').trim();
             if(!typeEl || !select) return;
             const type=typeEl.value||'normal';
-            let names=[];
-            if(type==='tp') {
-                names=tpPlayersFor(name).slice();
-            } else {
-                names=(db.players||[])
-                    .filter(p=>p && (p.role||'player')==='player')
-                    .map(p=>String(p.name||'').trim())
-                    .filter(Boolean);
-            }
-            const unique=[];
-            const seen=new Set();
-            names.forEach(n=>{ const k=n.toLowerCase(); if(!seen.has(k)){seen.add(k);unique.push(n);} });
+            let names=type==='tp' ? tpPlayersFor(name).slice() : (db.players||[]).filter(p=>p&&(p.role||'player')==='player').map(p=>String(p.name||'').trim()).filter(Boolean);
+            const unique=[],seen=new Set(); names.forEach(n=>{const k=n.toLowerCase();if(!seen.has(k)){seen.add(k);unique.push(n);}});
             select.innerHTML='<option value="">Выбрать игрока</option>'+unique.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
             const found=unique.find(n=>n.toLowerCase()===current.toLowerCase());
-            if(found) select.value=found;
-            else if(unique.length===1) select.value=unique[0];
+            if(found) select.value=found; else if(unique.length===1) select.value=unique[0];
+            if(select.value){const input=document.getElementById(`eloP${slot}`);if(input)input.value=select.value;}
         }
-
-        function syncPlayerSelectToInput(slot) {
-            const select=document.getElementById(`roomPlayerSelect${slot}`);
-            const input=document.getElementById(`roomP${slot}`);
-            if(select && input) input.value=select.value||'';
+        function updateEloBottomPreview(){
+            [1,2].forEach(slot=>{const sel=document.getElementById(`eloPlayerSelect${slot}`),input=document.getElementById(`eloP${slot}`);if(sel&&input)input.value=sel.value||'';});
+            const a=document.getElementById('eloBottomP1'),b=document.getElementById('eloBottomP2');
+            if(a)a.textContent=document.getElementById('eloP1')?.value||'—'; if(b)b.textContent=document.getElementById('eloP2')?.value||'—';
         }
-
-        function toggleRoomPlayerType(slot, encodedName) {
-            const type=document.getElementById(`roomType${slot}`)?.value || 'normal';
-            const name=encodedName ? decodeURIComponent(encodedName) : window.__activeStreamerObsName;
-            renderPlayerOptionsForSide(slot,name);
-            syncPlayerSelectToInput(slot);
-        }
-
-        function selectPlayerForSide(slot) {
-            syncPlayerSelectToInput(slot);
-            updateBottomEloPreview();
-        }
-
-        function renderObsTpSelectors(name) {
-            renderPlayerOptionsForSide(1,name);
-            renderPlayerOptionsForSide(2,name);
-        }
+        function toggleEloPlayerType(slot, encodedName){const name=encodedName?decodeURIComponent(encodedName):window.__activeStreamerObsName;renderEloPlayerOptions(slot,name);updateEloBottomPreview();}
+        function renderObsTpSelectors(name){renderEloPlayerOptions(1,name);renderEloPlayerOptions(2,name);updateEloBottomPreview();}
 
         async function addTpPlayerFromBottom(encodedName) {
             const name=decodeURIComponent(encodedName);
@@ -4807,10 +4780,6 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             alert(`ТП-игрок ${nick} добавлен.`);
         }
 
-        function selectTpForSide(slot,name){
-            const select=document.getElementById(`roomPlayerSelect${slot}`);
-            if(select) syncPlayerSelectToInput(slot);
-        }
 
         function openStreamerObsPanel(encodedName) {
             const name = decodeURIComponent(encodedName), s = ensureStreamerRoomRecord(name);
@@ -4826,12 +4795,14 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             body.innerHTML=`<div class="obs-v2-head"><div><div class="obs-v2-title"><i class="fas fa-layer-group" style="color:#a78bfa;"></i> МОЙ OVERLAY <small>${escapeHtml(name)}</small></div></div></div>
                 <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>НИК КЛАНА — ЛЕВЫЙ</label><input id="roomC1ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC1ScoreMirror" class="obs-v2-input" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>НИК КЛАНА — ПРАВЫЙ</label><input id="roomC2ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC2ScoreMirror" class="obs-v2-input" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="applyScoreboardChanges('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
                 <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayerBottom" class="obs-v2-input" placeholder="Добавить ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayerFromBottom('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">Здесь создаются ТП-игроки только для этого стримера. При выборе «ТП игроки» в карточке показывается именно этот список.</div></div>
-                <div class="obs-section obs-name-visibility"><div class="obs-section-title">👁️ ОТОБРАЖЕНИЕ НИКОВ ИГРОКОВ</div><div class="obs-name-toggle-grid"><label class="obs-name-toggle"><input id="roomShowName1" type="checkbox" ${sd.showName1!==false?'checked':''}><span>🟢 ЛЕВЫЙ ИГРОК</span></label><label class="obs-name-toggle"><input id="roomShowName2" type="checkbox" ${sd.showName2!==false?'checked':''}><span>🔴 ПРАВЫЙ ИГРОК</span></label></div><div class="obs-v2-footer-note">Можно отдельно скрыть ник любого игрока в OBS HUD. По умолчанию ники включены.</div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveObsNameVisibility('${streamerKey(name)}')">✓ Применить отображение</button></div></div>
-                <div class="obs-section"><div class="obs-section-title">🟦 VS КАРТОЧКИ ИГРОКОВ</div><div class="obs-side-grid">
-                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType1" class="obs-v2-select" onchange="toggleRoomPlayerType(1,'${streamerKey(name)}')"><option value="normal" ${type1==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type1==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА</div><select id="roomPlayerSelect1" class="obs-v2-select" onchange="selectPlayerForSide(1)"></select><input id="roomP1" type="hidden" value="${escapeHtml(sd.player1||name)}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS1" class="obs-v2-input" type="number" value="${sd.score1??0}"></div>
-                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType2" class="obs-v2-select" onchange="toggleRoomPlayerType(2,'${streamerKey(name)}')"><option value="normal" ${type2==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type2==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА</div><select id="roomPlayerSelect2" class="obs-v2-select" onchange="selectPlayerForSide(2)"></select><input id="roomP2" type="hidden" value="${escapeHtml(sd.player2||'PLAYER2')}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS2" class="obs-v2-input" type="number" value="${sd.score2??0}"></div>
-                </div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
-                <div class="obs-section elo-grant"><div class="obs-section-title" style="color:#ffc338;">🟨 ВЫДАЧА ELO — РЕЗУЛЬТАТ МАТЧА</div><div class="elo-box" style="margin-top:8px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −32 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −32 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
+                <div class="obs-section"><div class="obs-section-title">🟦 HUD ИГРОКОВ — ЧТО ПОКАЗЫВАТЬ В OBS</div><div class="obs-side-grid">
+                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">НИК В HUD (OBS)</div><input id="roomDisplayName1" class="obs-v2-input" value="${escapeHtml(sd.displayName1 ?? sd.player1 ?? name)}" placeholder="Напиши ник для OBS"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"></div>
+                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">НИК В HUD (OBS)</div><input id="roomDisplayName2" class="obs-v2-input" value="${escapeHtml(sd.displayName2 ?? sd.player2 ?? 'PLAYER2')}" placeholder="Напиши ник для OBS"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"></div>
+                </div><div class="obs-v2-footer-note">Здесь ты просто пишешь ники, которые должны отображаться на экране OBS. Счёта в HUD игроков здесь нет.</div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Сохранить HUD</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
+                <div class="obs-section elo-grant"><div class="obs-section-title" style="color:#ffc338;">🟨 ВЫДАЧА ELO — ВЫБОР ИГРОКОВ</div><div class="obs-side-grid">
+                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType1" class="obs-v2-select" onchange="toggleEloPlayerType(1,'${streamerKey(name)}')"><option value="normal" ${type1==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type1==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect1" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP1" type="hidden" value="${escapeHtml(sd.player1||name)}"></div>
+                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType2" class="obs-v2-select" onchange="toggleEloPlayerType(2,'${streamerKey(name)}')"><option value="normal" ${type2==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type2==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect2" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP2" type="hidden" value="${escapeHtml(sd.player2||'PLAYER2')}"></div>
+                </div><div class="elo-box" style="margin-top:10px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −32 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −32 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
             renderTpChips(name); renderObsTpSelectors(name); updateBottomEloPreview();
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
         }
@@ -4867,32 +4838,18 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         async function saveStreamerRoomObs(encodedName) {
             const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)){alert('Нет доступа к управлению этим стримером.');return;}
             if(!db.streamDataMap)db.streamDataMap={};
-            const p1=(document.getElementById('roomP1')?.value||'').trim(),p2=(document.getElementById('roomP2')?.value||'').trim();
-            const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана',c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
-            const s1=parseInt(document.getElementById('roomS1')?.value||'0',10)||0,s2=parseInt(document.getElementById('roomS2')?.value||'0',10)||0;
-            const t1=document.getElementById('roomType1')?.value||roomPlayerType(name,p1), t2=document.getElementById('roomType2')?.value||roomPlayerType(name,p2);
-            const showName1=document.getElementById('roomShowName1')?.checked!==false;
-            const showName2=document.getElementById('roomShowName2')?.checked!==false;
-            if(!p1||!p2){alert('Укажи оба ника.');return;} if(p1.toLowerCase()===p2.toLowerCase()){alert('Ники игроков должны отличаться.');return;}
-            if(t1==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p1.toLowerCase())){alert('Левый игрок отмечен как ТП, но его нет в списке ТП. Создай его кнопкой ＋.');return;}
-            if(t2==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p2.toLowerCase())){alert('Правый игрок отмечен как ТП, но его нет в списке ТП. Создай его кнопкой ＋.');return;}
-            db.streamDataMap[name]={...db.streamDataMap[name],player1:p1,player1Type:t1,clan1:c1,score1:s1,player2:p2,player2Type:t2,clan2:c2,score2:s2,showName1,showName2};
+            const displayName1=(document.getElementById('roomDisplayName1')?.value||'').trim();
+            const displayName2=(document.getElementById('roomDisplayName2')?.value||'').trim();
+            const current=db.streamDataMap[name]||{};
+            const p1=String(current.player1||name).trim(), p2=String(current.player2||'PLAYER2').trim();
+            const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана';
+            const c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
+            if(!displayName1||!displayName2){alert('Укажи оба ника для отображения в OBS.');return;}
+            db.streamDataMap[name]={...current,player1:p1,player2:p2,displayName1,displayName2,clan1:c1,clan2:c2};
             if(c1!=='Нет клана')ensureClanExistsByName(c1); if(c2!=='Нет клана')ensureClanExistsByName(c2);
             await saveData(); renderStreamers(); openStreamerObsPanel(encodedName);
         }
 
-        async function saveObsNameVisibility(encodedName){
-            const name=decodeURIComponent(encodedName);
-            if(!streamerCanManage(name)) return;
-            if(!db.streamDataMap) db.streamDataMap={};
-            const current=db.streamDataMap[name]||{};
-            const showName1=document.getElementById('roomShowName1')?.checked!==false;
-            const showName2=document.getElementById('roomShowName2')?.checked!==false;
-            db.streamDataMap[name]={...current,showName1,showName2};
-            await saveData();
-            updateObsContentSafe();
-            alert('✅ Отображение ников сохранено.');
-        }
 
         function updateObsContentSafe(){
             if(window.__activeStreamerObsName){
@@ -4932,40 +4889,23 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         }
 
         async function applyMatchResultForSide(encodedName, winnerSlot) {
-            const name=decodeURIComponent(encodedName);
-            if(!streamerCanManage(name)) return;
-            const p1=(document.getElementById('roomP1')?.value||'').trim();
-            const p2=(document.getElementById('roomP2')?.value||'').trim();
-            const t1=document.getElementById('roomType1')?.value||roomPlayerType(name,p1);
-            const t2=document.getElementById('roomType2')?.value||roomPlayerType(name,p2);
-            const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана';
-            const c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
-            const s1=parseInt(document.getElementById('roomS1')?.value||'0',10)||0;
-            const s2=parseInt(document.getElementById('roomS2')?.value||'0',10)||0;
-            if(!p1||!p2){alert('Укажи обоих игроков.');return;}
-            if(p1.toLowerCase()===p2.toLowerCase()){alert('Игроки должны иметь разные ники.');return;}
-            if(t1==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p1.toLowerCase())){alert('Левый ТП-игрок не найден в списке ТП.');return;}
-            if(t2==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p2.toLowerCase())){alert('Правый ТП-игрок не найден в списке ТП.');return;}
-
-            const winnerName=winnerSlot===1?p1:p2;
-            const loserName=winnerSlot===1?p2:p1;
-            const winnerType=winnerSlot===1?t1:t2;
-            const loserType=winnerSlot===1?t2:t1;
-            const w=applyEloToOverlayPlayer(name,winnerName,winnerType,26);
-            const l=applyEloToOverlayPlayer(name,loserName,loserType,-32);
-
-            const wp=ensureOverlayPlayer(winnerName), lp=ensureOverlayPlayer(loserName);
-            wp.matches=(wp.matches||0)+1; lp.matches=(lp.matches||0)+1; wp.wins=(wp.wins||0)+1;
-            if(!db.streamDataMap) db.streamDataMap={};
-            db.streamDataMap[name]={player1:p1,player1Type:t1,clan1:c1,score1:s1,player2:p2,player2Type:t2,clan2:c2,score2:s2,winnerPlayer:winnerName,winnerType:'player',winnerAt:new Date().toISOString()};
-            if(!db.streamerEloGrants) db.streamerEloGrants={};
-            if(!Array.isArray(db.streamerEloGrants[name])) db.streamerEloGrants[name]=[];
-            db.streamerEloGrants[name].unshift({player:winnerName,opponent:loserName,winnerType,loserType,winnerAmount:26,loserAmount:-32,at:new Date().toISOString(),winnerOldElo:w.oldElo,winnerNewElo:w.newElo,loserOldElo:l.oldElo,loserNewElo:l.newElo});
+            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)) return;
+            updateEloBottomPreview();
+            const p1=(document.getElementById('eloP1')?.value||'').trim(), p2=(document.getElementById('eloP2')?.value||'').trim();
+            const t1=document.getElementById('eloType1')?.value||'normal', t2=document.getElementById('eloType2')?.value||'normal';
+            if(!p1||!p2){alert('Выбери двух игроков для выдачи ELO.');return;}
+            if(p1.toLowerCase()===p2.toLowerCase()){alert('Нельзя выбрать одного и того же игрока дважды.');return;}
+            if(t1==='tp'&&!tpPlayersFor(name).some(x=>x.toLowerCase()===p1.toLowerCase())){alert('Левый ТП-игрок не найден в списке ТП.');return;}
+            if(t2==='tp'&&!tpPlayersFor(name).some(x=>x.toLowerCase()===p2.toLowerCase())){alert('Правый ТП-игрок не найден в списке ТП.');return;}
+            const winnerName=winnerSlot===1?p1:p2, loserName=winnerSlot===1?p2:p1;
+            const winnerType=winnerSlot===1?t1:t2, loserType=winnerSlot===1?t2:t1;
+            const w=applyEloToOverlayPlayer(name,winnerName,winnerType,26), l=applyEloToOverlayPlayer(name,loserName,loserType,-32);
+            const wp=ensureOverlayPlayer(winnerName),lp=ensureOverlayPlayer(loserName); wp.matches=(wp.matches||0)+1;lp.matches=(lp.matches||0)+1;wp.wins=(wp.wins||0)+1;
+            if(!db.streamDataMap)db.streamDataMap={}; db.streamDataMap[name]={...db.streamDataMap[name],winnerPlayer:winnerName,winnerType:'player',winnerAt:new Date().toISOString()};
+            if(!db.streamerEloGrants)db.streamerEloGrants={}; if(!Array.isArray(db.streamerEloGrants[name]))db.streamerEloGrants[name]=[];
+            db.streamerEloGrants[name].unshift({player:winnerName,opponent:loserName,winnerType,loserType,winnerAmount:26,loserAmount:-32,amount:26,at:new Date().toISOString(),winnerOldElo:w.oldElo,winnerNewElo:w.newElo,loserOldElo:l.oldElo,loserNewElo:l.newElo});
             db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,50);
-
-            await saveData();
-            renderStreamers(); renderLeaderboard(); renderTop100();
-            renderTpChips(name); renderObsTpSelectors(name);
+            await saveData(); renderStreamers();renderLeaderboard();renderTop100();renderObsTpSelectors(name);
             alert(`Победа: ${winnerName} +26 ELO. ${loserName} −32 ELO.`);
         }
 
@@ -6335,10 +6275,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                             const hasAvatar1 = !!avatarUrl1;
                             const hasAvatar2 = !!avatarUrl2;
 
-                            const safeName1 = escapeHistoryText(sd.player1 || 'PLAYER 1').replace(/^./, c => c.toUpperCase());
-                            const safeName2 = escapeHistoryText(sd.player2 || 'PLAYER 2').replace(/^./, c => c.toUpperCase());
-                            const showName1 = sd.showName1 !== false;
-                            const showName2 = sd.showName2 !== false;
+                            const safeName1 = escapeHistoryText(sd.displayName1 || sd.player1 || 'PLAYER 1').replace(/^./, c => c.toUpperCase());
+                            const safeName2 = escapeHistoryText(sd.displayName2 || sd.player2 || 'PLAYER 2').replace(/^./, c => c.toUpperCase());
+                            const showName1 = true;
+                            const showName2 = true;
                             const safeClan1 = escapeHistoryText(sd.clan1 || p1Obj?.clan || 'БЕЗ КЛАНА');
                             const safeClan2 = escapeHistoryText(sd.clan2 || p2Obj?.clan || 'БЕЗ КЛАНА');
 
