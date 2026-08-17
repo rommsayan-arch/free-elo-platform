@@ -3206,7 +3206,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 <div class="mini-brand">FREE <span>ELO</span></div>
                 <div class="header-title" id="pageTitle">МАТЧИ И СТАТИСТИКА</div>
             </div>
-            <div class="user-profile">
+            <div class="user-profile" onclick="openTopStreamerRoom()" style="cursor:pointer;">
                 <button id="secureLoginBtn" class="lock-btn" title="Вход для стримера / создателя" onclick="openSecureLogin()">
                     <i class="fas fa-lock"></i>
                 </button>
@@ -3216,7 +3216,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         <img id="userFrame" class="avatar-frame" src="" alt="Frame">
                     </div>
                     <div class="header-user-text">
-                        <span id="userName" onclick="event.stopPropagation();openTopStreamerRoom()" style="cursor:pointer;">Гость</span>
+                        <span id="userName">Гость</span>
                         <span id="roleBadge" class="role-badge">ГОСТЬ</span>
                     </div>
                 </div>
@@ -4552,35 +4552,76 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             });
         }
 
-        function openTopStreamerRoom() {
+        function ensureStreamerRoomRecord(name) {
             const user = getCurrentUser();
-            const name = String(user?.name || document.getElementById('userName')?.textContent || '').trim();
-            if (!name || name === 'Гость') {
-                alert('Сначала войдите в аккаунт стримера.');
-                return;
-            }
-
-            // Верхний ник открывает именно личную комнату этого стримера.
+            if (!name) return null;
+            if (!Array.isArray(db.streamers)) db.streamers = [];
             let streamer = getStreamerByName(name);
             if (!streamer && user?.role === 'streamer') {
-                if (!Array.isArray(db.streamers)) db.streamers = [];
                 streamer = { id: user.id || Date.now(), name, url: 'https://twitch.tv/', priority: 1, isLive: false };
                 db.streamers.push(streamer);
-                if (!db.streamDataMap) db.streamDataMap = {};
-                if (!db.streamDataMap[name]) {
-                    db.streamDataMap[name] = { player1:name, clan1:'Нет клана', score1:0, player2:'PLAYER2', clan2:'WAKANDA', score2:0 };
-                }
             }
+            if (!db.streamDataMap) db.streamDataMap = {};
+            if (!db.streamDataMap[name]) db.streamDataMap[name] = {player1:name, clan1:'Нет клана', score1:0, player2:'PLAYER2', clan2:'WAKANDA', score2:0};
+            if (!db.streamerTpPlayers) db.streamerTpPlayers = {};
+            if (!Array.isArray(db.streamerTpPlayers[name])) db.streamerTpPlayers[name] = [];
+            if (!db.streamerEloGrants) db.streamerEloGrants = {};
+            if (!Array.isArray(db.streamerEloGrants[name])) db.streamerEloGrants[name] = [];
+            if (!db.streamerTpElo) db.streamerTpElo = {};
+            if (!db.streamerTpElo[name]) db.streamerTpElo[name] = {};
+            return streamer;
+        }
 
-            if (!streamer) {
-                alert('Для этого аккаунта ещё не создана комната стримера.');
-                return;
+        function currentTopStreamer() {
+            const user = getCurrentUser();
+            const name = String(user?.name || document.getElementById('userName')?.textContent || '').trim();
+            if (!name || name === 'Гость') return null;
+            return ensureStreamerRoomRecord(name);
+        }
+
+        function openTopStreamerRoom() {
+            const streamer = currentTopStreamer();
+            if (!streamer) { alert('Сначала войдите в аккаунт стримера.'); return; }
+            window.__activeStreamerRoom = streamer.name;
+            const menu = document.getElementById('streamerMenuOverlay');
+            const nameEl = document.getElementById('streamerMenuName');
+            const btn = document.getElementById('streamerMenuLiveBtn');
+            const hint = document.getElementById('streamerMenuLiveHint');
+            if (nameEl) nameEl.textContent = streamer.name;
+            if (btn) {
+                btn.className = `streamer-menu-btn ${streamer.isLive ? 'exit' : 'start'}`;
+                btn.innerHTML = streamer.isLive ? '<i class="fas fa-stop"></i> Завершить эфир' : '<i class="fas fa-circle"></i> Начать эфир';
             }
-            openStreamerRoom(streamer.name);
+            if (hint) hint.textContent = streamer.isLive ? 'Сейчас эфир идёт. Нажми ещё раз, чтобы завершить.' : 'LIVE станет виден на карточке стримера.';
+            menu?.classList.add('open');
+            menu?.setAttribute('aria-hidden','false');
+        }
+
+        function closeStreamerMenu() {
+            const menu = document.getElementById('streamerMenuOverlay');
+            menu?.classList.remove('open');
+            menu?.setAttribute('aria-hidden','true');
+        }
+
+        async function toggleTopStreamerLive() {
+            const s = currentTopStreamer();
+            if (!s || !streamerCanManage(s.name)) return;
+            s.isLive = !s.isLive;
+            s.liveAt = s.isLive ? new Date().toISOString() : null;
+            await saveData();
+            renderStreamers();
+            openTopStreamerRoom();
+        }
+
+        function openTopStreamerObs() {
+            const s = currentTopStreamer();
+            if (!s || !streamerCanManage(s.name)) return;
+            closeStreamerMenu();
+            openStreamerObsPanel(streamerKey(s.name));
         }
 
         function openStreamerRoom(streamerName, openObs = false) {
-            const s = getStreamerByName(streamerName);
+            const s = ensureStreamerRoomRecord(streamerName);
             if (!s) return;
             const overlay = document.getElementById('streamerRoomOverlay');
             if (!overlay) return;
@@ -4589,7 +4630,6 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const titleEl = document.getElementById('streamerRoomTitle');
             if (avatarEl) avatarEl.src = streamerAvatar(s.name);
             if (titleEl) titleEl.textContent = s.name;
-
             const sd = (db.streamDataMap || {})[s.name] || {};
             const live = !!s.isLive;
             const status = document.getElementById('streamerRoomStatusText');
@@ -4598,165 +4638,146 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             if (status) status.textContent = live ? 'В ЭФИРЕ' : 'ОФФЛАЙН';
             if (dot) dot.className = `streamer-live-dot ${live ? 'live' : ''}`;
             if (clanText) clanText.textContent = `• Клан: ${sd.clan1 || sd.clan2 || s.clan || 'Нет клана'}`;
-
             const actions = document.getElementById('streamerRoomActions');
             const body = document.getElementById('streamerRoomBody');
             const canManage = streamerCanManage(s.name);
-
-            if (actions) {
-                actions.innerHTML = `
-                    ${canManage ? `<button class="btn ${live ? 'btn-danger' : 'btn-success'}" onclick="toggleStreamerLive('${streamerKey(s.name)}')"><i class="fas ${live ? 'fa-stop' : 'fa-circle-play'}"></i> ${live ? 'Завершить стрим' : 'Начать стрим'}</button>` : ''}
-                    ${canManage ? `<button class="btn btn-primary" onclick="openStreamerObsPanel('${streamerKey(s.name)}')"><i class="fas fa-sliders"></i> Управление моим OBS</button>` : ''}
-                    ${s.url ? `<a class="btn btn-secondary" href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none;"><i class="fas fa-external-link-alt"></i> Открыть трансляцию</a>` : ''}
-                `;
-            }
-
+            if (actions) actions.innerHTML = `${canManage ? `<button class="btn ${live ? 'btn-danger' : 'btn-success'}" onclick="toggleStreamerLive('${streamerKey(s.name)}')"><i class="fas ${live ? 'fa-stop' : 'fa-circle-play'}"></i> ${live ? 'Завершить стрим' : 'Начать стрим'}</button><button class="btn btn-primary" onclick="openStreamerObsPanel('${streamerKey(s.name)}')"><i class="fas fa-sliders"></i> Управление моим OBS</button>` : ''}${s.url ? `<a class="btn btn-secondary" href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none;"><i class="fas fa-external-link-alt"></i> Открыть трансляцию</a>` : ''}`;
             if (body) body.innerHTML = buildStreamerRoomView(s.name, canManage);
-            overlay.classList.add('open');
-            overlay.setAttribute('aria-hidden','false');
+            overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
             if (openObs && canManage) openStreamerObsPanel(streamerKey(s.name));
         }
 
         function buildStreamerRoomView(streamerName, canManage) {
             const s = getStreamerByName(streamerName) || {};
-            const sd = (db.streamDataMap || {})[streamerName] || {};
             const baseUrl = window.location.origin + window.location.pathname;
             const linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(streamerName)}`;
             const linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(streamerName)}`;
-            return `
-                <div class="streamer-room-grid">
-                    <div class="streamer-room-panel">
-                        <h3><i class="fas fa-broadcast-tower" style="color:#22d3ee;"></i> Комната ${streamerName}</h3>
-                        <p class="room-note">Здесь зритель открывает трансляцию, а владелец аккаунта управляет эфиром и своими OBS-ссылками.</p>
-                        <div style="padding:15px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,.10),rgba(34,211,238,.06));border:1px solid rgba(139,92,246,.18);">
-                            <div style="font-size:10px;color:#7f8ba3;text-transform:uppercase;letter-spacing:1px;">Статус</div>
-                            <div style="font-size:24px;font-weight:1000;margin-top:5px;color:${s.isLive ? '#00ff88' : '#8d9ab3'};">${s.isLive ? '● LIVE' : '○ OFFLINE'}</div>
-                            <div style="font-size:11px;color:#8d9ab3;margin-top:4px;">${s.isLive ? 'Стример сейчас в эфире.' : 'Стример сейчас не ведёт эфир.'}</div>
-                        </div>
-                        <div class="streamer-room-actions" style="margin-top:14px;margin-bottom:0;">
-                            ${s.url ? `<a class="btn btn-primary" href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none;"><i class="fas fa-play"></i> Смотреть трансляцию</a>` : ''}
-                        </div>
-                    </div>
-                    <div class="streamer-room-panel">
-                        <h3><i class="fas fa-link" style="color:#a78bfa;"></i> OBS-ссылки</h3>
-                        <p class="room-note">Ссылки персональные для этого стримера. Скопируй нужную ссылку в Browser Source OBS.</p>
-                        <div class="room-link-label">HUD ИГРОКОВ</div>
-                        <div class="room-link-row"><input value="${linkAnime}" readonly id="roomLinkAnime"><button class="btn btn-primary" onclick="copyLinkText('roomLinkAnime')"><i class="fas fa-copy"></i></button></div>
-                        <div class="room-link-label" style="margin-top:10px;">HUD КЛАНОВ</div>
-                        <div class="room-link-row"><input value="${linkC}" readonly id="roomLinkClans"><button class="btn btn-primary" onclick="copyLinkText('roomLinkClans')"><i class="fas fa-copy"></i></button></div>
-                        <div class="room-owner-note">У каждого аккаунта свой параметр <b>streamer</b>, поэтому изменения одного стримера не должны попадать в комнату другого.</div>
-                    </div>
-                </div>
-                ${canManage ? `<div id="streamerRoomObsMount" style="margin-top:16px;"></div>` : ''}
-            `;
+            return `<div class="streamer-room-grid"><div class="streamer-room-panel"><h3><i class="fas fa-broadcast-tower" style="color:#22d3ee;"></i> Комната ${streamerName}</h3><p class="room-note">Личная комната стримера. Здесь меняются только его эфир и его OBS.</p><div style="padding:15px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,.10),rgba(34,211,238,.06));border:1px solid rgba(139,92,246,.18);"><div style="font-size:10px;color:#7f8ba3;text-transform:uppercase;letter-spacing:1px;">Статус</div><div style="font-size:24px;font-weight:1000;margin-top:5px;color:${s.isLive ? '#00ff88' : '#8d9ab3'};">${s.isLive ? '● LIVE' : '○ OFFLINE'}</div></div></div><div class="streamer-room-panel"><h3><i class="fas fa-link" style="color:#a78bfa;"></i> OBS-ссылки</h3><div class="room-link-label">HUD ИГРОКОВ</div><div class="room-link-row"><input value="${linkAnime}" readonly id="roomLinkAnime"><button class="btn btn-primary" onclick="copyLinkText('roomLinkAnime')"><i class="fas fa-copy"></i></button></div><div class="room-link-label" style="margin-top:10px;">HUD КЛАНОВ</div><div class="room-link-row"><input value="${linkC}" readonly id="roomLinkClans"><button class="btn btn-primary" onclick="copyLinkText('roomLinkClans')"><i class="fas fa-copy"></i></button></div></div></div>${canManage ? `<div id="streamerRoomObsMount" style="margin-top:16px;"></div>` : ''}`;
+        }
+
+        function tpPlayersFor(name) {
+            if (!db.streamerTpPlayers) db.streamerTpPlayers = {};
+            if (!Array.isArray(db.streamerTpPlayers[name])) db.streamerTpPlayers[name] = [];
+            return db.streamerTpPlayers[name];
+        }
+
+        function renderTpChips(name) {
+            const box = document.getElementById('tpChipList');
+            if (!box) return;
+            const list = tpPlayersFor(name);
+            const eloMap=(db.streamerTpElo||{})[name]||{};
+            box.innerHTML = list.length ? list.map((n,i)=>{ const k=Object.keys(eloMap).find(x=>x.toLowerCase()===n.toLowerCase())||n; return `<span class="tp-chip">${escapeHtml(n)} <b>${Number(eloMap[k]||0)} ELO</b> <button onclick="removeTpPlayer('${streamerKey(name)}',${i})">×</button></span>`; }).join('') : '<span style="font-size:8px;color:#68758b;">Пока нет добавленных ТП-игроков.</span>';
+        }
+
+        function escapeHtml(v){ return String(v ?? '').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
+
+        async function addTpPlayer(encodedName) {
+            const name = decodeURIComponent(encodedName);
+            const input = document.getElementById('tpNewPlayer');
+            const nick = (input?.value || '').trim();
+            if (!nick) return;
+            const list = tpPlayersFor(name);
+            if (!list.some(x=>x.toLowerCase()===nick.toLowerCase())) {
+                list.push(nick);
+                if (!db.streamerTpElo) db.streamerTpElo={};
+                if (!db.streamerTpElo[name]) db.streamerTpElo[name]={};
+                if (typeof db.streamerTpElo[name][nick] !== 'number') db.streamerTpElo[name][nick]=0;
+            }
+            if (input) input.value='';
+            await saveData();
+            renderTpChips(name); renderObsTpSelectors(name);
+        }
+
+        async function removeTpPlayer(encodedName,index) {
+            const name=decodeURIComponent(encodedName), list=tpPlayersFor(name);
+            list.splice(index,1); await saveData(); renderTpChips(name); renderObsTpSelectors(name);
+        }
+
+        function renderObsTpSelectors(name) {
+            const list=tpPlayersFor(name), sd=(db.streamDataMap||{})[name]||{};
+            ['1','2'].forEach(slot=>{
+                const el=document.getElementById(`tpSelect${slot}`); if(!el) return;
+                const current=slot==='1'?(sd.player1||name):(sd.player2||'');
+                el.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>`<option value="${escapeHtml(n)}" ${n===current?'selected':''}>${escapeHtml(n)}</option>`).join('');
+            });
+            const g1=document.getElementById('eloGrantPlayer'); if(g1) g1.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+        }
+
+        function selectTpForSide(slot,name) {
+            const v=document.getElementById(`tpSelect${slot}`)?.value || '';
+            if(v){ const inp=document.getElementById(`roomP${slot}`); if(inp) inp.value=v; }
         }
 
         function openStreamerObsPanel(encodedName) {
-            const name = decodeURIComponent(encodedName);
-            const s = getStreamerByName(name);
-            if (!s) return;
-            const mount = document.getElementById('streamerRoomObsMount');
-            if (!mount) return;
-            const sd = (db.streamDataMap || {})[name] || {};
-            const players = db?.players || [];
-            const baseUrl = window.location.origin + window.location.pathname;
-            const linkAnime = baseUrl + `?obs=anime&streamer=${encodeURIComponent(name)}`;
-            const linkC = baseUrl + `?obs=clans&streamer=${encodeURIComponent(name)}`;
-
-            const options = players.map(p => `<option value="${String(p.id)}">${p.name} (${p.elo || 0} ELO)</option>`).join('');
-            mount.innerHTML = `
-                <div class="streamer-room-panel" style="border-color:rgba(139,92,246,.28);">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-                        <div><h3><i class="fas fa-sliders" style="color:#a78bfa;"></i> Управление моим OBS</h3><p class="room-note">Каждый ник и каждый клан изменяются отдельно. Сохранение действует только для <b>${name}</b>.</p></div>
-                        <span class="streamer-live-dot ${s.isLive ? 'live' : ''}">${s.isLive ? 'LIVE' : 'OFFLINE'}</span>
-                    </div>
-                    <div class="room-match-grid">
-                        <div class="room-side left">
-                            <div class="room-side-title">ЛЕВАЯ СТОРОНА</div>
-                            <div class="room-field"><label>Ник игрока</label><input id="roomP1" value="${sd.player1 || name}" placeholder="Ник игрока 1"></div>
-                            <div class="room-field"><label>Ник клана</label><input id="roomC1" value="${sd.clan1 || 'NUN'}" placeholder="Клан игрока 1"></div>
-                            <div class="room-field"><label>Счёт</label><input id="roomS1" type="number" value="${sd.score1 ?? 0}"></div>
-                            <select id="roomSelectP1" style="font-size:11px;margin-bottom:9px;">${options}</select>
-                        </div>
-                        <div class="room-side right">
-                            <div class="room-side-title">ПРАВАЯ СТОРОНА</div>
-                            <div class="room-field"><label>Ник игрока</label><input id="roomP2" value="${sd.player2 || 'PLAYER2'}" placeholder="Ник игрока 2"></div>
-                            <div class="room-field"><label>Ник клана</label><input id="roomC2" value="${sd.clan2 || 'WAKANDA'}" placeholder="Клан игрока 2"></div>
-                            <div class="room-field"><label>Счёт</label><input id="roomS2" type="number" value="${sd.score2 ?? 0}"></div>
-                            <select id="roomSelectP2" style="font-size:11px;margin-bottom:9px;">${options}</select>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="saveStreamerRoomObs('${streamerKey(name)}')"><i class="fas fa-save"></i> Сохранить ники и кланы</button>
-                    <div style="margin-top:14px;">
-                        <div class="room-link-label">ВАШИ ССЫЛКИ OBS</div>
-                        <div class="room-link-row"><input value="${linkAnime}" readonly id="roomObsAnime"><button class="btn btn-primary" onclick="copyLinkText('roomObsAnime')"><i class="fas fa-copy"></i></button></div>
-                        <div class="room-link-row" style="margin-top:7px;"><input value="${linkC}" readonly id="roomObsClans"><button class="btn btn-primary" onclick="copyLinkText('roomObsClans')"><i class="fas fa-copy"></i></button></div>
-                    </div>
-                </div>
-            `;
-
-            // Selecting a player fills only that side's nickname. Clan remains independently editable.
-            const p1 = document.getElementById('roomSelectP1');
-            const p2 = document.getElementById('roomSelectP2');
-            if (p1) p1.onchange = () => {
-                const player = players.find(x => String(x.id) === String(p1.value));
-                if (player) document.getElementById('roomP1').value = player.name || '';
-            };
-            if (p2) p2.onchange = () => {
-                const player = players.find(x => String(x.id) === String(p2.value));
-                if (player) document.getElementById('roomP2').value = player.name || '';
-            };
+            const name = decodeURIComponent(encodedName), s = ensureStreamerRoomRecord(name);
+            if (!s || !streamerCanManage(name)) return;
+            closeStreamerRoom(); closeStreamerMenu();
+            const overlay=document.getElementById('streamerObsOverlay'), body=document.getElementById('streamerObsBody');
+            const sd=(db.streamDataMap||{})[name]||{};
+            const baseUrl=window.location.origin+window.location.pathname;
+            const linkAnime=baseUrl+`?obs=anime&streamer=${encodeURIComponent(name)}`;
+            const linkC=baseUrl+`?obs=clans&streamer=${encodeURIComponent(name)}`;
+            body.innerHTML=`<div class="obs-v2-head"><div><div class="obs-v2-title"><i class="fas fa-layer-group" style="color:#a78bfa;"></i> МОЙ OVERLAY <small>${escapeHtml(name)}</small></div></div><button class="obs-v2-close" onclick="closeStreamerObs()">×</button></div>
+                <div class="obs-section"><div class="obs-section-title">🟦 VS КАРТОЧКИ ИГРОКОВ</div><div class="obs-side-grid">
+                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ</div><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP1" class="obs-v2-input" value="${escapeHtml(sd.player1||name)}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"><div class="obs-v2-label">ТП</div><select id="tpSelect1" class="obs-v2-select" onchange="selectTpForSide(1,'${streamerKey(name)}')"></select><div class="obs-v2-label">СЧЁТ</div><input id="roomS1" class="obs-v2-input" type="number" value="${sd.score1??0}"></div>
+                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ</div><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP2" class="obs-v2-input" value="${escapeHtml(sd.player2||'PLAYER2')}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"><div class="obs-v2-label">ТП</div><select id="tpSelect2" class="obs-v2-select" onchange="selectTpForSide(2,'${streamerKey(name)}')"></select><div class="obs-v2-label">СЧЁТ</div><input id="roomS2" class="obs-v2-input" type="number" value="${sd.score2??0}"></div>
+                </div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Применить</button><button class="obs-red" onclick="closeStreamerObs()">Скрыть</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
+                <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>${escapeHtml(sd.clan1||'NUN')}</label><input id="roomC1ScoreMirror" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>${escapeHtml(sd.clan2||'WAKANDA')}</label><input id="roomC2ScoreMirror" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="syncScoreMirror()">🔄 Обновить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
+                <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ДЛЯ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayer" class="obs-v2-input" placeholder="Добавь ник ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayer('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">В списках ТП показываются только ники, которые ты добавил здесь. Обычные игроки платформы сюда не попадают.</div></div>
+                <div class="obs-section elo-grant"><div class="obs-section-title">🟨 ВЫДАТЬ ELO ИГРОКАМ</div><div class="elo-grid"><div class="elo-box"><label>ИГРОК</label><select id="eloGrantPlayer"></select></div><div class="elo-box"><label>ELO</label><input id="eloGrantAmount" type="number" value="10" min="1"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="grantStreamerElo('${streamerKey(name)}')">🏆 Выдать ELO</button></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
+            renderTpChips(name); renderObsTpSelectors(name); renderEloGrantHistory(name);
+            overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
         }
 
-        async function saveStreamerRoomObs(encodedName) {
-            const name = decodeURIComponent(encodedName);
-            if (!streamerCanManage(name)) { alert('Нет доступа к управлению этим стримером.'); return; }
-            if (!db.streamDataMap) db.streamDataMap = {};
-            const p1 = (document.getElementById('roomP1')?.value || '').trim();
-            const p2 = (document.getElementById('roomP2')?.value || '').trim();
-            const c1 = (document.getElementById('roomC1')?.value || '').trim() || 'Нет клана';
-            const c2 = (document.getElementById('roomC2')?.value || '').trim() || 'Нет клана';
-            const s1 = parseInt(document.getElementById('roomS1')?.value || '0',10) || 0;
-            const s2 = parseInt(document.getElementById('roomS2')?.value || '0',10) || 0;
-            if (!p1 || !p2) { alert('Укажи оба ника.'); return; }
-            if (p1.toLowerCase() === p2.toLowerCase()) { alert('Ники игроков должны отличаться.'); return; }
+        function syncScoreMirror(){
+            const a=document.getElementById('roomC1ScoreMirror')?.value||0,b=document.getElementById('roomC2ScoreMirror')?.value||0;
+            const s1=document.getElementById('roomS1'),s2=document.getElementById('roomS2'); if(s1)s1.value=a;if(s2)s2.value=b;
+        }
 
-            db.streamDataMap[name] = {player1:p1,clan1:c1,score1:s1,player2:p2,clan2:c2,score2:s2};
-            if (c1 !== 'Нет клана') ensureClanExistsByName(c1);
-            if (c2 !== 'Нет клана') ensureClanExistsByName(c2);
-            await saveData();
-            renderStreamers();
-            openStreamerRoom(name, true);
-            alert('Ники и кланы OBS сохранены.');
+        function closeStreamerObs(){ const o=document.getElementById('streamerObsOverlay'); o?.classList.remove('open');o?.setAttribute('aria-hidden','true'); }
+
+        async function saveStreamerRoomObs(encodedName) {
+            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)){alert('Нет доступа к управлению этим стримером.');return;}
+            if(!db.streamDataMap)db.streamDataMap={};
+            const p1=(document.getElementById('roomP1')?.value||'').trim(),p2=(document.getElementById('roomP2')?.value||'').trim();
+            const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана',c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
+            const s1=parseInt(document.getElementById('roomS1')?.value||'0',10)||0,s2=parseInt(document.getElementById('roomS2')?.value||'0',10)||0;
+            if(!p1||!p2){alert('Укажи оба ника.');return;} if(p1.toLowerCase()===p2.toLowerCase()){alert('Ники игроков должны отличаться.');return;}
+            db.streamDataMap[name]={player1:p1,clan1:c1,score1:s1,player2:p2,clan2:c2,score2:s2};
+            if(c1!=='Нет клана')ensureClanExistsByName(c1); if(c2!=='Нет клана')ensureClanExistsByName(c2);
+            await saveData(); renderStreamers(); openStreamerObsPanel(encodedName);
+        }
+
+        async function grantStreamerElo(encodedName){
+            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name))return;
+            const player=(document.getElementById('eloGrantPlayer')?.value||'').trim(); const amount=parseInt(document.getElementById('eloGrantAmount')?.value||'0',10)||0;
+            if(!player||amount<=0){alert('Выбери ТП-игрока и укажи ELO.');return;}
+            const tp=tpPlayersFor(name); if(!tp.includes(player)){alert('Этот игрок не добавлен в список ТП.');return;}
+            const target=(db.players||[]).find(p=>String(p.name||'').toLowerCase()===player.toLowerCase());
+            if(target){target.elo=(Number(target.elo)||0)+amount; target.level=Math.max(1,Math.floor(target.elo/300)+1);}
+            if(!db.streamerTpElo)db.streamerTpElo={}; if(!db.streamerTpElo[name])db.streamerTpElo[name]={};
+            const exactTpKey=Object.keys(db.streamerTpElo[name]).find(k=>k.toLowerCase()===player.toLowerCase()) || player;
+            db.streamerTpElo[name][exactTpKey]=(Number(db.streamerTpElo[name][exactTpKey])||0)+amount;
+            if(!db.streamerEloGrants)db.streamerEloGrants={}; if(!Array.isArray(db.streamerEloGrants[name]))db.streamerEloGrants[name]=[];
+            db.streamerEloGrants[name].unshift({player,amount,at:new Date().toISOString()}); db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,20);
+            await saveData(); renderEloGrantHistory(name); renderObsTpSelectors(name); alert(`Игроку ${player} выдано +${amount} ELO.`);
+        }
+
+        function renderEloGrantHistory(name){
+            const box=document.getElementById('eloGrantHistory'); if(!box)return; const list=(db.streamerEloGrants||{})[name]||[];
+            box.innerHTML=list.length?'Последние выдачи: '+list.slice(0,5).map(x=>`${escapeHtml(x.player)} +${x.amount}`).join(' • '):'Пока ELO никому не выдано.';
         }
 
         async function toggleStreamerLive(encodedName) {
-            const name = decodeURIComponent(encodedName);
-            if (!streamerCanManage(name)) { alert('Только владелец стримерского аккаунта или создатель может управлять эфиром.'); return; }
-            const s = getStreamerByName(name);
-            if (!s) return;
-            s.isLive = !s.isLive;
-            s.liveAt = s.isLive ? new Date().toISOString() : null;
-            await saveData();
-            renderStreamers();
-            openStreamerRoom(name);
+            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)){alert('Только владелец стримерского аккаунта или создатель может управлять эфиром.');return;}
+            const s=ensureStreamerRoomRecord(name); if(!s)return; s.isLive=!s.isLive;s.liveAt=s.isLive?new Date().toISOString():null; await saveData();renderStreamers();openStreamerRoom(name);
         }
 
-        function closeStreamerRoom() {
-            const overlay = document.getElementById('streamerRoomOverlay');
-            if (overlay) {
-                overlay.classList.remove('open');
-                overlay.setAttribute('aria-hidden','true');
-            }
-            window.__activeStreamerRoom = null;
-        }
-
-        document.addEventListener('keydown', function(e){
-            if (e.key === 'Escape') closeStreamerRoom();
-        });
-        document.getElementById('streamerRoomOverlay')?.addEventListener('click', function(e){
-            if (e.target === this) closeStreamerRoom();
-        });
+        function closeStreamerRoom(){const overlay=document.getElementById('streamerRoomOverlay');overlay?.classList.remove('open');overlay?.setAttribute('aria-hidden','true');window.__activeStreamerRoom=null;}
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeStreamerObs();closeStreamerMenu();closeStreamerRoom();}});
+        document.getElementById('streamerRoomOverlay')?.addEventListener('click',function(e){if(e.target===this)closeStreamerRoom();});
+        document.getElementById('streamerObsOverlay')?.addEventListener('click',function(e){if(e.target===this)closeStreamerObs();});
+        document.getElementById('streamerMenuOverlay')?.addEventListener('click',function(e){if(e.target===this)closeStreamerMenu();});
 
         async function updateStreamerUrl(streamerName) {
             const inputEl = document.getElementById(`streamUrl_${streamerName}`);
@@ -6655,6 +6676,19 @@ body.obs-overlay #obsOverlayRoot{
 </style>
 
 
+<div id="streamerMenuOverlay" class="streamer-menu-overlay" aria-hidden="true">
+  <div class="streamer-menu-card" role="dialog" aria-modal="true">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+      <div><div class="streamer-menu-kicker"><i class="fas fa-broadcast-tower"></i> Панель стримера</div><div id="streamerMenuName" class="streamer-menu-name">Korean Stream</div></div>
+      <button class="streamer-menu-close obs-v2-close" onclick="closeStreamerMenu()">×</button>
+    </div>
+    <button id="streamerMenuLiveBtn" class="streamer-menu-btn start" onclick="toggleTopStreamerLive()"><i class="fas fa-circle"></i> Начать эфир</button>
+    <div id="streamerMenuLiveHint" class="streamer-menu-hint">LIVE станет виден на карточке стримера.</div>
+    <button class="streamer-menu-btn obs" onclick="openTopStreamerObs()"><i class="fas fa-sliders"></i> Управление моим OBS overlay</button>
+    <button class="streamer-menu-btn exit" onclick="closeStreamerMenu()"><i class="fas fa-right-from-bracket"></i> Выйти из режима стримера</button>
+  </div>
+</div>
+
 <div id="streamerRoomOverlay" class="streamer-room-overlay" aria-hidden="true">
   <div class="streamer-room-card" role="dialog" aria-modal="true" aria-labelledby="streamerRoomTitle">
     <div class="streamer-room-head">
@@ -6672,6 +6706,18 @@ body.obs-overlay #obsOverlayRoot{
   </div>
 </div>
 
+<div id="streamerObsOverlay" class="streamer-menu-overlay" aria-hidden="true">
+  <div id="streamerObsCard" class="obs-v2-card" role="dialog" aria-modal="true">
+    <div id="streamerObsBody"></div>
+  </div>
+</div>
+
+
+<style id="streamer-v2-header-style">
+.user-profile{padding:5px 10px;border:1px solid rgba(0,255,136,.35);border-radius:18px;background:rgba(0,40,30,.32);box-shadow:0 0 18px rgba(0,255,136,.06);transition:.2s}
+.user-profile:hover{border-color:rgba(0,255,136,.65);box-shadow:0 0 24px rgba(0,255,136,.12)}
+.user-profile .avatar-wrapper{width:26px;height:26px}.user-profile .avatar{width:26px;height:26px}.user-profile .role-badge{font-size:8px}
+</style>
 </body>
 </html>
 
@@ -7373,6 +7419,35 @@ body.obs-overlay .obs-avatar-wrap.frame-effect{
 }
 .streamer-live-dot.live{background:rgba(0,255,136,.12);color:#00ff88;border-color:rgba(0,255,136,.38)}
 .streamer-live-dot i{font-size:8px}
+
+/* === STREAMER ACCOUNT MENU / OBS ROOM V2 === */
+.streamer-menu-overlay{position:fixed;inset:0;z-index:1000002;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(10px)}
+.streamer-menu-overlay.open{display:flex}
+.streamer-menu-card{width:min(330px,92vw);background:linear-gradient(180deg,#111625,#080b12);border:1px solid rgba(34,211,238,.18);border-radius:16px;padding:16px;box-shadow:0 30px 90px rgba(0,0,0,.75),0 0 45px rgba(34,211,238,.06)}
+.streamer-menu-kicker{font-size:9px;color:#738099;text-transform:uppercase;letter-spacing:1.6px;font-weight:900}
+.streamer-menu-name{font-size:19px;font-weight:1000;color:#00e58a;margin-top:4px}
+.streamer-menu-close{position:absolute}
+.streamer-menu-btn{width:100%;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 12px;margin-top:8px;background:#151b29;color:#fff;cursor:pointer;font-weight:900;font-size:11px;text-align:center}
+.streamer-menu-btn.start{background:#00c878;color:#06130d;border-color:#00e58a}
+.streamer-menu-btn.obs{background:linear-gradient(180deg,#25204c,#1a1737);color:#b69cff;border-color:rgba(139,92,246,.38)}
+.streamer-menu-btn.exit{background:#0a0e16;color:#a8b0c1}
+.streamer-menu-hint{font-size:9px;color:#718098;text-align:center;margin-top:7px}
+.obs-v2-card{width:min(390px,95vw);max-height:92vh;overflow:auto;padding:14px;border-radius:14px;background:linear-gradient(180deg,#0d1320,#080b12);border:1px solid rgba(139,92,246,.30);box-shadow:0 35px 100px rgba(0,0,0,.8)}
+.obs-v2-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.obs-v2-title{font-size:15px;font-weight:1000;color:#e9edf7}.obs-v2-title small{display:block;color:#9aa5b8;font-size:9px;margin-top:2px;font-weight:800}
+.obs-v2-close{border:0;background:none;color:#9aa4b7;font-size:21px;cursor:pointer}
+.obs-section{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px;margin-top:9px;background:rgba(255,255,255,.018)}
+.obs-section-title{font-size:9px;font-weight:1000;letter-spacing:.5px;color:#8bd8ff;margin-bottom:7px}
+.obs-side-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.obs-side{border:1px solid rgba(0,229,255,.13);border-radius:9px;padding:8px;background:#0b1019}.obs-side.right{border-color:rgba(255,70,110,.16)}
+.obs-side-head{font-size:8px;font-weight:1000;color:#43dfff;margin-bottom:6px}.obs-side.right .obs-side-head{color:#ff6687}
+.obs-v2-label{font-size:8px;color:#7e8aa0;text-transform:uppercase;letter-spacing:.7px;margin:5px 0 4px}.obs-v2-input,.obs-v2-select{width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:#070a10;color:#e9edf7;padding:7px 8px;font-size:10px;outline:none}.obs-v2-input:focus,.obs-v2-select:focus{border-color:rgba(139,92,246,.7)}
+.obs-v2-actions{display:flex;gap:7px;margin-top:8px}.obs-v2-actions button{flex:1;padding:8px;border:0;border-radius:6px;font-size:9px;font-weight:1000;cursor:pointer}.obs-apply{background:#00d58a;color:#06130e}.obs-red{background:#7d2744;color:#ffdce7}.obs-orange{background:#f7a500;color:#171000}
+.obs-link{display:flex;gap:5px;margin-top:6px}.obs-link input{flex:1;min-width:0;background:#070a10;border:1px solid rgba(255,255,255,.08);color:#98a5b8;border-radius:5px;padding:6px;font-size:8px}.obs-link button{width:34px;border:0;border-radius:5px;background:#7047e8;color:#fff;cursor:pointer}
+.tp-add-row{display:flex;gap:6px}.tp-add-row input{flex:1}.tp-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.tp-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border-radius:999px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.16);color:#bdefff;font-size:8px}.tp-chip button{border:0;background:none;color:#ff7d9a;cursor:pointer;padding:0;font-size:10px}
+.elo-grant{border-color:rgba(255,184,0,.25);background:rgba(255,184,0,.025)}.elo-grant .obs-section-title{color:#ffc338}.elo-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.elo-box{border:1px solid rgba(255,184,0,.16);border-radius:8px;padding:7px}.elo-box label{display:block;font-size:8px;color:#8d98ab;margin-bottom:4px}.elo-box input,.elo-box select{width:100%;box-sizing:border-box;background:#080b11;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:7px;font-size:9px}.obs-v2-footer-note{font-size:8px;line-height:1.4;color:#68758b;margin-top:7px}
+@media(max-width:520px){.obs-v2-card{width:95vw}.obs-side-grid,.elo-grid{grid-template-columns:1fr}}
+
 .streamer-room-overlay{
     position:fixed;inset:0;z-index:1000001;display:none;align-items:center;justify-content:center;
     padding:24px;background:rgba(1,2,7,.78);backdrop-filter:blur(12px);
@@ -7428,6 +7503,18 @@ body.obs-overlay .obs-avatar-wrap.frame-effect{
 }
 
 </style>
+
+<script id="FREE-ELO-STREAMER-V2-DEFAULTS">
+(function(){
+    function ensureV2(){
+        if(typeof db==='undefined' || !db) return;
+        if(!db.streamerTpPlayers) db.streamerTpPlayers={};
+        if(!db.streamerEloGrants) db.streamerEloGrants={};
+    }
+    const oldSave=window.saveData;
+    window.addEventListener('load',ensureV2);
+})();
+</script>
 
 <script id="FREE-ELO-REMOVE-FRAMES-FROM-SITE">
 (function(){
