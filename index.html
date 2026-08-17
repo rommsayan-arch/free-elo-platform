@@ -7367,8 +7367,246 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserT
 </script>
 
 
+<script id="FREE-ELO-AUTHORITATIVE-SAVE-FIX">
+(function(){
+  let writeQueue=Promise.resolve();
+  window.FE_CLOUD_WRITE=false;
+  window.FE_CLOUD_VERSION=window.FE_CLOUD_VERSION||0;
+
+  function deepClone(v){ return JSON.parse(JSON.stringify(v)); }
+
+  async function writeCloudNow(snapshot){
+    const body={content:snapshot};
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`,{
+      method:'PATCH',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`,
+        'Prefer':'return=representation'
+      },
+      body:JSON.stringify(body)
+    });
+    const raw=await r.text();
+    if(!r.ok) throw new Error(`SAVE ${r.status}: ${raw}`);
+
+    /* PATCH may return [] with some Supabase settings; the HTTP 2xx is
+       still a successful write. */
+    return true;
+  }
+
+  async function authoritativeSave(){
+    writeQueue=writeQueue.then(async()=>{
+      FE_CLOUD_WRITE=true;
+      const snapshot=deepClone(db);
+      const version=++FE_CLOUD_VERSION;
+
+      try{
+        await writeCloudNow(snapshot);
+
+        /* Verify the exact object we just wrote. If another stale tab/request
+           won the race, immediately write our newest snapshot again. */
+        for(let attempt=0;attempt<2;attempt++){
+          const vr=await fetch(`${SUPABASE_URL}/rest/v1/app_data?select=content&id=eq.1`,{
+            headers:{
+              'apikey':SUPABASE_KEY,
+              'Authorization':`Bearer ${SUPABASE_KEY}`,
+              'Accept':'application/json'
+            },
+            cache:'no-store'
+          });
+          if(!vr.ok) throw new Error(`VERIFY ${vr.status}`);
+          const rows=await vr.json();
+          const remote=rows?.[0]?.content;
+          if(JSON.stringify(remote)===JSON.stringify(snapshot)) break;
+          await writeCloudNow(snapshot);
+        }
+        return true;
+      }finally{
+        if(version===FE_CLOUD_VERSION) FE_CLOUD_WRITE=false;
+      }
+    });
+    return writeQueue;
+  }
+
+  /* All common save entry points use ONE queue. */
+  window.saveDataToCloud=authoritativeSave;
+  window.saveData=async function(){
+    if(db?.players) db.players=db.players.map(p=>sanitizeAndValidateUser(p));
+    const curr=getCurrentUser();
+    if(curr){
+      const i=db.players.findIndex(p=>p.id===curr.id);
+      if(i!==-1){
+        db.players[i]=sanitizeAndValidateUser(curr);
+        rememberDeviceSession(db.players[i]);
+      }
+    }
+    await authoritativeSave();
+    /* Do not reload cloud here — that was the source of the rollback. */
+    if(typeof initApp==='function') initApp();
+    return true;
+  };
+
+  /* Direct streamer save: write the current form values into the database,
+     then write once. No render/load cycle can overwrite them during save. */
+  window.saveStreamerObsData=async function(streamerName){
+    if(!db.streamDataMap) db.streamDataMap={};
+    if(!db.players) db.players=[];
+
+    const get=id=>document.getElementById(id);
+    const p1=String(get(`p1_${streamerName}`)?.value||'').trim();
+    const p2=String(get(`p2_${streamerName}`)?.value||'').trim();
+    const c1=String(get(`c1_${streamerName}`)?.value||'Нет клана').trim()||'Нет клана';
+    const c2=String(get(`c2_${streamerName}`)?.value||'Нет клана').trim()||'Нет клана';
+    const s1=Math.max(0,parseInt(get(`s1_${streamerName}`)?.value||'0',10)||0);
+    const s2=Math.max(0,parseInt(get(`s2_${streamerName}`)?.value||'0',10)||0);
+
+    if(!p1||!p2){alert('Введите ник обоих игроков.');return false;}
+    if(p1.toLowerCase()===p2.toLowerCase()){alert('Игроки должны иметь разные ники.');return false;}
+
+    const find=n=>(db.players||[]).find(x=>String(x.name||'').trim().toLowerCase()===n.toLowerCase());
+    const make=n=>({
+      id:Date.now()+Math.floor(Math.random()*100000),
+      name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,
+      role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,
+      frame:'',inventory:[],equippedCharacter:''
+    });
+
+    let a=find(p1), b=find(p2);
+    if(!a){a=make(p1);db.players.push(a);}
+    if(!b){b=make(p2);db.players.push(b);}
+    if(c1!=='Нет клана')ensureClanExistsByName(c1);
+    if(c2!=='Нет клана')ensureClanExistsByName(c2);
+
+    const prev=db.streamDataMap[streamerName]||{};
+    db.streamDataMap[streamerName]={
+      ...prev,
+      player1:p1,clan1:c1,score1:s1,
+      player2:p2,clan2:c2,score2:s2
+    };
+
+    await authoritativeSave();
+
+    /* Render only from the current in-memory db. */
+    renderStreamers();
+    renderLeaderboard();
+    renderTop100();
+    renderClans();
+    if(typeof renderClanLeaderboard==='function')renderClanLeaderboard();
+
+    /* Put exactly the saved values back into the new inputs. */
+    setTimeout(()=>{
+      const vals={p1,p2,c1,c2,s1:String(s1),s2:String(s2)};
+      Object.entries(vals).forEach(([k,v])=>{
+        const el=get(`${k}_${streamerName}`);
+        if(el)el.value=v;
+      });
+    },0);
+
+    alert('✅ Ник, кланы и счёт сохранены.');
+    return true;
+  };
+
+  /* Creator: save the actual selected player object and nickname. */
+  window.applyAdminChanges=async function(){
+    if(!isCreator()){alert('Только создатель может менять данные.');return;}
+    const sel=document.getElementById('adminUserSelect');
+    const p=(db.players||[]).find(x=>String(x.id)===String(sel?.value));
+    if(!p){alert('Игрок не выбран.');return;}
+
+    const oldName=String(p.name||'').trim();
+    const newName=String(document.getElementById('adminNameInput')?.value||oldName).trim();
+    if(!newName){alert('Ник не может быть пустым.');return;}
+
+    const dup=(db.players||[]).some(x=>x.id!==p.id&&String(x.name||'').trim().toLowerCase()===newName.toLowerCase());
+    if(dup){alert('Такой ник уже существует.');return;}
+
+    p.name=newName;
+    p.elo=Math.max(0,parseInt(document.getElementById('adminEloInput')?.value,10)||0);
+    p.matches=Math.max(0,parseInt(document.getElementById('adminMatchesInput')?.value,10)||0);
+    p.level=Math.max(1,parseInt(document.getElementById('adminLevelInput')?.value,10)||1);
+    if(p.email?.toLowerCase()==='rommsayan@gmail.com'||oldName.toLowerCase()==='sayan')p.role='creator';
+    else p.role=document.getElementById('adminRoleSelect')?.value||p.role||'player';
+
+    /* Rename streamer record and ALL overlay keys/references atomically. */
+    (db.streamers||[]).forEach(s=>{
+      if(String(s.name||'').trim().toLowerCase()===oldName.toLowerCase())s.name=newName;
+    });
+
+    if(db.streamDataMap){
+      const oldKey=Object.keys(db.streamDataMap).find(k=>k.toLowerCase()===oldName.toLowerCase());
+      if(oldKey&&oldKey!==newName){
+        db.streamDataMap[newName]=db.streamDataMap[oldKey];
+        delete db.streamDataMap[oldKey];
+      }
+      Object.values(db.streamDataMap).forEach(sd=>{
+        if(!sd)return;
+        if(String(sd.player1||'').toLowerCase()===oldName.toLowerCase())sd.player1=newName;
+        if(String(sd.player2||'').toLowerCase()===oldName.toLowerCase())sd.player2=newName;
+      });
+    }
+
+    (db.matchHistory||[]).forEach(m=>{
+      ['player1','player2','winner','loser'].forEach(k=>{
+        if(String(m[k]||'').toLowerCase()===oldName.toLowerCase())m[k]=newName;
+      });
+    });
+
+    if(typeof rememberCreatorStreamerRename==='function'){
+      rememberCreatorStreamerRename(oldName,newName,p.id);
+    }
+
+    await authoritativeSave();
+
+    /* Never call loadDataFromCloud here. That is what used to bring SAYAN
+       and 4:3 back after a successful local edit. */
+    const id=String(p.id);
+    renderAdminPanel();
+    const s=document.getElementById('adminUserSelect');
+    if(s)s.value=id;
+    const n=document.getElementById('adminNameInput');
+    if(n)n.value=newName;
+    renderStreamers();
+    renderLeaderboard();
+    renderTop100();
+    updateHeaderProfile(getCurrentUser());
+
+    alert('✅ Ник, ELO и данные сохранены.');
+    return true;
+  };
+
+  /* The 4-second poll must NEVER replace db while a write is active.
+     After a successful save, the first poll is also skipped. */
+  const oldLoad=window.loadDataFromCloud;
+  window.FE_LAST_WRITE_AT=0;
+
+  const originalAuthoritative=authoritativeSave;
+  window.saveDataToCloud=async function(){
+    const result=await originalAuthoritative();
+    window.FE_LAST_WRITE_AT=Date.now();
+    return result;
+  };
+
+  /* Guard the existing interval by making cloud loads wait until writes
+     are completely finished. */
+  window.FE_CLOUD_READ_LOCK=async function(){
+    while(FE_CLOUD_WRITE) await new Promise(r=>setTimeout(r,50));
+    return true;
+  };
+})();
+</script>
 
 
-
-
+<script id="FREE-ELO-CLOUD-READ-GUARD">
+(function(){
+  const originalLoad=window.loadDataFromCloud;
+  if(typeof originalLoad!=='function')return;
+  window.loadDataFromCloud=async function(){
+    if(window.FE_CLOUD_WRITE)return;
+    /* Immediately after our save, don't read an older replica into db. */
+    if(window.FE_LAST_WRITE_AT && Date.now()-window.FE_LAST_WRITE_AT<1500)return;
+    return originalLoad.apply(this,arguments);
+  };
+})();
+</script>
 
