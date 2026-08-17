@@ -4733,19 +4733,60 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             list.splice(index,1); await saveData(); renderTpChips(name); renderObsTpSelectors(name);
         }
 
+        function roomPlayerType(name, player) {
+            const sd=(db.streamDataMap||{})[name]||{};
+            const slot1=String(sd.player1||'').toLowerCase()===String(player||'').toLowerCase();
+            const explicit=slot1 ? sd.player1Type : sd.player2Type;
+            if(explicit==='tp' || explicit==='normal') return explicit;
+            const list=tpPlayersFor(name);
+            return list.some(x=>String(x).toLowerCase()===String(player||'').toLowerCase()) ? 'tp' : 'normal';
+        }
+
         function renderObsTpSelectors(name) {
             const list=tpPlayersFor(name), sd=(db.streamDataMap||{})[name]||{};
             ['1','2'].forEach(slot=>{
                 const el=document.getElementById(`tpSelect${slot}`); if(!el) return;
                 const current=slot==='1'?(sd.player1||name):(sd.player2||'');
-                el.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>`<option value="${escapeHtml(n)}" ${n===current?'selected':''}>${escapeHtml(n)}</option>`).join('');
+                el.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>`<option value="${escapeHtml(n)}" ${n.toLowerCase()===current.toLowerCase()?'selected':''}>${escapeHtml(n)}</option>`).join('');
+                toggleRoomPlayerType(Number(slot));
             });
-            const matchPlayer=document.getElementById('eloMatchPlayer'); if(matchPlayer) matchPlayer.innerHTML='<option value="">Выбрать ТП-игрока</option>'+list.map(n=>{const k=Object.keys((db.streamerTpElo||{})[name]||{}).find(x=>x.toLowerCase()===n.toLowerCase())||n; const elo=Number(((db.streamerTpElo||{})[name]||{})[k]||0); return `<option value="${escapeHtml(n)}">${escapeHtml(n)} — ${elo} ELO</option>`;}).join('');
+        }
+
+        function toggleRoomPlayerType(slot) {
+            const type=document.getElementById(`roomType${slot}`)?.value || 'normal';
+            const wrap=document.getElementById(`roomTpWrap${slot}`);
+            if(wrap) wrap.style.display=type==='tp' ? 'block' : 'none';
         }
 
         function selectTpForSide(slot,name) {
             const v=document.getElementById(`tpSelect${slot}`)?.value || '';
-            if(v){ const inp=document.getElementById(`roomP${slot}`); if(inp) inp.value=v; }
+            if(v){
+                const inp=document.getElementById(`roomP${slot}`); if(inp) inp.value=v;
+                const type=document.getElementById(`roomType${slot}`); if(type) type.value='tp';
+                toggleRoomPlayerType(slot);
+            }
+        }
+
+        async function addTpPlayerFromSide(slot, encodedName) {
+            const name=decodeURIComponent(encodedName);
+            const input=document.getElementById(`tpNewPlayer${slot}`);
+            const nick=(input?.value||'').trim();
+            if(!nick) return;
+            const list=tpPlayersFor(name);
+            if(!list.some(x=>x.toLowerCase()===nick.toLowerCase())) {
+                list.push(nick);
+                if(!db.streamerTpElo) db.streamerTpElo={};
+                if(!db.streamerTpElo[name]) db.streamerTpElo[name]={};
+                if(typeof db.streamerTpElo[name][nick] !== 'number') db.streamerTpElo[name][nick]=0;
+            }
+            if(input) input.value='';
+            const select=document.getElementById(`tpSelect${slot}`); if(select) select.value=nick;
+            const playerInput=document.getElementById(`roomP${slot}`); if(playerInput) playerInput.value=nick;
+            const type=document.getElementById(`roomType${slot}`); if(type) type.value='tp';
+            await saveData();
+            renderTpChips(name); renderObsTpSelectors(name);
+            const select2=document.getElementById(`tpSelect${slot}`); if(select2) select2.value=nick;
+            toggleRoomPlayerType(slot);
         }
 
         function openStreamerObsPanel(encodedName) {
@@ -4758,13 +4799,12 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const linkAnime=baseUrl+`?obs=anime&streamer=${encodeURIComponent(name)}`;
             const linkC=baseUrl+`?obs=clans&streamer=${encodeURIComponent(name)}`;
             body.innerHTML=`<div class="obs-v2-head"><div><div class="obs-v2-title"><i class="fas fa-layer-group" style="color:#a78bfa;"></i> МОЙ OVERLAY <small>${escapeHtml(name)}</small></div></div></div>
-                <div class="obs-section"><div class="obs-section-title">🟦 VS КАРТОЧКИ ИГРОКОВ</div><div class="obs-side-grid">
-                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ</div><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP1" class="obs-v2-input" value="${escapeHtml(sd.player1||name)}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"><div class="obs-v2-label">ТП</div><select id="tpSelect1" class="obs-v2-select" onchange="selectTpForSide(1,'${streamerKey(name)}')"></select><div class="obs-v2-label">СЧЁТ</div><input id="roomS1" class="obs-v2-input" type="number" value="${sd.score1??0}"></div>
-                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ</div><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP2" class="obs-v2-input" value="${escapeHtml(sd.player2||'PLAYER2')}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"><div class="obs-v2-label">ТП</div><select id="tpSelect2" class="obs-v2-select" onchange="selectTpForSide(2,'${streamerKey(name)}')"></select><div class="obs-v2-label">СЧЁТ</div><input id="roomS2" class="obs-v2-input" type="number" value="${sd.score2??0}"></div>
+                <div class="obs-section"><div class="obs-section-title">🟦 VS КАРТОЧКИ ИГРОКОВ — ОБЫЧНЫЕ / ТП</div><div class="obs-side-grid">
+                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType1" class="obs-v2-select" onchange="toggleRoomPlayerType(1)"><option value="normal" ${roomPlayerType(name,sd.player1||name)==='normal'?'selected':''}>Обычный игрок</option><option value="tp" ${roomPlayerType(name,sd.player1||name)==='tp'?'selected':''}>ТП-игрок</option></select><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP1" class="obs-v2-input" value="${escapeHtml(sd.player1||name)}"><div id="roomTpWrap1"><div class="obs-v2-label">ВЫБРАТЬ ТП-ИГРОКА</div><select id="tpSelect1" class="obs-v2-select" onchange="selectTpForSide(1,'${streamerKey(name)}')"></select><div class="tp-add-row tp-add-inline"><input id="tpNewPlayer1" class="obs-v2-input" placeholder="Создать ТП-игрока"><button class="obs-apply" onclick="addTpPlayerFromSide(1,'${streamerKey(name)}')">＋</button></div></div><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS1" class="obs-v2-input" type="number" value="${sd.score1??0}"><button class="side-win-btn side-win-left" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый игрок −32 ELO</small></button></div>
+                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="roomType2" class="obs-v2-select" onchange="toggleRoomPlayerType(2)"><option value="normal" ${roomPlayerType(name,sd.player2||'PLAYER2')==='normal'?'selected':''}>Обычный игрок</option><option value="tp" ${roomPlayerType(name,sd.player2||'PLAYER2')==='tp'?'selected':''}>ТП-игрок</option></select><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP2" class="obs-v2-input" value="${escapeHtml(sd.player2||'PLAYER2')}"><div id="roomTpWrap2"><div class="obs-v2-label">ВЫБРАТЬ ТП-ИГРОКА</div><select id="tpSelect2" class="obs-v2-select" onchange="selectTpForSide(2,'${streamerKey(name)}')"></select><div class="tp-add-row tp-add-inline"><input id="tpNewPlayer2" class="obs-v2-input" placeholder="Создать ТП-игрока"><button class="obs-apply" onclick="addTpPlayerFromSide(2,'${streamerKey(name)}')">＋</button></div></div><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"><div class="obs-v2-label">СЧЁТ</div><input id="roomS2" class="obs-v2-input" type="number" value="${sd.score2??0}"><button class="side-win-btn side-win-right" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый игрок −32 ELO</small></button></div>
                 </div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
                 <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>НИК КЛАНА — ЛЕВЫЙ</label><input id="roomC1ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC1ScoreMirror" class="obs-v2-input" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>НИК КЛАНА — ПРАВЫЙ</label><input id="roomC2ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC2ScoreMirror" class="obs-v2-input" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="applyScoreboardChanges('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
-                <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ДЛЯ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayer" class="obs-v2-input" placeholder="Добавь ник ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayer('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">В списках ТП показываются только ники, которые ты добавил здесь. Обычные игроки платформы сюда не попадают.</div></div>
-                <div class="obs-section elo-grant"><div class="obs-section-title" style="color:#ffc338;">🟨 ТП — РЕЗУЛЬТАТ МАТЧА</div><div class="elo-box" style="margin-top:8px;"><label>ТП-ИГРОК</label><select id="eloMatchPlayer" class="obs-v2-input"></select><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyTpMatchResult('${streamerKey(name)}','win')">🏆 ПОБЕДА <b>+26 ELO</b></button><button class="tp-loss-btn" onclick="applyTpMatchResult('${streamerKey(name)}','loss')">✖ ПОРАЖЕНИЕ <b>-32 ELO</b></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
+                <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ЭТОГО СТРИМЕРА</div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">ТП-игроков можно создавать прямо в карточке левого или правого игрока. Обычные игроки остаются обычными.</div></div>`;
             renderTpChips(name); renderObsTpSelectors(name); renderEloGrantHistory(name);
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
         }
@@ -4798,44 +4838,82 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const p1=(document.getElementById('roomP1')?.value||'').trim(),p2=(document.getElementById('roomP2')?.value||'').trim();
             const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана',c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
             const s1=parseInt(document.getElementById('roomS1')?.value||'0',10)||0,s2=parseInt(document.getElementById('roomS2')?.value||'0',10)||0;
+            const t1=document.getElementById('roomType1')?.value||roomPlayerType(name,p1), t2=document.getElementById('roomType2')?.value||roomPlayerType(name,p2);
             if(!p1||!p2){alert('Укажи оба ника.');return;} if(p1.toLowerCase()===p2.toLowerCase()){alert('Ники игроков должны отличаться.');return;}
-            db.streamDataMap[name]={player1:p1,clan1:c1,score1:s1,player2:p2,clan2:c2,score2:s2};
+            if(t1==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p1.toLowerCase())){alert('Левый игрок отмечен как ТП, но его нет в списке ТП. Создай его кнопкой ＋.');return;}
+            if(t2==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p2.toLowerCase())){alert('Правый игрок отмечен как ТП, но его нет в списке ТП. Создай его кнопкой ＋.');return;}
+            db.streamDataMap[name]={player1:p1,player1Type:t1,clan1:c1,score1:s1,player2:p2,player2Type:t2,clan2:c2,score2:s2};
             if(c1!=='Нет клана')ensureClanExistsByName(c1); if(c2!=='Нет клана')ensureClanExistsByName(c2);
             await saveData(); renderStreamers(); openStreamerObsPanel(encodedName);
         }
 
-        async function applyTpMatchResult(encodedName, result){
+        function ensureOverlayPlayer(name) {
+            if(!db.players) db.players=[];
+            const existing=db.players.find(p=>String(p.name||'').trim().toLowerCase()===String(name||'').trim().toLowerCase());
+            if(existing) return existing;
+            const player={id:Date.now()+Math.floor(Math.random()*100000),name:String(name).trim(),email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,frame:'',inventory:[],equippedCharacter:''};
+            db.players.push(player);
+            return player;
+        }
+
+        function applyEloToOverlayPlayer(streamerName, playerName, type, amount) {
+            if(type==='tp') {
+                if(!db.streamerTpElo) db.streamerTpElo={};
+                if(!db.streamerTpElo[streamerName]) db.streamerTpElo[streamerName]={};
+                const map=db.streamerTpElo[streamerName];
+                const key=Object.keys(map).find(k=>k.toLowerCase()===playerName.toLowerCase())||playerName;
+                const oldElo=Number(map[key])||0;
+                const newElo=Math.max(0,oldElo+amount);
+                map[key]=newElo;
+                const player=ensureOverlayPlayer(playerName);
+                player.elo=newElo;
+                player.level=Math.max(1,Math.floor(newElo/300)+1);
+                return {oldElo,newElo};
+            }
+            const player=ensureOverlayPlayer(playerName);
+            const oldElo=Number(player.elo)||0;
+            const newElo=Math.max(0,oldElo+amount);
+            player.elo=newElo;
+            player.level=Math.max(1,Math.floor(newElo/300)+1);
+            return {oldElo,newElo};
+        }
+
+        async function applyMatchResultForSide(encodedName, winnerSlot) {
             const name=decodeURIComponent(encodedName);
             if(!streamerCanManage(name)) return;
-            const player=(document.getElementById('eloMatchPlayer')?.value||'').trim();
-            const amount=result==='win'?26:-32;
-            if(!player){alert('Выбери ТП-игрока.');return;}
-            const tp=tpPlayersFor(name);
-            if(!tp.some(x=>x.toLowerCase()===player.toLowerCase())){alert('Этот игрок не добавлен в список ТП.');return;}
+            const p1=(document.getElementById('roomP1')?.value||'').trim();
+            const p2=(document.getElementById('roomP2')?.value||'').trim();
+            const t1=document.getElementById('roomType1')?.value||roomPlayerType(name,p1);
+            const t2=document.getElementById('roomType2')?.value||roomPlayerType(name,p2);
+            const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана';
+            const c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
+            const s1=parseInt(document.getElementById('roomS1')?.value||'0',10)||0;
+            const s2=parseInt(document.getElementById('roomS2')?.value||'0',10)||0;
+            if(!p1||!p2){alert('Укажи обоих игроков.');return;}
+            if(p1.toLowerCase()===p2.toLowerCase()){alert('Игроки должны иметь разные ники.');return;}
+            if(t1==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p1.toLowerCase())){alert('Левый ТП-игрок не найден в списке ТП.');return;}
+            if(t2==='tp' && !tpPlayersFor(name).some(x=>x.toLowerCase()===p2.toLowerCase())){alert('Правый ТП-игрок не найден в списке ТП.');return;}
 
-            if(!db.streamerTpElo) db.streamerTpElo={};
-            if(!db.streamerTpElo[name]) db.streamerTpElo[name]={};
-            const exactTpKey=Object.keys(db.streamerTpElo[name]).find(k=>k.toLowerCase()===player.toLowerCase()) || player;
-            const oldElo=Number(db.streamerTpElo[name][exactTpKey])||0;
-            const newElo=oldElo+amount;
-            db.streamerTpElo[name][exactTpKey]=newElo;
+            const winnerName=winnerSlot===1?p1:p2;
+            const loserName=winnerSlot===1?p2:p1;
+            const winnerType=winnerSlot===1?t1:t2;
+            const loserType=winnerSlot===1?t2:t1;
+            const w=applyEloToOverlayPlayer(name,winnerName,winnerType,26);
+            const l=applyEloToOverlayPlayer(name,loserName,loserType,-32);
 
-            const target=(db.players||[]).find(p=>String(p.name||'').toLowerCase()===player.toLowerCase());
-            if(target){
-                target.elo=newElo;
-                target.level=Math.max(1,Math.floor(newElo/300)+1);
-            }
-
+            const wp=ensureOverlayPlayer(winnerName), lp=ensureOverlayPlayer(loserName);
+            wp.matches=(wp.matches||0)+1; lp.matches=(lp.matches||0)+1; wp.wins=(wp.wins||0)+1;
+            if(!db.streamDataMap) db.streamDataMap={};
+            db.streamDataMap[name]={player1:p1,player1Type:t1,clan1:c1,score1:s1,player2:p2,player2Type:t2,clan2:c2,score2:s2,winnerPlayer:winnerName,winnerType:'player',winnerAt:new Date().toISOString()};
             if(!db.streamerEloGrants) db.streamerEloGrants={};
             if(!Array.isArray(db.streamerEloGrants[name])) db.streamerEloGrants[name]=[];
-            db.streamerEloGrants[name].unshift({player,amount,type:result==='win'?'win':'loss',at:new Date().toISOString(),oldElo,newElo});
-            db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,20);
+            db.streamerEloGrants[name].unshift({player:winnerName,opponent:loserName,winnerType,loserType,winnerAmount:26,loserAmount:-32,at:new Date().toISOString(),winnerOldElo:w.oldElo,winnerNewElo:w.newElo,loserOldElo:l.oldElo,loserNewElo:l.newElo});
+            db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,50);
 
             await saveData();
-            renderEloGrantHistory(name);
-            renderObsTpSelectors(name);
-            const label=result==='win'?'Победа':'Поражение';
-            alert(`ТП-игрок ${player}: ${label}. ${amount>0?'+':''}${amount} ELO. Теперь ${newElo} ELO.`);
+            renderStreamers(); renderLeaderboard(); renderTop100();
+            renderTpChips(name); renderObsTpSelectors(name);
+            alert(`Победа: ${winnerName} +26 ELO. ${loserName} −32 ELO.`);
         }
 
         function renderEloGrantHistory(name){
@@ -7577,7 +7655,12 @@ body.obs-overlay .obs-avatar-wrap.frame-effect{
 }
 
 
-        .tp-result-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+        .side-win-btn{width:100%;margin-top:9px;border:0;border-radius:9px;padding:10px 8px;font-size:10px;font-weight:1000;cursor:pointer;color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s;}
+        .side-win-btn b{font-size:12px}.side-win-btn small{font-size:8px;opacity:.78}.side-win-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+        .side-win-left{background:linear-gradient(90deg,#00c98b,#00a878);box-shadow:0 5px 14px rgba(0,201,139,.16)}
+        .side-win-right{background:linear-gradient(90deg,#ff4b5c,#d92f42);box-shadow:0 5px 14px rgba(255,75,92,.16)}
+        .tp-add-inline{margin-top:6px}.tp-add-inline .obs-apply{border:0;border-radius:6px;padding:0 10px}
+                .tp-result-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
         .tp-result-buttons button{border:0;border-radius:8px;padding:11px 8px;font-size:10px;font-weight:1000;cursor:pointer;color:#fff;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:3px;}
         .tp-result-buttons button b{font-size:11px;}
         .tp-win-btn{background:linear-gradient(90deg,#00c98b,#00a878);box-shadow:0 5px 14px rgba(0,201,139,.16);}
