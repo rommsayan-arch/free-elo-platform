@@ -6935,3 +6935,194 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame{
 .shop-frame-preview.frame-phoenix{filter:drop-shadow(0 0 8px rgba(255,150,20,.9))}
 </style>
 
+<style id="free-elo-frame-visibility-fix">
+/*
+  FIX:
+  In OBS the avatar is stretched to the whole player card.
+  The previous CSS drew the frame on .obs-avatar-wrap, but the HUD
+  clipped it with overflow:hidden. Therefore nothing was visible.
+  We keep the HUD layout exactly as-is and draw ONLY the equipped
+  frame on the player-card edge.
+*/
+
+/* Let the frame glow outside the card. */
+body.obs-overlay .obs-player-card{
+    position:relative !important;
+    overflow:visible !important;
+}
+
+/* Do not alter size/position/layout of the HUD. */
+body.obs-overlay .obs-avatar-wrap.frame-effect{
+    overflow:visible !important;
+}
+
+/* The old image/SVG frame is hidden; the CSS frame is the visual frame. */
+body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame{
+    display:none !important;
+}
+
+/* Base premium frame — follows the exact existing HUD card size. */
+body.obs-overlay .obs-player-card:has(.frame-effect)::before{
+    content:"" !important;
+    position:absolute !important;
+    inset:-3px !important;
+    z-index:40 !important;
+    pointer-events:none !important;
+    border:2px solid var(--equipped-frame-main,#fff) !important;
+    border-radius:10px !important;
+    background:transparent !important;
+    box-shadow:
+        0 0 5px var(--equipped-frame-main,#fff),
+        0 0 15px var(--equipped-frame-glow,rgba(255,255,255,.8)),
+        inset 0 0 9px var(--equipped-frame-inner,transparent) !important;
+}
+
+/* Broken/technical second contour, like the reference frame. */
+body.obs-overlay .obs-player-card:has(.frame-effect)::after{
+    content:"" !important;
+    position:absolute !important;
+    inset:-7px !important;
+    z-index:39 !important;
+    pointer-events:none !important;
+    border:1px solid var(--equipped-frame-second,#fff) !important;
+    border-radius:12px !important;
+    background:transparent !important;
+    clip-path:polygon(
+        0 18px,18px 18px,18px 0,
+        42% 0,43% 4px,78% 4px,79% 0,
+        calc(100% - 18px) 0,calc(100% - 18px) 18px,100% 18px,
+        100% calc(100% - 18px),calc(100% - 18px) calc(100% - 18px),
+        calc(100% - 18px) 100%,58% 100%,57% calc(100% - 4px),
+        22% calc(100% - 4px),21% 100%,18px 100%,18px calc(100% - 18px),
+        0 calc(100% - 18px)
+    ) !important;
+    box-shadow:0 0 13px var(--equipped-frame-glow,rgba(255,255,255,.6)) !important;
+}
+
+/* FIRE — ГОРЯЩИЙ АЛМАЗ */
+body.obs-overlay .obs-player-card:has(.frame-fire){
+    --equipped-frame-main:#ff9b16;
+    --equipped-frame-second:#ffe7a0;
+    --equipped-frame-glow:rgba(255,75,0,.95);
+    --equipped-frame-inner:rgba(255,120,0,.10);
+}
+body.obs-overlay .obs-player-card:has(.frame-fire)::before{
+    border-width:3px !important;
+    border-radius:11px !important;
+    box-shadow:
+        0 0 5px #fff1a8,
+        0 0 12px #ff9b16,
+        0 0 27px rgba(255,55,0,.95),
+        inset 0 0 12px rgba(255,120,0,.22) !important;
+    animation:freeEloFireBorder 0.7s ease-in-out infinite alternate !important;
+}
+/* flame tongues underneath — frame only, not HUD */
+body.obs-overlay .obs-player-card:has(.frame-fire)::after{
+    border-color:#ffd86a !important;
+    box-shadow:
+        0 0 10px #ff6b00,
+        0 0 24px rgba(255,50,0,.75) !important;
+}
+body.obs-overlay .obs-player-card:has(.frame-fire){
+    filter:drop-shadow(0 0 5px rgba(255,75,0,.65));
+}
+
+/* LIGHTNING */
+body.obs-overlay .obs-player-card:has(.frame-lightning){
+    --equipped-frame-main:#eaffff;
+    --equipped-frame-second:#2abfff;
+    --equipped-frame-glow:rgba(30,180,255,.95);
+}
+body.obs-overlay .obs-player-card:has(.frame-lightning)::before{
+    border-radius:7px !important;
+    clip-path:polygon(
+        0 13px,12px 13px,7px 3px,30px 3px,27px 0,
+        calc(100% - 30px) 0,calc(100% - 27px) 3px,calc(100% - 7px) 3px,
+        calc(100% - 12px) 13px,100% 13px,
+        100% calc(100% - 13px),calc(100% - 12px) calc(100% - 13px),
+        calc(100% - 7px) calc(100% - 3px),calc(100% - 30px) calc(100% - 3px),
+        calc(100% - 27px) 100%,27px 100%,30px calc(100% - 3px),
+        7px calc(100% - 3px),12px calc(100% - 13px),0 calc(100% - 13px)
+    ) !important;
+    animation:freeEloLightning 0.9s steps(1,end) infinite !important;
+}
+
+/* THUNDER */
+body.obs-overlay .obs-player-card:has(.frame-thunder){
+    --equipped-frame-main:#d9b8ff;
+    --equipped-frame-second:#7b43ff;
+    --equipped-frame-glow:rgba(120,55,255,.95);
+}
+body.obs-overlay .obs-player-card:has(.frame-thunder)::before{
+    border-radius:8px !important;
+    animation:freeEloThunder 1s ease-in-out infinite alternate !important;
+}
+
+/* ICE */
+body.obs-overlay .obs-player-card:has(.frame-ice){
+    --equipped-frame-main:#f3ffff;
+    --equipped-frame-second:#5bdfff;
+    --equipped-frame-glow:rgba(70,220,255,.9);
+}
+body.obs-overlay .obs-player-card:has(.frame-ice)::before{
+    border-radius:8px !important;
+}
+
+/* NEON */
+body.obs-overlay .obs-player-card:has(.frame-neon){
+    --equipped-frame-main:#ff8de7;
+    --equipped-frame-second:#7755ff;
+    --equipped-frame-glow:rgba(255,70,215,.9);
+}
+body.obs-overlay .obs-player-card:has(.frame-neon)::before{
+    border-radius:8px !important;
+    animation:freeEloNeon 1s ease-in-out infinite alternate !important;
+}
+
+/* POISON */
+body.obs-overlay .obs-player-card:has(.frame-poison){
+    --equipped-frame-main:#eaff72;
+    --equipped-frame-second:#20dc73;
+    --equipped-frame-glow:rgba(35,220,105,.9);
+}
+body.obs-overlay .obs-player-card:has(.frame-poison)::before{
+    border-radius:7px !important;
+}
+
+/* PHOENIX */
+body.obs-overlay .obs-player-card:has(.frame-phoenix){
+    --equipped-frame-main:#fff1a0;
+    --equipped-frame-second:#ff9b17;
+    --equipped-frame-glow:rgba(255,145,20,.95);
+}
+body.obs-overlay .obs-player-card:has(.frame-phoenix)::before{
+    border-radius:9px !important;
+    animation:freeEloPhoenix 1.1s ease-in-out infinite alternate !important;
+}
+
+/* Keep the existing HUD border underneath — we only add the frame above it. */
+
+@keyframes freeEloFireBorder{
+    from{filter:brightness(1)}
+    to{filter:brightness(1.32)}
+}
+@keyframes freeEloLightning{
+    0%,72%,100%{filter:brightness(1)}
+    74%{filter:brightness(2)}
+    76%{filter:brightness(.7)}
+    78%{filter:brightness(1.8)}
+}
+@keyframes freeEloThunder{
+    from{filter:brightness(.96)}
+    to{filter:brightness(1.3)}
+}
+@keyframes freeEloNeon{
+    from{filter:brightness(.95)}
+    to{filter:brightness(1.35)}
+}
+@keyframes freeEloPhoenix{
+    from{filter:brightness(1)}
+    to{filter:brightness(1.3)}
+}
+</style>
+
