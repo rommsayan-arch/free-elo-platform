@@ -4589,17 +4589,17 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const hint = document.getElementById('streamerMenuLiveHint');
             const obsBtn = menu?.querySelector('.streamer-menu-btn.obs');
             const exitBtn = menu?.querySelector('.streamer-menu-btn.exit');
-            const creatorMode = isCreator();
+            const canManage = streamerCanManage(streamer.name);
             if (nameEl) nameEl.textContent = streamer.name;
             if (btn) {
-                btn.style.display = creatorMode ? '' : 'none';
-                if (creatorMode) {
+                btn.style.display = canManage ? '' : 'none';
+                if (canManage) {
                     btn.className = `streamer-menu-btn ${streamer.isLive ? 'exit' : 'start'}`;
                     btn.innerHTML = streamer.isLive ? '<i class="fas fa-stop"></i> Завершить эфир' : '<i class="fas fa-circle"></i> Начать эфир';
                 }
             }
-            if (obsBtn) obsBtn.style.display = creatorMode ? '' : 'none';
-            if (exitBtn) exitBtn.style.display = creatorMode ? '' : 'none';
+            if (obsBtn) obsBtn.style.display = canManage ? '' : 'none';
+            if (exitBtn) exitBtn.style.display = canManage ? '' : 'none';
             if (hint) {
                 hint.style.display = '';
                 hint.innerHTML = streamer.isLive
@@ -4732,16 +4732,51 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const baseUrl=window.location.origin+window.location.pathname;
             const linkAnime=baseUrl+`?obs=anime&streamer=${encodeURIComponent(name)}`;
             const linkC=baseUrl+`?obs=clans&streamer=${encodeURIComponent(name)}`;
-            body.innerHTML=`<div class="obs-v2-head"><div><div class="obs-v2-title"><i class="fas fa-layer-group" style="color:#a78bfa;"></i> МОЙ OVERLAY <small>${escapeHtml(name)}</small></div></div><button class="obs-v2-close" onclick="closeStreamerObs()">×</button></div>
+            body.innerHTML=`<div class="obs-v2-head"><div><div class="obs-v2-title"><i class="fas fa-layer-group" style="color:#a78bfa;"></i> МОЙ OVERLAY <small>${escapeHtml(name)}</small></div></div></div>
                 <div class="obs-section"><div class="obs-section-title">🟦 VS КАРТОЧКИ ИГРОКОВ</div><div class="obs-side-grid">
                     <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ</div><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP1" class="obs-v2-input" value="${escapeHtml(sd.player1||name)}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}"><div class="obs-v2-label">ТП</div><select id="tpSelect1" class="obs-v2-select" onchange="selectTpForSide(1,'${streamerKey(name)}')"></select><div class="obs-v2-label">СЧЁТ</div><input id="roomS1" class="obs-v2-input" type="number" value="${sd.score1??0}"></div>
                     <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ</div><div class="obs-v2-label">НИК ИГРОКА</div><input id="roomP2" class="obs-v2-input" value="${escapeHtml(sd.player2||'PLAYER2')}"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"><div class="obs-v2-label">ТП</div><select id="tpSelect2" class="obs-v2-select" onchange="selectTpForSide(2,'${streamerKey(name)}')"></select><div class="obs-v2-label">СЧЁТ</div><input id="roomS2" class="obs-v2-input" type="number" value="${sd.score2??0}"></div>
-                </div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Применить</button><button class="obs-red" onclick="closeStreamerObs()">Скрыть</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
-                <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>${escapeHtml(sd.clan1||'NUN')}</label><input id="roomC1ScoreMirror" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>${escapeHtml(sd.clan2||'WAKANDA')}</label><input id="roomC2ScoreMirror" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="syncScoreMirror()">🔄 Обновить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
+                </div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
+                <div class="obs-section"><div class="obs-section-title" style="color:#ffc338;">🟨 ТАБЛО СЧЁТА</div><div class="elo-grid"><div class="elo-box"><label>НИК КЛАНА — ЛЕВЫЙ</label><input id="roomC1ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan1||'NUN')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC1ScoreMirror" class="obs-v2-input" value="${sd.score1??0}" type="number"></div><div class="elo-box"><label>НИК КЛАНА — ПРАВЫЙ</label><input id="roomC2ScoreMirrorClan" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}" placeholder="Ник клана"><label style="margin-top:6px;">СЧЁТ</label><input id="roomC2ScoreMirror" class="obs-v2-input" value="${sd.score2??0}" type="number"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="applyScoreboardChanges('${streamerKey(name)}')">✓ Применить</button></div><div class="obs-v2-label">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkC}" readonly id="roomObsClans"><button onclick="copyLinkText('roomObsClans')">📋</button></div></div>
                 <div class="obs-section"><div class="obs-section-title">🟦 ТП-ИГРОКИ ДЛЯ ЭТОГО СТРИМЕРА</div><div class="tp-add-row"><input id="tpNewPlayer" class="obs-v2-input" placeholder="Добавь ник ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayer('${streamerKey(name)}')">＋</button></div><div id="tpChipList" class="tp-list"></div><div class="obs-v2-footer-note">В списках ТП показываются только ники, которые ты добавил здесь. Обычные игроки платформы сюда не попадают.</div></div>
-                <div class="obs-section elo-grant"><div class="obs-section-title">🟨 ВЫДАТЬ ELO ИГРОКАМ</div><div class="elo-grid"><div class="elo-box"><label>ИГРОК</label><select id="eloGrantPlayer"></select></div><div class="elo-box"><label>ELO</label><input id="eloGrantAmount" type="number" value="10" min="1"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="grantStreamerElo('${streamerKey(name)}')">🏆 Выдать ELO</button></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
+                <div class="obs-section elo-grant"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><div class="obs-section-title" style="margin-bottom:0;">🟨 ВЫДАТЬ ELO ИГРОКАМ</div><span style="font-size:8px;font-weight:1000;color:#ffc338;border:1px solid rgba(255,184,0,.35);padding:4px 7px;border-radius:999px;">ТП</span></div><div class="tp-add-row" style="margin-top:8px;"><input id="tpGrantNewPlayer" class="obs-v2-input" placeholder="Добавить ТП-игрока"><button class="obs-apply" style="border:0;border-radius:6px;padding:0 10px;" onclick="addTpPlayerFromGrant('${streamerKey(name)}')">＋</button></div><div class="elo-grid" style="margin-top:7px;"><div class="elo-box"><label>ТП-ИГРОК</label><select id="eloGrantPlayer"></select></div><div class="elo-box"><label>ELO</label><input id="eloGrantAmount" type="number" value="10" min="1"></div></div><div class="obs-v2-actions"><button class="obs-orange" onclick="grantStreamerElo('${streamerKey(name)}')">🏆 Выдать ELO</button></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
             renderTpChips(name); renderObsTpSelectors(name); renderEloGrantHistory(name);
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
+        }
+
+        async function applyScoreboardChanges(encodedName){
+            const name=decodeURIComponent(encodedName);
+            if(!streamerCanManage(name)) return;
+            const c1=(document.getElementById('roomC1ScoreMirrorClan')?.value||'Нет клана').trim()||'Нет клана';
+            const c2=(document.getElementById('roomC2ScoreMirrorClan')?.value||'Нет клана').trim()||'Нет клана';
+            const s1=parseInt(document.getElementById('roomC1ScoreMirror')?.value||'0',10)||0;
+            const s2=parseInt(document.getElementById('roomC2ScoreMirror')?.value||'0',10)||0;
+            if(!db.streamDataMap) db.streamDataMap={};
+            const current=db.streamDataMap[name]||{};
+            db.streamDataMap[name]={...current,player1:current.player1||name,player2:current.player2||'PLAYER2',clan1:c1,clan2:c2,score1:s1,score2:s2};
+            if(c1!=='Нет клана') ensureClanExistsByName(c1);
+            if(c2!=='Нет клана') ensureClanExistsByName(c2);
+            await saveData();
+            openStreamerObsPanel(encodedName);
+        }
+
+        async function addTpPlayerFromGrant(encodedName){
+            const name=decodeURIComponent(encodedName);
+            if(!streamerCanManage(name)) return;
+            const input=document.getElementById('tpGrantNewPlayer');
+            const nick=(input?.value||'').trim();
+            if(!nick) return;
+            const list=tpPlayersFor(name);
+            if(!list.some(x=>x.toLowerCase()===nick.toLowerCase())){
+                list.push(nick);
+                if(!db.streamerTpElo) db.streamerTpElo={};
+                if(!db.streamerTpElo[name]) db.streamerTpElo[name]={};
+                if(typeof db.streamerTpElo[name][nick]!=='number') db.streamerTpElo[name][nick]=0;
+                await saveData();
+            }
+            if(input) input.value='';
+            renderTpChips(name);
+            renderObsTpSelectors(name);
         }
 
         function syncScoreMirror(){
