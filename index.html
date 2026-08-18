@@ -2098,6 +2098,8 @@ body.obs-overlay .obs-clan-label {
 
 /* OBS: player card is the frame. Avatar sits BEHIND the centered nickname. */
 body.obs-overlay .obs-player-card {
+  isolation:isolate !important;
+  isolation:isolate !important;
   width:272px !important;
   height:150px !important;
   left:50% !important;
@@ -2383,7 +2385,10 @@ body.obs-overlay .obs-avatar-wrap.frame-fire::after {
   50%{opacity:1;transform:scale(1.045)}
 }
 /* В OBS аватарка всегда остаётся видимой под ником. */
-body.obs-overlay .obs-avatar{display:block !important;visibility:visible !important;}
+body.obs-overlay .obs-avatar{display:block !important;visibility:visible !important;position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;object-fit:cover !important;z-index:0 !important;}
+body.obs-overlay .obs-avatar-wrap{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;display:block !important;overflow:hidden !important;z-index:0 !important;}
+body.obs-overlay .obs-player-card .obs-avatar-wrap .obs-avatar{opacity:.78 !important;filter:saturate(1.08) contrast(1.04) brightness(.95) !important;}
+body.obs-overlay .obs-player-card.obs-avatar-failed::before{content:'AVATAR';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;color:rgba(255,255,255,.18);font:900 11px Arial,sans-serif;letter-spacing:2px;}
 </style>
 <style id="free-elo-final-working-hud">
 /* FINAL WORKING HUD: no rotation; effects animate by glow/opacity only. */
@@ -4197,7 +4202,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 const u = String(url || '').trim();
                 if (!u) return '';
                 const low = u.toLowerCase();
-                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return '';
+                if (!/^https?:\/\//i.test(u) && !u.startsWith('data:image/') && !u.startsWith('blob:')) return '';
                 return u;
             };
 
@@ -6312,7 +6317,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                                 const raw = String(player.avatar || '').trim();
                                 if (!raw) return '';
                                 const low = raw.toLowerCase();
-                                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return '';
+                                if (!/^https?:\/\//i.test(raw) && !raw.startsWith('data:image/') && !raw.startsWith('blob:')) return '';
                                 return raw;
                             };
 
@@ -6340,10 +6345,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                             const frameImg1 = frame1?.img ? `<img class="obs-avatar-frame active-frame-visual" src=${JSON.stringify(frame1.img)} alt="">` : '';
                             const frameImg2 = frame2?.img ? `<img class="obs-avatar-frame active-frame-visual" src=${JSON.stringify(frame2.img)} alt="">` : '';
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl1)} alt="" onerror="this.remove();this.closest('.obs-player-card')?.classList.add('obs-name-only');">${frameImg1}</div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl1)} alt="" onerror="this.onerror=null;this.style.display='none';this.closest('.obs-player-card')?.classList.add('obs-avatar-failed');">${frameImg1}</div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl2)} alt="" onerror="this.remove();this.closest('.obs-player-card')?.classList.add('obs-name-only');">${frameImg2}</div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl2)} alt="" onerror="this.onerror=null;this.style.display='none';this.closest('.obs-player-card')?.classList.add('obs-avatar-failed');">${frameImg2}</div>`
                                 : '';
 
                             // Место игрока по ELO. Создатель/стримерские роли на рейтинг не влияют.
