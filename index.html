@@ -6312,17 +6312,16 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         if (obsMode === 'anime') {
                             const resolveObsAvatar = (player) => {
                                 if (!player) return '';
-                                const isRealAvatar = (url) => {
-                                    const raw = String(url || '').trim();
-                                    if (!raw) return '';
-                                    const low = raw.toLowerCase();
-                                    if (low.includes('api.dicebear.com') || low.includes('bottts') || low.includes('initials')) return '';
-                                    if (!/^https?:\/\//i.test(raw) && !raw.startsWith('data:image/') && !raw.startsWith('blob:')) return '';
-                                    return raw;
-                                };
-                                const equipped = isRealAvatar(player.__hudEquippedAvatar) || isRealAvatar(resolveEquippedAvatar(player));
-                                if (equipped) return equipped;
-                                return isRealAvatar(player.avatar);
+                                const equipped = player.__hudEquippedAvatar || resolveEquippedAvatar(player);
+                                if (equipped) return String(equipped);
+                                const raw = String(player.avatar || '').trim();
+                                if (!raw) return '';
+                                const low = raw.toLowerCase();
+                                // В HUD показываем только настоящую аватарку игрока.
+                                // Роботы DiceBear (bottts/initials и т.п.) не показываем.
+                                if (low.includes('api.dicebear.com')) return '';
+                                if (!/^https?:\/\//i.test(raw) && !raw.startsWith('data:image/') && !raw.startsWith('blob:')) return '';
+                                return raw;
                             };
 
                             const resolveObsFrame = (player) => {
