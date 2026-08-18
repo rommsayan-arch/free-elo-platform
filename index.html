@@ -3896,8 +3896,22 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return changed;
         }
 
-        async function loadDataFromCloud() {
-            if (window.__FE_SAVE_IN_PROGRESS) return;
+        async function loadDataFromCloud(force = false) {
+            if (window.__FE_SAVE_IN_PROGRESS && !force) return true;
+            if (!db?.players?.length) {
+                try {
+                    const cached = JSON.parse(localStorage.getItem('freeEloCacheV2') || 'null');
+                    if (cached?.players) {
+                        db = cached;
+                        if (!db.clans) db.clans = [];
+                        if (!db.streamers) db.streamers = [];
+                        if (!db.streamDataMap) db.streamDataMap = {};
+                        if (!db.matchHistory) db.matchHistory = [];
+                        if (!db.clanMatchHistory) db.clanMatchHistory = [];
+                        if (!db.news) db.news = [];
+                    }
+                } catch (_) {}
+            }
             if (activeController) activeController.abort();
             activeController = new AbortController();
 
@@ -3916,14 +3930,13 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 if (rows.length > 0 && rows[0].content) {
                     db = rows[0].content;
                     if (!db.players) db.players = [];
+                    if (!db.clans) db.clans = [];
                     if (!db.streamers) db.streamers = [];
                     if (!db.streamDataMap) db.streamDataMap = {};
                     if (!db.matchHistory) db.matchHistory = [];
-            if (!db.clanMatchHistory) db.clanMatchHistory = [];
                     if (!db.clanMatchHistory) db.clanMatchHistory = [];
-                    if (!db.clanMatchHistory) db.clanMatchHistory = [];
-            if (!db.clanMatchHistory) db.clanMatchHistory = [];
                     if (!db.news) db.news = [];
+                    try { localStorage.setItem('freeEloCacheV2', JSON.stringify(db)); } catch (_) {}
                     if (!Number.isFinite(Number(db.currentSeason)) || Number(db.currentSeason) < 1) db.currentSeason = 1;
                     if (!db.seasonStartedAt) db.seasonStartedAt = new Date().toISOString();
                 }
@@ -3940,18 +3953,8 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 await saveDataToCloud();
             }
 
-            // Миграция: все обычные игроки принудительно остаются без клана.
-            // Кланы, выбранные стримером для конкретного матча, не записываются в профили.
-            let playersClanChanged = false;
-            (db?.players || []).forEach(p => {
-                if ((p.role || 'player') === 'player' && p.clan) {
-                    p.clan = '';
-                    playersClanChanged = true;
-                }
-            });
-            if (playersClanChanged) await saveDataToCloud();
-
             ensureAnimeShopItems();
+            return true;
         }
 
         function ensureCreatorRights() {
@@ -3964,12 +3967,60 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             });
         }
 
+        // Клиентский слой контроля целостности. Для настоящего античита
+        // те же проверки должны быть продублированы на сервере/RLS.
+        function runClientAntiCheat() {
+            if (!db) return true;
+            let clean = true;
+            const catalog = new Map((db.shopItems || []).map(i => [Number(i.id), i]));
+            const seenIds = new Set();
+            (db.players || []).forEach(p => {
+                if (!p) return;
+                if (seenIds.has(p.id)) { p.id = Date.now() + Math.floor(Math.random()*1000000); clean = false; }
+                seenIds.add(p.id);
+                const elo = Number(p.elo), matches = Number(p.matches), wins = Number(p.wins);
+                if (!Number.isFinite(elo) || elo < 0) { p.elo = 0; clean = false; }
+                if (!Number.isFinite(matches) || matches < 0) { p.matches = 0; clean = false; }
+                if (!Number.isFinite(wins) || wins < 0 || wins > Number(p.matches||0)) {
+                    p.wins = Math.max(0, Math.min(Number(p.matches||0), Number.isFinite(wins) ? wins : 0));
+                    clean = false;
+                }
+                p.level = Math.max(1, Math.floor(Number(p.elo||0) / 300) + 1);
+                if (!Array.isArray(p.inventory)) p.inventory = [];
+                const itemIds = new Set();
+                p.inventory = p.inventory.filter(item => {
+                    const id = Number(item?.id);
+                    if (!Number.isFinite(id) || itemIds.has(id)) { clean = false; return false; }
+                    itemIds.add(id);
+                    const source = catalog.get(id);
+                    if (source && Number(item.price||0) !== Number(source.price||0)) {
+                        item.price = Number(source.price||0);
+                        item.name = source.name;
+                        item.type = source.type;
+                        item.img = source.img;
+                        clean = false;
+                    }
+                    return true;
+                });
+                const av = String(p.avatar||'').toLowerCase();
+                if (av.includes('dicebear.com') || av.includes('api.dicebear.com')) {
+                    p.avatar = '';
+                    p.activeAvatarId = null;
+                    clean = false;
+                }
+            });
+            return clean;
+        }
+
         async function saveDataToCloud() {
             ensureCreatorRights();
+            runClientAntiCheat();
+            if (window.__FE_SAVE_PROMISE) return window.__FE_SAVE_PROMISE;
             window.__FE_SAVE_IN_PROGRESS = true;
             const snapshot = JSON.parse(JSON.stringify(db));
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`, {
+                try { localStorage.setItem('freeEloCacheV2', JSON.stringify(snapshot)); } catch (_) {}
+                window.__FE_SAVE_PROMISE = fetch(`${SUPABASE_URL}/rest/v1/app_data?id=eq.1`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3978,30 +4029,24 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({ content: snapshot })
+                }).then(async response => {
+                    const raw = await response.text();
+                    if (!response.ok) throw new Error(`Supabase ${response.status}: ${raw}`);
+                    window.__FE_LAST_SAVE_AT = Date.now();
+                    return true;
+                }).catch(e => {
+                    console.error("Ошибка сохранения:", e);
+                    return false;
+                }).finally(() => {
+                    window.__FE_SAVE_PROMISE = null;
+                    window.__FE_SAVE_IN_PROGRESS = false;
                 });
-                const raw = await response.text();
-                if (!response.ok) throw new Error(`Supabase ${response.status}: ${raw}`);
-
-                const verify = await fetch(`${SUPABASE_URL}/rest/v1/app_data?select=content&id=eq.1`, {
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Accept': 'application/json'
-                    },
-                    cache: 'no-store'
-                });
-                if (!verify.ok) throw new Error(`Supabase verify ${verify.status}`);
-                const rows = await verify.json();
-                if (JSON.stringify(rows?.[0]?.content) !== JSON.stringify(snapshot)) {
-                    throw new Error('Сохранённые данные не совпадают с текущими.');
-                }
-                window.__FE_LAST_SAVE_AT = Date.now();
-                return true;
+                return await window.__FE_SAVE_PROMISE;
             } catch (e) {
+                window.__FE_SAVE_PROMISE = null;
+                window.__FE_SAVE_IN_PROGRESS = false;
                 console.error("Ошибка сохранения:", e);
                 return false;
-            } finally {
-                window.__FE_SAVE_IN_PROGRESS = false;
             }
         }
 
@@ -4202,6 +4247,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 const u = String(url || '').trim();
                 if (!u) return '';
                 const low = u.toLowerCase();
+                if (low.includes('api.dicebear.com') || low.includes('dicebear.com')) return '';
                 if (!/^https?:\/\//i.test(u) && !u.startsWith('data:image/') && !u.startsWith('blob:')) return '';
                 return u;
             };
@@ -4855,7 +4901,28 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 <div class="obs-section elo-grant"><div class="obs-section-title" style="color:#ffc338;">🟨 ВЫДАЧА ELO — ВЫБОР ИГРОКОВ</div><div class="obs-side-grid">
                     <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType1" class="obs-v2-select" onchange="toggleEloPlayerType(1,'${streamerKey(name)}')"><option value="normal" ${type1==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type1==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ПОИСК ИГРОКА ДЛЯ ELO</div><input id="eloPlayerSearch1" class="obs-v2-input elo-player-search" placeholder="🔎 Начни писать ник игрока..." autocomplete="off" oninput="filterEloPlayers(1,'${streamerKey(name)}')"><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect1" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP1" type="hidden" value="${escapeHtml(sd.player1||name)}"></div>
                     <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType2" class="obs-v2-select" onchange="toggleEloPlayerType(2,'${streamerKey(name)}')"><option value="normal" ${type2==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type2==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ПОИСК ИГРОКА ДЛЯ ELO</div><input id="eloPlayerSearch2" class="obs-v2-input elo-player-search" placeholder="🔎 Начни писать ник игрока..." autocomplete="off" oninput="filterEloPlayers(2,'${streamerKey(name)}')"><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect2" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP2" type="hidden" value="${escapeHtml(sd.player2||'PLAYER2')}"></div>
-                </div><div class="elo-box" style="margin-top:10px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −32 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −32 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div><div class="elo-box" style="margin-top:10px;"><label>КЛАНОВОЕ ELO</label><div class="obs-side-grid"><div class="obs-side"><div class="obs-v2-label">КЛАН 1</div><input id="eloClan1" class="obs-v2-input" placeholder="Название клана"></div><div class="obs-side right"><div class="obs-v2-label">КЛАН 2</div><input id="eloClan2" class="obs-v2-input" placeholder="Название клана"></div></div><div class="obs-v2-label">ПОБЕДИЛ</div><select id="eloClanWinner" class="obs-v2-select"><option value="1">Клан 1</option><option value="2">Клан 2</option></select><div class="obs-v2-actions"><button class="obs-apply" onclick="applyClanEloResult('${streamerKey(name)}')">🏆 Применить: победитель +26 / проигравший −26</button></div></div></div>`;
+                </div><div class="elo-box" style="margin-top:10px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −26 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −26 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>
+                <div class="obs-section elo-grant">
+                    <div class="obs-section-title" style="color:#ffc338;">🟨 ВЫДАЧА ELO — КЛАНЫ</div>
+                    <div class="obs-side-grid">
+                        <div class="obs-side"><div class="obs-side-head">🟢 КЛАН 1</div>
+                            <div class="obs-v2-label">КЛАН 1</div>
+                            <input id="eloClan1" class="obs-v2-input" value="${escapeHtml(sd.clan1||'')}" placeholder="Название клана">
+                        </div>
+                        <div class="obs-side right"><div class="obs-side-head">🔴 КЛАН 2</div>
+                            <div class="obs-v2-label">КЛАН 2</div>
+                            <input id="eloClan2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'')}" placeholder="Название клана">
+                        </div>
+                    </div>
+                    <div class="elo-box" style="margin-top:10px;">
+                        <label>ПОБЕДИТЕЛЬ</label>
+                        <div class="tp-result-buttons">
+                            <button class="tp-win-btn" onclick="applyClanMatchResult('${streamerKey(name)}',1)">🏆 КЛАН 1 ПОБЕДИЛ <b>+26 ELO</b><small>Клан 2 −26 ELO</small></button>
+                            <button class="tp-loss-btn" onclick="applyClanMatchResult('${streamerKey(name)}',2)">🏆 КЛАН 2 ПОБЕДИЛ <b>+26 ELO</b><small>Клан 1 −26 ELO</small></button>
+                        </div>
+                    </div>
+                    <div id="clanEloGrantHistory" class="obs-v2-footer-note"></div>
+                </div>`;
             renderTpChips(name); renderObsTpSelectors(name); updateBottomEloPreview();
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
         }
@@ -4889,20 +4956,48 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         function closeStreamerObs(){ const o=document.getElementById('streamerObsOverlay'); o?.classList.remove('open');o?.setAttribute('aria-hidden','true'); }
 
         async function saveStreamerRoomObs(encodedName) {
-            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)){alert('Нет доступа к управлению этим стримером.');return;}
+            const name=decodeURIComponent(encodedName);
+            if(!streamerCanManage(name)){alert('Нет доступа к управлению этим стримером.');return;}
             if(!db.streamDataMap)db.streamDataMap={};
+            if(!db.players)db.players=[];
             const displayName1=(document.getElementById('roomDisplayName1')?.value||'').trim();
             const displayName2=(document.getElementById('roomDisplayName2')?.value||'').trim();
             const current=db.streamDataMap[name]||{};
-            const p1=displayName1, p2=displayName2;
             const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана';
             const c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
             if(!displayName1||!displayName2){alert('Укажи оба ника для отображения в OBS.');return;}
-            const player1=ensureOverlayPlayer(p1), player2=ensureOverlayPlayer(p2);
-            if(c1!=='Нет клана'){ ensureClanExistsByName(c1); player1.clan=c1; } else { player1.clan=''; }
-            if(c2!=='Нет клана'){ ensureClanExistsByName(c2); player2.clan=c2; } else { player2.clan=''; }
-            db.streamDataMap[name]={...current,player1:p1,player2:p2,displayName1,displayName2,clan1:c1,clan2:c2};
-            await saveData(); renderPlayers?.(); renderClans?.(); renderStreamers(); openStreamerObsPanel(encodedName);
+            if(displayName1.toLowerCase()===displayName2.toLowerCase()){alert('Игроки должны иметь разные ники.');return;}
+
+            const findPlayer = n => db.players.find(p => String(p.name||'').trim().toLowerCase()===n.toLowerCase());
+            const makePlayer = n => ({
+                id:Date.now()+Math.floor(Math.random()*100000),
+                name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',
+                clan:'',avatar:'',frame:'',inventory:[],equippedCharacter:''
+            });
+            let player1=findPlayer(displayName1), player2=findPlayer(displayName2);
+            if(!player1){ player1=makePlayer(displayName1); db.players.push(player1); }
+            if(!player2){ player2=makePlayer(displayName2); db.players.push(player2); }
+
+            if(c1!=='Нет клана')ensureClanExistsByName(c1);
+            if(c2!=='Нет клана')ensureClanExistsByName(c2);
+
+            db.streamDataMap[name]={
+                ...current,
+                player1:player1.name,
+                player2:player2.name,
+                displayName1,
+                displayName2,
+                clan1:c1,
+                clan2:c2
+            };
+            await saveData();
+            // Обновляем HUD и списки сразу, без ожидания следующего polling-цикла.
+            renderStreamers();
+            renderLeaderboard();
+            renderTop100();
+            renderClans();
+            openStreamerObsPanel(encodedName);
+            if(window.__refreshObsNow) window.__refreshObsNow();
         }
 
 
@@ -4943,21 +5038,6 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return {oldElo,newElo};
         }
 
-        async function applyClanEloResult(encodedName){
-            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)) return;
-            const c1=(document.getElementById('eloClan1')?.value||'').trim();
-            const c2=(document.getElementById('eloClan2')?.value||'').trim();
-            const winner=Number(document.getElementById('eloClanWinner')?.value||1);
-            if(!c1||!c2){alert('Укажи оба клана.');return;}
-            if(c1.toLowerCase()===c2.toLowerCase()){alert('Кланы должны быть разными.');return;}
-            const clan1=ensureClanExistsByName(c1), clan2=ensureClanExistsByName(c2);
-            clan1.elo=Math.max(0,Number(clan1.elo||0)+(winner===1?26:-26));
-            clan2.elo=Math.max(0,Number(clan2.elo||0)+(winner===2?26:-26));
-            if(!db.clanEloHistory) db.clanEloHistory=[];
-            db.clanEloHistory.unshift({clan1:c1,clan2:c2,winner:winner===1?c1:c2,winnerAmount:26,loserAmount:-26,at:new Date().toISOString(),streamer:name});
-            await saveData(); renderClans?.(); openStreamerObsPanel(encodedName);
-        }
-
         async function applyMatchResultForSide(encodedName, winnerSlot) {
             const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)) return;
             updateEloBottomPreview();
@@ -4969,14 +5049,47 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             if(t2==='tp'&&!tpPlayersFor(name).some(x=>x.toLowerCase()===p2.toLowerCase())){alert('Правый ТП-игрок не найден в списке ТП.');return;}
             const winnerName=winnerSlot===1?p1:p2, loserName=winnerSlot===1?p2:p1;
             const winnerType=winnerSlot===1?t1:t2, loserType=winnerSlot===1?t2:t1;
-            const w=applyEloToOverlayPlayer(name,winnerName,winnerType,26), l=applyEloToOverlayPlayer(name,loserName,loserType,-32);
+            const w=applyEloToOverlayPlayer(name,winnerName,winnerType,26), l=applyEloToOverlayPlayer(name,loserName,loserType,-26);
             const wp=ensureOverlayPlayer(winnerName),lp=ensureOverlayPlayer(loserName); wp.matches=(wp.matches||0)+1;lp.matches=(lp.matches||0)+1;wp.wins=(wp.wins||0)+1;
             if(!db.streamDataMap)db.streamDataMap={}; db.streamDataMap[name]={...db.streamDataMap[name],winnerPlayer:winnerName,winnerType:'player',winnerAt:new Date().toISOString()};
             if(!db.streamerEloGrants)db.streamerEloGrants={}; if(!Array.isArray(db.streamerEloGrants[name]))db.streamerEloGrants[name]=[];
-            db.streamerEloGrants[name].unshift({player:winnerName,opponent:loserName,winnerType,loserType,winnerAmount:26,loserAmount:-32,amount:26,at:new Date().toISOString(),winnerOldElo:w.oldElo,winnerNewElo:w.newElo,loserOldElo:l.oldElo,loserNewElo:l.newElo});
+            db.streamerEloGrants[name].unshift({player:winnerName,opponent:loserName,winnerType,loserType,winnerAmount:26,loserAmount:-26,amount:26,at:new Date().toISOString(),winnerOldElo:w.oldElo,winnerNewElo:w.newElo,loserOldElo:l.oldElo,loserNewElo:l.newElo});
             db.streamerEloGrants[name]=db.streamerEloGrants[name].slice(0,50);
             await saveData(); renderStreamers();renderLeaderboard();renderTop100();renderObsTpSelectors(name);
-            alert(`Победа: ${winnerName} +26 ELO. ${loserName} −32 ELO.`);
+            alert(`Победа: ${winnerName} +26 ELO. ${loserName} −26 ELO.`);
+        }
+
+        async function applyClanMatchResult(encodedName, winnerSlot) {
+            const name=decodeURIComponent(encodedName);
+            if(!streamerCanManage(name)) return;
+            const c1=(document.getElementById('eloClan1')?.value||'').trim();
+            const c2=(document.getElementById('eloClan2')?.value||'').trim();
+            if(!c1||!c2){alert('Укажи Клан 1 и Клан 2.');return;}
+            if(c1.toLowerCase()===c2.toLowerCase()){alert('Кланы должны быть разными.');return;}
+            const winnerName=winnerSlot===1?c1:c2;
+            const loserName=winnerSlot===1?c2:c1;
+            const winner=ensureClanExistsByName(winnerName);
+            const loser=ensureClanExistsByName(loserName);
+            winner.elo=Math.max(0,Number(winner.elo||0)+26);
+            loser.elo=Math.max(0,Number(loser.elo||0)-26);
+            winner.games=Number(winner.games||0)+1;
+            loser.games=Number(loser.games||0)+1;
+            winner.wins=Number(winner.wins||0)+1;
+            loser.losses=Number(loser.losses||0)+1;
+            if(!db.clanEloGrants)db.clanEloGrants={};
+            if(!Array.isArray(db.clanEloGrants[name]))db.clanEloGrants[name]=[];
+            db.clanEloGrants[name].unshift({clan1:c1,clan2:c2,winner:winnerName,winnerAmount:26,loserAmount:-26,at:new Date().toISOString()});
+            db.clanEloGrants[name]=db.clanEloGrants[name].slice(0,50);
+            if(!db.streamDataMap)db.streamDataMap={};
+            db.streamDataMap[name]={...(db.streamDataMap[name]||{}),clan1:c1,clan2:c2,winnerClan:winnerName,winnerAt:new Date().toISOString()};
+            await saveData();
+            renderClans();
+            if(typeof renderClanLeaderboard==='function') renderClanLeaderboard();
+            renderStreamers();
+            if(window.__refreshObsNow) window.__refreshObsNow();
+            const box=document.getElementById('clanEloGrantHistory');
+            if(box) box.textContent='Последний результат: '+winnerName+' +26 ELO • '+loserName+' −26 ELO';
+            alert('Победа клана: '+winnerName+' +26 ELO. '+loserName+' −26 ELO.');
         }
 
         function renderEloGrantHistory(name){
@@ -5691,7 +5804,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             let baseTag=clean.replace(/[^a-zA-ZА-Яа-я0-9]/g,'').slice(0,4).toUpperCase()||'CLAN';
             let tag=baseTag, i=2;
             while(db.clans.some(c=>String(c.tag||'').toLowerCase()===tag.toLowerCase())) tag=(baseTag.slice(0,3)+i++).slice(0,4);
-            existing={name:clean,tag,owner:''}; db.clans.push(existing); return existing;
+            existing={name:clean,tag,owner:'',elo:0,games:0,wins:0,losses:0}; db.clans.push(existing); return existing;
         }
 
         function renderClans() {
@@ -5720,7 +5833,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                             <span class="level-badge" style="background:var(--accent);color:#fff;">Клан</span>
                         </div>
                         <p style="color:var(--text-muted);font-size:12px;margin:10px 0 0;">
-                            ELO: <b>${Number(c.elo||0)}</b> · Клан существует отдельно от профилей игроков.
+                            Клан существует отдельно от профилей игроков.
                         </p>
                         <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">
                             Нажмите на клан, чтобы увидеть соперников, счета, победы и поражения.
@@ -6028,7 +6141,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const item=(p.inventory||[]).find(i=>i.id==itemId); if(!item)return;
             if(!confirm(`Удалить «${item.name}» у ${p.name}?`))return;
             p.inventory=(p.inventory||[]).filter(i=>i.id!=itemId);
-            if(p.activeAvatarId==itemId){p.activeAvatarId=null;p.avatar=`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(p.name)}`;}
+            if(p.activeAvatarId==itemId){p.activeAvatarId=null;p.avatar='';}
             if(p.activeFrameId==itemId){p.activeFrameId=null;p.frame='';}
             await saveDataToCloud(); renderInventory(); renderAdminPanel(); renderShop();
         }
@@ -6307,7 +6420,8 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 }
 
                 async function updateObsContent() {
-                    await loadDataFromCloud();
+                    // HUD обновляется из локального состояния мгновенно; облако синхронизируется отдельно.
+                    // Это убирает задержку fetch каждые 2 секунды.
                     // Нормализуем активные аватарки/рамки после загрузки из облака.
                     (db?.players || []).forEach(p => {
                         p.inventory = Array.isArray(p.inventory) ? p.inventory : [];
@@ -6324,8 +6438,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
 
                     const hudName1 = String(sd.displayName1 || sd.player1 || '').trim();
                     const hudName2 = String(sd.displayName2 || sd.player2 || '').trim();
-                    let p1Obj = (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === hudName1.toLowerCase());
-                    let p2Obj = (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === hudName2.toLowerCase());
+                    let p1Obj = (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === hudName1.toLowerCase())
+                        || (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === String(sd.player1||'').toLowerCase());
+                    let p2Obj = (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === hudName2.toLowerCase())
+                        || (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === String(sd.player2||'').toLowerCase());
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
@@ -6337,7 +6453,6 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                                 if (!raw) return '';
                                 const low = raw.toLowerCase();
                                 if (!/^https?:\/\//i.test(raw) && !raw.startsWith('data:image/') && !raw.startsWith('blob:')) return '';
-                                if (low.includes('api.dicebear.com') || low.includes('/bottts/') || low.includes('/initials/')) return '';
                                 return raw;
                             };
 
@@ -6562,8 +6677,11 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         }
                     }
                 }
+                await loadDataFromCloud();
                 await updateObsContent();
-                setInterval(updateObsContent, 2000);
+                window.__refreshObsNow = updateObsContent;
+                setInterval(updateObsContent, 500);
+                setInterval(() => loadDataFromCloud(true).then(() => updateObsContent()), 5000);
                 return;
             }
 
