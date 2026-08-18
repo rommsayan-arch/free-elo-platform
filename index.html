@@ -4193,37 +4193,39 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         function resolveEquippedAvatar(player) {
             if (!player) return '';
             const inv = Array.isArray(player.inventory) ? player.inventory : [];
-            const isRealAvatar = (url) => {
+            const real = (url) => {
                 const u = String(url || '').trim();
-                if (!u) return false;
+                if (!u) return '';
                 const low = u.toLowerCase();
-                // Не считаем автоматические DiceBear-заглушки настоящей аватаркой.
-                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return false;
-                return true;
+                if (low.includes('dicebear.com') && (low.includes('/bottts/') || low.includes('/initials/'))) return '';
+                return u;
             };
 
+            // 1) Главный источник: активная аватарка игрока.
             if (player.activeAvatarId != null) {
-                const item = inv.find(i => Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar');
-                if (item?.img && isRealAvatar(item.img)) return String(item.img);
-                const catalogItem = (db?.shopItems || []).find(i =>
-                    Number(i.id) === Number(player.activeAvatarId) && i.type === 'avatar'
-                );
-                if (catalogItem?.img && isRealAvatar(catalogItem.img)) return String(catalogItem.img);
+                const id = Number(player.activeAvatarId);
+                const owned = inv.find(i => Number(i?.id) === id && String(i?.type || '').toLowerCase() === 'avatar');
+                const catalog = (db?.shopItems || []).find(i => Number(i?.id) === id && String(i?.type || '').toLowerCase() === 'avatar');
+                const activeUrl = real(owned?.img) || real(catalog?.img);
+                if (activeUrl) return activeUrl;
             }
 
-            // В облачной базе activeAvatarId иногда остаётся старым.
-            // Если сама аватарка уже сохранена в player.avatar — используем её напрямую.
-            if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
+            // 2) Сохранённая аватарка профиля — используем её до любых заглушек.
+            const profileUrl = real(player.avatar);
+            if (profileUrl) return profileUrl;
 
+            // 3) Если activeAvatarId потерялся при синхронизации, ищем надетый предмет.
             const marked = inv.find(i =>
-                i.type === 'avatar' &&
-                (i.equipped === true || i.isEquipped === true || i.worn === true) &&
-                isRealAvatar(i.img)
+                String(i?.type || '').toLowerCase() === 'avatar' &&
+                (i.equipped === true || i.isEquipped === true || i.worn === true || i.active === true)
             );
-            if (marked?.img) return String(marked.img);
+            const markedUrl = real(marked?.img);
+            if (markedUrl) return markedUrl;
 
-            if (isRealAvatar(player.avatar)) return String(player.avatar).trim();
-            return '';
+            // 4) Последний fallback: первый купленный предмет-аватар с картинкой.
+            // Это позволяет HUD восстановить аватар даже после старой версии базы.
+            const ownedAvatar = inv.find(i => String(i?.type || '').toLowerCase() === 'avatar' && real(i?.img));
+            return real(ownedAvatar?.img) || '';
         }
 
         function resolveEquippedFrame(player) {
@@ -6264,7 +6266,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                     (db?.players || []).forEach(p => {
                         p.inventory = Array.isArray(p.inventory) ? p.inventory : [];
                         const a = resolveEquippedAvatar(p);
-                        if (a) p.avatar = a;
+                        if (a) {
+                            p.avatar = a;
+                            p.__hudEquippedAvatar = a;
+                        }
                         const f = resolveEquippedFrame(p);
                         if (f?.img) p.frame = f.img;
                     });
@@ -6278,7 +6283,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         if (obsMode === 'anime') {
                             const resolveObsAvatar = (player) => {
                                 if (!player) return '';
-                                const equipped = resolveEquippedAvatar(player);
+                                const equipped = player.__hudEquippedAvatar || resolveEquippedAvatar(player);
                                 if (equipped) return String(equipped);
                                 const raw = String(player.avatar || '').trim();
                                 if (!raw) return '';
@@ -6675,8 +6680,8 @@ body.obs-overlay #obsOverlayRoot{
 .hud-player-card .obs-avatar{
     width:100%!important;height:100%!important;
     object-fit:cover!important;
-    opacity:.24!important;
-    filter:saturate(1.1) contrast(1.06)!important;
+    opacity:.72!important;
+    filter:saturate(1.1) contrast(1.06) brightness(.9)!important;
     transform:scale(1.04)!important;
 }
 .hud-player-card .obs-avatar-frame{
