@@ -4855,7 +4855,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 <div class="obs-section elo-grant"><div class="obs-section-title" style="color:#ffc338;">🟨 ВЫДАЧА ELO — ВЫБОР ИГРОКОВ</div><div class="obs-side-grid">
                     <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType1" class="obs-v2-select" onchange="toggleEloPlayerType(1,'${streamerKey(name)}')"><option value="normal" ${type1==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type1==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ПОИСК ИГРОКА ДЛЯ ELO</div><input id="eloPlayerSearch1" class="obs-v2-input elo-player-search" placeholder="🔎 Начни писать ник игрока..." autocomplete="off" oninput="filterEloPlayers(1,'${streamerKey(name)}')"><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect1" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP1" type="hidden" value="${escapeHtml(sd.player1||name)}"></div>
                     <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType2" class="obs-v2-select" onchange="toggleEloPlayerType(2,'${streamerKey(name)}')"><option value="normal" ${type2==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type2==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ПОИСК ИГРОКА ДЛЯ ELO</div><input id="eloPlayerSearch2" class="obs-v2-input elo-player-search" placeholder="🔎 Начни писать ник игрока..." autocomplete="off" oninput="filterEloPlayers(2,'${streamerKey(name)}')"><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect2" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP2" type="hidden" value="${escapeHtml(sd.player2||'PLAYER2')}"></div>
-                </div><div class="elo-box" style="margin-top:10px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −32 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −32 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
+                </div><div class="elo-box" style="margin-top:10px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −32 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −32 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div><div class="elo-box" style="margin-top:10px;"><label>КЛАНОВОЕ ELO</label><div class="obs-side-grid"><div class="obs-side"><div class="obs-v2-label">КЛАН 1</div><input id="eloClan1" class="obs-v2-input" placeholder="Название клана"></div><div class="obs-side right"><div class="obs-v2-label">КЛАН 2</div><input id="eloClan2" class="obs-v2-input" placeholder="Название клана"></div></div><div class="obs-v2-label">ПОБЕДИЛ</div><select id="eloClanWinner" class="obs-v2-select"><option value="1">Клан 1</option><option value="2">Клан 2</option></select><div class="obs-v2-actions"><button class="obs-apply" onclick="applyClanEloResult('${streamerKey(name)}')">🏆 Применить: победитель +26 / проигравший −26</button></div></div></div>`;
             renderTpChips(name); renderObsTpSelectors(name); updateBottomEloPreview();
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
         }
@@ -4894,13 +4894,15 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             const displayName1=(document.getElementById('roomDisplayName1')?.value||'').trim();
             const displayName2=(document.getElementById('roomDisplayName2')?.value||'').trim();
             const current=db.streamDataMap[name]||{};
-            const p1=String(current.player1||name).trim(), p2=String(current.player2||'PLAYER2').trim();
+            const p1=displayName1, p2=displayName2;
             const c1=(document.getElementById('roomC1')?.value||'Нет клана').trim()||'Нет клана';
             const c2=(document.getElementById('roomC2')?.value||'Нет клана').trim()||'Нет клана';
             if(!displayName1||!displayName2){alert('Укажи оба ника для отображения в OBS.');return;}
+            const player1=ensureOverlayPlayer(p1), player2=ensureOverlayPlayer(p2);
+            if(c1!=='Нет клана'){ ensureClanExistsByName(c1); player1.clan=c1; } else { player1.clan=''; }
+            if(c2!=='Нет клана'){ ensureClanExistsByName(c2); player2.clan=c2; } else { player2.clan=''; }
             db.streamDataMap[name]={...current,player1:p1,player2:p2,displayName1,displayName2,clan1:c1,clan2:c2};
-            if(c1!=='Нет клана')ensureClanExistsByName(c1); if(c2!=='Нет клана')ensureClanExistsByName(c2);
-            await saveData(); renderStreamers(); openStreamerObsPanel(encodedName);
+            await saveData(); renderPlayers?.(); renderClans?.(); renderStreamers(); openStreamerObsPanel(encodedName);
         }
 
 
@@ -4914,7 +4916,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             if(!db.players) db.players=[];
             const existing=db.players.find(p=>String(p.name||'').trim().toLowerCase()===String(name||'').trim().toLowerCase());
             if(existing) return existing;
-            const player={id:Date.now()+Math.floor(Math.random()*100000),name:String(name).trim(),email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,frame:'',inventory:[],equippedCharacter:''};
+            const player={id:Date.now()+Math.floor(Math.random()*100000),name:String(name).trim(),email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:'',frame:'',inventory:[],equippedCharacter:''};
             db.players.push(player);
             return player;
         }
@@ -4939,6 +4941,21 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             player.elo=newElo;
             player.level=Math.max(1,Math.floor(newElo/300)+1);
             return {oldElo,newElo};
+        }
+
+        async function applyClanEloResult(encodedName){
+            const name=decodeURIComponent(encodedName); if(!streamerCanManage(name)) return;
+            const c1=(document.getElementById('eloClan1')?.value||'').trim();
+            const c2=(document.getElementById('eloClan2')?.value||'').trim();
+            const winner=Number(document.getElementById('eloClanWinner')?.value||1);
+            if(!c1||!c2){alert('Укажи оба клана.');return;}
+            if(c1.toLowerCase()===c2.toLowerCase()){alert('Кланы должны быть разными.');return;}
+            const clan1=ensureClanExistsByName(c1), clan2=ensureClanExistsByName(c2);
+            clan1.elo=Math.max(0,Number(clan1.elo||0)+(winner===1?26:-26));
+            clan2.elo=Math.max(0,Number(clan2.elo||0)+(winner===2?26:-26));
+            if(!db.clanEloHistory) db.clanEloHistory=[];
+            db.clanEloHistory.unshift({clan1:c1,clan2:c2,winner:winner===1?c1:c2,winnerAmount:26,loserAmount:-26,at:new Date().toISOString(),streamer:name});
+            await saveData(); renderClans?.(); openStreamerObsPanel(encodedName);
         }
 
         async function applyMatchResultForSide(encodedName, winnerSlot) {
@@ -5703,7 +5720,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                             <span class="level-badge" style="background:var(--accent);color:#fff;">Клан</span>
                         </div>
                         <p style="color:var(--text-muted);font-size:12px;margin:10px 0 0;">
-                            Клан существует отдельно от профилей игроков.
+                            ELO: <b>${Number(c.elo||0)}</b> · Клан существует отдельно от профилей игроков.
                         </p>
                         <p style="color:var(--text-muted);font-size:11px;margin-top:12px;">
                             Нажмите на клан, чтобы увидеть соперников, счета, победы и поражения.
@@ -6305,8 +6322,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                     let map = db?.streamDataMap || {};
                     let sd = (targetStreamer && map[targetStreamer]) ? map[targetStreamer] : (map[Object.keys(map)[0]] || { player1: 'sayan', clan1: 'NUN', score1: 0, player2: 'PLAYER2', clan2: 'WAKANDA', score2: 0 });
 
-                    let p1Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player1?.toLowerCase());
-                    let p2Obj = (db?.players || []).find(p => p.name?.toLowerCase() === sd.player2?.toLowerCase());
+                    const hudName1 = String(sd.displayName1 || sd.player1 || '').trim();
+                    const hudName2 = String(sd.displayName2 || sd.player2 || '').trim();
+                    let p1Obj = (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === hudName1.toLowerCase());
+                    let p2Obj = (db?.players || []).find(p => String(p.name||'').trim().toLowerCase() === hudName2.toLowerCase());
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
@@ -6317,10 +6336,8 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                                 const raw = String(player.avatar || '').trim();
                                 if (!raw) return '';
                                 const low = raw.toLowerCase();
-                                // В HUD показываем только настоящую аватарку игрока.
-                                // Роботы DiceBear (bottts/initials и т.п.) не показываем.
-                                if (low.includes('api.dicebear.com')) return '';
                                 if (!/^https?:\/\//i.test(raw) && !raw.startsWith('data:image/') && !raw.startsWith('blob:')) return '';
+                                if (low.includes('api.dicebear.com') || low.includes('/bottts/') || low.includes('/initials/')) return '';
                                 return raw;
                             };
 
