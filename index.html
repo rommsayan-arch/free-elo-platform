@@ -4766,18 +4766,42 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
             return list.some(x=>String(x).toLowerCase()===String(player||'').toLowerCase()) ? 'tp' : 'normal';
         }
 
-        function renderEloPlayerOptions(slot, name) {
+        function getEloPlayerNames(slot, name) {
+            const typeEl=document.getElementById(`eloType${slot}`);
+            const type=typeEl?.value||'normal';
+            let names=type==='tp'
+                ? tpPlayersFor(name).slice()
+                : (db.players||[]).filter(p=>p && (p.role||'player')==='player').map(p=>String(p.name||'').trim()).filter(Boolean);
+            const unique=[],seen=new Set();
+            names.forEach(n=>{const k=n.toLowerCase();if(!seen.has(k)){seen.add(k);unique.push(n);}});
+            return unique.sort((a,b)=>a.localeCompare(b,'ru',{sensitivity:'base'}));
+        }
+
+        function renderEloPlayerOptions(slot, name, searchOverride) {
             const typeEl=document.getElementById(`eloType${slot}`), select=document.getElementById(`eloPlayerSelect${slot}`);
             const current=(document.getElementById(`eloP${slot}`)?.value||'').trim();
+            const searchEl=document.getElementById(`eloPlayerSearch${slot}`);
             if(!typeEl || !select) return;
-            const type=typeEl.value||'normal';
-            let names=type==='tp' ? tpPlayersFor(name).slice() : (db.players||[]).filter(p=>p&&(p.role||'player')==='player').map(p=>String(p.name||'').trim()).filter(Boolean);
-            const unique=[],seen=new Set(); names.forEach(n=>{const k=n.toLowerCase();if(!seen.has(k)){seen.add(k);unique.push(n);}});
-            select.innerHTML='<option value="">Выбрать игрока</option>'+unique.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
-            const found=unique.find(n=>n.toLowerCase()===current.toLowerCase());
-            if(found) select.value=found; else if(unique.length===1) select.value=unique[0];
+            const names=getEloPlayerNames(slot,name);
+            const query=String(searchOverride ?? searchEl?.value ?? '').trim().toLowerCase();
+            const filtered=query ? names.filter(n=>n.toLowerCase().includes(query)) : names;
+            select.innerHTML='<option value="">Выбрать игрока</option>'+filtered.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+            const found=names.find(n=>n.toLowerCase()===current.toLowerCase());
+            if(found && filtered.some(n=>n.toLowerCase()===found.toLowerCase())) select.value=found;
+            else if(filtered.length===1 && query) select.value=filtered[0];
             if(select.value){const input=document.getElementById(`eloP${slot}`);if(input)input.value=select.value;}
         }
+
+        function filterEloPlayers(slot, encodedName) {
+            const name=encodedName ? decodeURIComponent(encodedName) : window.__activeStreamerObsName;
+            renderEloPlayerOptions(slot,name);
+            updateEloBottomPreview();
+        }
+        /* Поиск игроков в выдаче ELO */
+        const eloSearchStyle = document.createElement('style');
+        eloSearchStyle.textContent = `.elo-player-search{margin-bottom:6px;border-color:rgba(167,139,250,.55)!important;background:rgba(10,12,20,.92)!important}.elo-player-search:focus{border-color:#a78bfa!important;box-shadow:0 0 0 2px rgba(167,139,250,.16),0 0 18px rgba(167,139,250,.12)}.elo-player-search::placeholder{color:#68758b}`;
+        if(!document.getElementById('eloSearchStyle')){eloSearchStyle.id='eloSearchStyle';document.head.appendChild(eloSearchStyle);}
+
         function updateEloBottomPreview(){
             [1,2].forEach(slot=>{const sel=document.getElementById(`eloPlayerSelect${slot}`),input=document.getElementById(`eloP${slot}`);if(sel&&input)input.value=sel.value||'';});
             const a=document.getElementById('eloBottomP1'),b=document.getElementById('eloBottomP2');
@@ -4824,8 +4848,8 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                     <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">НИК В HUD (OBS)</div><input id="roomDisplayName2" class="obs-v2-input" value="${escapeHtml(sd.displayName2 ?? sd.player2 ?? 'PLAYER2')}" placeholder="Напиши ник для OBS"><div class="obs-v2-label">НИК КЛАНА</div><input id="roomC2" class="obs-v2-input" value="${escapeHtml(sd.clan2||'WAKANDA')}"></div>
                 </div><div class="obs-v2-footer-note">Здесь ты просто пишешь ники, которые должны отображаться на экране OBS. Счёта в HUD игроков здесь нет.</div><div class="obs-v2-actions"><button class="obs-apply" onclick="saveStreamerRoomObs('${streamerKey(name)}')">✓ Сохранить HUD</button></div><div class="obs-v2-label" style="margin-top:7px;">URL ДЛЯ OBS</div><div class="obs-link"><input value="${linkAnime}" readonly id="roomObsAnime"><button onclick="copyLinkText('roomObsAnime')">📋</button></div></div>
                 <div class="obs-section elo-grant"><div class="obs-section-title" style="color:#ffc338;">🟨 ВЫДАЧА ELO — ВЫБОР ИГРОКОВ</div><div class="obs-side-grid">
-                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType1" class="obs-v2-select" onchange="toggleEloPlayerType(1,'${streamerKey(name)}')"><option value="normal" ${type1==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type1==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect1" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP1" type="hidden" value="${escapeHtml(sd.player1||name)}"></div>
-                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType2" class="obs-v2-select" onchange="toggleEloPlayerType(2,'${streamerKey(name)}')"><option value="normal" ${type2==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type2==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect2" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP2" type="hidden" value="${escapeHtml(sd.player2||'PLAYER2')}"></div>
+                    <div class="obs-side"><div class="obs-side-head">🟢 ЛЕВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType1" class="obs-v2-select" onchange="toggleEloPlayerType(1,'${streamerKey(name)}')"><option value="normal" ${type1==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type1==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ПОИСК ИГРОКА ДЛЯ ELO</div><input id="eloPlayerSearch1" class="obs-v2-input elo-player-search" placeholder="🔎 Начни писать ник игрока..." autocomplete="off" oninput="filterEloPlayers(1,'${streamerKey(name)}')"><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect1" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP1" type="hidden" value="${escapeHtml(sd.player1||name)}"></div>
+                    <div class="obs-side right"><div class="obs-side-head">🔴 ПРАВЫЙ ИГРОК</div><div class="obs-v2-label">ТИП ИГРОКА</div><select id="eloType2" class="obs-v2-select" onchange="toggleEloPlayerType(2,'${streamerKey(name)}')"><option value="normal" ${type2==='normal'?'selected':''}>Обычные игроки</option><option value="tp" ${type2==='tp'?'selected':''}>ТП игроки</option></select><div class="obs-v2-label">ПОИСК ИГРОКА ДЛЯ ELO</div><input id="eloPlayerSearch2" class="obs-v2-input elo-player-search" placeholder="🔎 Начни писать ник игрока..." autocomplete="off" oninput="filterEloPlayers(2,'${streamerKey(name)}')"><div class="obs-v2-label">ВЫБРАТЬ ИГРОКА ДЛЯ ELO</div><select id="eloPlayerSelect2" class="obs-v2-select" onchange="updateEloBottomPreview()"></select><input id="eloP2" type="hidden" value="${escapeHtml(sd.player2||'PLAYER2')}"></div>
                 </div><div class="elo-box" style="margin-top:10px;"><label>ВЫБРАННЫЕ ИГРОКИ</label><div class="elo-match-preview"><div>🟢 <b id="eloBottomP1">—</b></div><div>🔴 <b id="eloBottomP2">—</b></div></div><div class="tp-result-buttons"><button class="tp-win-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',1)">🏆 ПОБЕДА ЛЕВОГО <b>+26 ELO</b><small>Правый −32 ELO</small></button><button class="tp-loss-btn" onclick="applyMatchResultForSide('${streamerKey(name)}',2)">🏆 ПОБЕДА ПРАВОГО <b>+26 ELO</b><small>Левый −32 ELO</small></button></div></div><div id="eloGrantHistory" class="obs-v2-footer-note"></div></div>`;
             renderTpChips(name); renderObsTpSelectors(name); updateBottomEloPreview();
             overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
