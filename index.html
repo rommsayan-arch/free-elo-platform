@@ -3576,7 +3576,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                     level: 1, 
                     role: 'creator', 
                     clan: 'NUN', 
-                    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=sayan`, 
+                    avatar: '', 
                     frame: '', 
                     inventory: [],
                     equippedCharacter: ''
@@ -3587,7 +3587,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 { name: 'WAKANDA', tag: 'WAK', owner: 'PLAYER2' }
             ],
             shopItems: [
-                { id: 101, name: 'Крутой Робот', type: 'avatar', price: 500, img: 'https://api.dicebear.com/7.x/bottts/svg?seed=robot1' }
+                
             ],
             streamers: [
                 { id: 1, name: 'sayan', url: 'https://twitch.tv/', priority: 10, isLive: false }
@@ -4358,6 +4358,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         }
 
         function initApp() {
+            cleanupRobotAvatars();
             ensureCreatorRights(); ensureAnimeShopItems();
             loadAnimeImages().catch(()=>{});
             let currentUser=getCurrentUser();
@@ -4534,7 +4535,21 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
 
         function streamerAvatar(streamerName) {
             const p = (db?.players || []).find(x => String(x.name || '').toLowerCase() === String(streamerName || '').toLowerCase());
-            return p?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(streamerName)}`;
+            return p?.avatar || '';
+        }
+
+        // FREE ELO: никакие robot/DiceBear-заглушки не должны попадать в HUD.
+        function cleanupRobotAvatars() {
+            (db?.players || []).forEach(p => {
+                if (!p) return;
+                const raw = String(p.avatar || '').toLowerCase();
+                const hasRobotFallback = raw.includes('dicebear.com') || raw.includes('api.dicebear.com');
+                if (hasRobotFallback) {
+                    const equipped = resolveEquippedAvatar(p);
+                    p.avatar = equipped || '';
+                    p.__hudEquippedAvatar = equipped || '';
+                }
+            });
         }
 
         // Создатель может управлять любым стримером, а стример — только своим аккаунтом.
@@ -5176,7 +5191,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 id: Date.now() + Math.floor(Math.random() * 100000),
                 name, email:'', password:'', elo:0, matches:0, wins:0, level:1,
                 role:'player', clan:'Нет клана',
-                avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
+                avatar:'',
                 frame:'', inventory:[], equippedCharacter:''
             });
 
@@ -6001,8 +6016,14 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
         async function equipItemForPlayer(itemId,playerId){
             const p=(db?.players||[]).find(x=>x.id==playerId); if(!p)return;
             const item=(p.inventory||[]).find(x=>x.id==itemId); if(!item)return;
-            if(item.type==='avatar'){p.avatar=item.img;p.activeAvatarId=item.id;} else if(item.type==='frame'){p.frame=item.img;p.activeFrameId=item.id;}
-            else return;
+            if(item.type==='avatar'){
+                p.avatar = item.img;
+                p.activeAvatarId = item.id;
+                p.__hudEquippedAvatar = item.img || '';
+            } else if(item.type==='frame'){
+                p.frame = item.img;
+                p.activeFrameId = item.id;
+            } else return;
             await saveDataToCloud();
             if (currentUserId == p.id) updateHeaderProfile(p);
             inventoryTargetPlayerId=p.id;
@@ -6239,7 +6260,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 name, email, password,
                 elo: 0, matches: 0, wins: 0, level: 1,
                 role: 'streamer', clan,
-                avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
+                avatar: '',
                 frame: '', inventory: [], equippedCharacter: ''
             });
 
@@ -6420,6 +6441,7 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                 }
 
                 async function updateObsContent() {
+                    cleanupRobotAvatars();
                     // HUD обновляется из локального состояния мгновенно; облако синхронизируется отдельно.
                     // Это убирает задержку fetch каждые 2 секунды.
                     // Нормализуем активные аватарки/рамки после загрузки из облака.
@@ -6429,6 +6451,13 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                         if (a) {
                             p.avatar = a;
                             p.__hudEquippedAvatar = a;
+                        } else {
+                            // Если ничего не надето — не возвращаем старого робота.
+                            p.__hudEquippedAvatar = '';
+                            if (String(p.avatar || '').toLowerCase().includes('dicebear.com') ||
+                                String(p.avatar || '').toLowerCase().includes('api.dicebear.com')) {
+                                p.avatar = '';
+                            }
                         }
                         const f = resolveEquippedFrame(p);
                         if (f?.img) p.frame = f.img;
@@ -6445,15 +6474,21 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
 
                     if (obsContainer) {
                         if (obsMode === 'anime') {
+                            // OBS показывает только реально НАДЕТУЮ аватарку из инвентаря.
+                            // Старые DiceBear/robot-заглушки никогда не выводим.
                             const resolveObsAvatar = (player) => {
                                 if (!player) return '';
-                                const equipped = player.__hudEquippedAvatar || resolveEquippedAvatar(player);
-                                if (equipped) return String(equipped);
-                                const raw = String(player.avatar || '').trim();
-                                if (!raw) return '';
-                                const low = raw.toLowerCase();
-                                if (!/^https?:\/\//i.test(raw) && !raw.startsWith('data:image/') && !raw.startsWith('blob:')) return '';
-                                return raw;
+                                const equipped = String(
+                                    player.__hudEquippedAvatar || resolveEquippedAvatar(player) || ''
+                                ).trim();
+                                if (!equipped) return '';
+
+                                const low = equipped.toLowerCase();
+                                if (low.includes('dicebear.com') || low.includes('api.dicebear.com')) return '';
+                                if (!/^https?:\/\//i.test(equipped) &&
+                                    !equipped.startsWith('data:image/') &&
+                                    !equipped.startsWith('blob:')) return '';
+                                return equipped;
                             };
 
                             const resolveObsFrame = (player) => {
@@ -6480,10 +6515,10 @@ body.obs-overlay .obs-avatar-wrap.frame-effect > .obs-avatar-frame.active-frame-
                             const frameImg1 = frame1?.img ? `<img class="obs-avatar-frame active-frame-visual" src=${JSON.stringify(frame1.img)} alt="">` : '';
                             const frameImg2 = frame2?.img ? `<img class="obs-avatar-frame active-frame-visual" src=${JSON.stringify(frame2.img)} alt="">` : '';
                             const avatar1 = hasAvatar1
-                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl1)} alt="" onerror="this.onerror=null;this.style.display='none';this.closest('.obs-player-card')?.classList.add('obs-avatar-failed');">${frameImg1}</div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass1}"><img class="obs-avatar" referrerpolicy="no-referrer" loading="eager" src=${JSON.stringify(avatarUrl1)} alt="" onerror="this.onerror=null;this.style.display='none';this.closest('.obs-player-card')?.classList.add('obs-avatar-failed');">${frameImg1}</div>`
                                 : '';
                             const avatar2 = hasAvatar2
-                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" src=${JSON.stringify(avatarUrl2)} alt="" onerror="this.onerror=null;this.style.display='none';this.closest('.obs-player-card')?.classList.add('obs-avatar-failed');">${frameImg2}</div>`
+                                ? `<div class="obs-avatar-wrap ${frameClass2}"><img class="obs-avatar" referrerpolicy="no-referrer" loading="eager" src=${JSON.stringify(avatarUrl2)} alt="" onerror="this.onerror=null;this.style.display='none';this.closest('.obs-player-card')?.classList.add('obs-avatar-failed');">${frameImg2}</div>`
                                 : '';
 
                             // Место игрока по ELO. Создатель/стримерские роли на рейтинг не влияют.
@@ -8091,7 +8126,7 @@ window.saveStreamerObsData=async function(streamerName){
   if(p1.toLowerCase()===p2.toLowerCase()){alert('Игроки должны иметь разные ники.');return;}
 
   const find=n=>(db.players||[]).find(x=>String(x.name||'').trim().toLowerCase()===n.toLowerCase());
-  const make=n=>({id:Date.now()+Math.floor(Math.random()*100000),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,frame:'',inventory:[],equippedCharacter:''});
+  const make=n=>({id:Date.now()+Math.floor(Math.random()*100000),name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,role:'player',clan:'',avatar:'',frame:'',inventory:[],equippedCharacter:''});
 
   let a=find(p1),b=find(p2);
   if(!a){a=make(p1);db.players.push(a);}
@@ -8215,7 +8250,7 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.loadUserT
     const make=n=>({
       id:Date.now()+Math.floor(Math.random()*100000),
       name:n,email:'',password:'',elo:0,matches:0,wins:0,level:1,
-      role:'player',clan:'',avatar:`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(n)}`,
+      role:'player',clan:'',avatar:'',
       frame:'',inventory:[],equippedCharacter:''
     });
 
